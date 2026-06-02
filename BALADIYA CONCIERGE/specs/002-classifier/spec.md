@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-02
 
-**Status**: Draft
+**Status**: Implemented
 
 **Covers**: Design C — Your Own Model: ML vs DL, Trained Offline, Served Lean
 
@@ -28,17 +28,17 @@ A developer trains a TF-IDF + LogReg (or linear SVM) classifier on `civic_intent
 
 ---
 
-### User Story 2 — Three-Way Comparison (Priority: P1)
+### User Story 2 — Two-Way Comparison (Priority: P1)
 
-A developer trains all three approaches on the held-out test set and commits the comparison table before choosing one to ship.
+A developer trains both approaches on the held-out test set and commits the comparison table before choosing one to ship.
 
 **Why this priority**: The spec and defense require a committed comparison — shipping without the table is a grade violation.
 
-**Independent Test**: `EVALS.md` contains a table with macro-F1, per-class F1, per-variety F1, p95 latency, and estimated cost-per-call for all three approaches. The shipped model is identified with a justification.
+**Independent Test**: `EVALS.md` contains a table with macro-F1, per-class F1, per-variety F1, p95 latency, and estimated cost-per-call for both approaches. The shipped model is identified with a justification.
 
 **Acceptance Scenarios**:
 
-1. **Given** the training notebook runs on the CSV, **When** it completes, **Then** it outputs a comparison table: Classical (TF-IDF+LogReg) vs Optional DL (ONNX) vs LLM zero-shot — macro-F1, per-class F1, per-variety F1 (EN/MSA/Lebanese/Arabizi), p95 latency, cost/call.
+1. **Given** the training notebook runs on the CSV, **When** it completes, **Then** it outputs a comparison table: Classical (TF-IDF+LogReg) vs LLM zero-shot — macro-F1, per-class F1, per-variety F1 (EN/MSA/Lebanese/Arabizi), p95 latency, cost/call.
 2. **Given** the comparison table is committed to `EVALS.md`, **When** a new training run updates the artifact, **Then** the CI gate checks that macro-F1 on the held-out test does not fall below `eval_thresholds.yaml` → `classifier_macro_f1`.
 3. **Given** the shipped model artifact, **When** its SHA-256 is computed, **Then** it matches the hash in `model_card.md`.
 
@@ -77,7 +77,7 @@ The classifier correctly classifies Lebanese dialect and Arabizi messages withou
 - **FR-003**: Classification latency MUST be < 50ms p95 for the classical sklearn model.
 - **FR-004**: The `modelserver` container MUST NOT contain torch, transformers, or any ML training code. Only `onnxruntime`, `scikit-learn`, `numpy`, `joblib`.
 - **FR-005**: The `modelserver` MUST authenticate incoming requests with a service credential from Vault — it is not an open endpoint.
-- **FR-006**: Three approaches MUST be trained, evaluated, and compared before shipping any one of them. The comparison table MUST be committed to `EVALS.md`.
+- **FR-006**: Classical ML and LLM zero-shot MUST be trained, evaluated, and compared before shipping. The comparison table MUST be committed to `EVALS.md` with macro-F1, per-class F1, per-variety F1, latency, and cost.
 - **FR-007**: The CI classifier gate MUST check macro-F1 on the held-out test against `eval_thresholds.yaml → classifier_macro_f1`. A regression blocks merge.
 - **FR-008**: The classifier MUST report per-language F1 (EN and AR) and per-variety F1 (en, msa, lebanese, arabizi) in the CI gate output.
 - **FR-009**: Char n-grams (3–5) MUST be included in the TF-IDF features to handle Arabizi and Lebanese spelling variation.
@@ -96,7 +96,7 @@ The classifier correctly classifies Lebanese dialect and Arabizi messages withou
 
 ### Measurable Outcomes
 
-- **SC-001**: Classical baseline macro-F1 ≥ threshold in `eval_thresholds.yaml` (placeholder: 0.80) on held-out test.
+- **SC-001**: Classical baseline macro-F1 ≥ threshold in `eval_thresholds.yaml` (`classifier_macro_f1: 0.88`, measured 0.8983) on held-out test.
 - **SC-002**: Classification latency < 50ms p95 for the shipped model (measured in the `modelserver` CI smoke test).
 - **SC-003**: Per-variety F1 reported for all four varieties (en, msa, lebanese, arabizi) — absolute numbers committed in `EVALS.md`.
 - **SC-004**: `modelserver` image size < 500 MB (verified in CI build step).

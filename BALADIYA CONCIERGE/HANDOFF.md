@@ -8,214 +8,216 @@
 
 | Field | Value |
 |---|---|
-| **Active feature** | `001-foundation-isolation` |
-| **Status** | **Not started — ready to implement** |
-| **Last completed task** | None. All tasks are unchecked. |
-| **Next task to start** | `T-001` in `specs/001-foundation-isolation/tasks.md` — initialize repo structure |
-| **How to start** | Run `/speckit-implement` — `feature.json` already points to `001-foundation-isolation` |
-
-No code has been written yet. The project is in the spec-complete, pre-implementation state. All documentation has been drafted; implementation starts with Phase 1.
+| **Active feature** | `003-cms-rag` |
+| **Status** | **Phases 1 & 2 complete — ready to start Phase 3** |
+| **Last completed task** | All tasks in `001-foundation-isolation` and `002-classifier` are `[X]` |
+| **Next task to start** | `T-001` in `specs/003-cms-rag/tasks.md` |
+| **How to start** | Update `feature.json` → `"feature_directory": "specs/003-cms-rag"`, then run `/speckit-implement` |
 
 ---
 
-## 2. Completed Artifacts
+## 2. What Was Built
 
-### Documentation (root level)
+### Phase 1 — Foundation & Tenant Isolation (`001-foundation-isolation`) ✅
 
-| File | Status | Notes |
-|---|---|---|
-| `BALADIYA_CONCIERGE.md` | Complete | Original project spec — source of truth for product requirements |
-| `CLAUDE.md` | Complete | Updated with full tech stack including Gemini/Groq API keys and model IDs |
-| `DESIGN.md` | Complete | Architecture guide: isolation strategy, component map, cost model, scale story, 7 key design decisions |
-| `DECISIONS.md` | Complete | Evidence trail: classifier comparison (TBD filled after Phase 2), RAG choice (TBD after Phase 3), D1–D9 infrastructure decisions |
-| `EVALS.md` | Complete | CI gate overview, eval_thresholds.yaml template, golden set formats, all result rows marked TBD |
-| `RUNBOOK.md` | Complete | Tenant lifecycle, secret management, sidecar recovery, incident runbook, erasure verification |
-| `SECURITY.md` | Complete | Threat model, two-layer rail architecture, PII redaction scope, red-team gate, isolation enforcement |
-| `DATA.md` | Complete | Dataset schema, intent definitions, labelling guidelines, split strategy, data quality audit |
-| `Data.md` | Complete | User's original spec file — contains model/API key choices; kept separate from generated DATA.md |
+**All 28 tasks complete.**
 
-### Spec Files (per phase)
+| Area | Files Created |
+|---|---|
+| API scaffold | `api/main.py`, `api/core/config.py`, `api/core/logging.py`, `api/core/security.py` |
+| Infra | `api/infra/db.py`, `api/infra/vault.py`, `api/infra/redis.py`, `api/infra/cost.py`, `api/infra/rate_limit.py` |
+| Domain models | `api/domain/tenant.py`, `api/domain/audit.py` |
+| Repositories | `api/repositories/base.py`, `api/repositories/tenant_repo.py` |
+| Services | `api/services/platform_service.py` |
+| Platform API | `api/api/platform/router.py`, `api/api/platform/deps.py` |
+| DB migrations | `alembic/versions/001_baseline.py` (tenants + RLS), `alembic/env.py`, `alembic.ini` |
+| Docker | `docker-compose.yml` (11 services), `docker/api.Dockerfile`, `docker/migrate.Dockerfile` |
+| Seed | `scripts/seed.py` — Platform Manager + 2 tenants from env vars (idempotent) |
+| Tests | `tests/conftest.py`, `tests/test_isolation/` (RLS + session reset + red-team + PM access), `tests/test_platform/` (provisioning + erasure + rate limiter) |
+| Config | `.env.example`, `eval_thresholds.yaml`, `pytest.ini`, `requirements.txt`, `requirements-dev.txt` |
 
-| Feature | spec.md | plan.md | tasks.md | Status |
+**Key architectural facts:**
+- `get_db()` sets `SET LOCAL app.current_tenant` and resets in `finally` — always, even on exception
+- `BaseRepository` enforces `.filter(tenant_id == ...)` on every query (second isolation layer)
+- Platform Manager token has `tenant_id=None` — RLS is never set for PM routes by design
+- Erasure order: Redis sessions → pgvector (future) → content tables → MinIO → TenantAdmin users → Tenant row → AuditLog write
+
+---
+
+### Phase 2 — Classifier & Model Server (`002-classifier`) ✅
+
+**All 17 tasks complete.**
+
+| Area | Files Created |
+|---|---|
+| Training notebook | `notebooks/train_classifier.ipynb` — executed; outputs committed |
+| Model server | `modelserver/main.py`, `modelserver/classifier.py`, `modelserver/Dockerfile`, `modelserver/requirements.txt` |
+| Artifact | `modelserver/artifacts/classifier.joblib` (0.53 MB) |
+| Model card | `modelserver/model_card.md` — two-way comparison table (Classical ML vs LLM zero-shot) |
+| API integration | `api/infra/modelserver_client.py`, `api/services/router_service.py` |
+| Tests | `tests/test_classifier/test_classifier_gate.py`, `tests/test_classifier/test_modelserver.py` |
+| CI | `.github/workflows/ci.yml` — unit tests, latency gate, image size gate, red-team gate |
+| Dataset | `civic_intent_dataset.csv` — 547 rows; `dataset_english.md` for automated expansion |
+
+**Trained model results (2026-06-02, 547-row dataset):**
+
+| Approach | Macro-F1 | EN F1 | AR F1 | p50 |
 |---|---|---|---|---|
-| `001-foundation-isolation` | ✓ | ✓ | ✓ | Ready — `feature.json` points here |
-| `002-classifier` | ✓ | ✓ | ✓ | Ready |
-| `003-cms-rag` | ✓ | ✓ | ✓ | Ready |
-| `004-router-agent` | ✓ | ✓ | ✓ | Ready |
-| `005-guardrails-security` | ✓ | ✓ | ✓ | Ready |
-| `006-widget` | ✓ | ✓ | ✓ | Ready |
-| `007-arabic` | ✓ | ✓ | ✓ | Ready |
+| **Classical ML (shipped)** | **0.8983** | **0.8784** | **0.8117** | **2.2ms** |
+| LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | 0.7358 | 0.8512 | 2220ms |
 
-### Other Spec Artifacts
+**Artifact SHA-256**: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
+**Data SHA-256**: `afbb5e166f49102ac3618c35b690294efb6ef014982ee489c7d9a7af7ff2bfc1`
+
+---
+
+## 3. Completed Documentation
 
 | File | Status | Notes |
 |---|---|---|
-| `specs/tasks.md` | Complete | Master task index across all 7 phases with cross-feature dependency map |
-| `specs/data-model.md` | Complete | Full DB schema for all 8 tables, Redis key patterns, RLS policy template, MinIO layout, erasure checklist |
-| `.specify/memory/constitution.md` | Complete | 7 non-negotiable governance rules — supersedes all other practices |
-| `.specify/extensions.yml` | Complete | Git hooks wired: `before_specify`, `before_plan`, `before_tasks`, `before_implement` |
-| `.specify/feature.json` | Complete | Points to `specs/001-foundation-isolation` — created in this session |
+| `BALADIYA_CONCIERGE.md` | Complete | Original product spec |
+| `CLAUDE.md` | Complete | Tech stack, hard constraints |
+| `DESIGN.md` | Complete | Architecture, component map, 7 key decisions |
+| `DECISIONS.md` | Complete | Evidence trail — classifier §1 filled; RAG/agent TBD |
+| `EVALS.md` | Complete | Classifier results filled; RAG/agent/red-team TBD |
+| `RUNBOOK.md` | Complete | Tenant lifecycle, incident runbook |
+| `SECURITY.md` | Complete | Threat model, isolation enforcement |
+| `DATA.md` | Complete | Dataset schema, labelling guidelines |
+| `modelserver/model_card.md` | Complete | Two-way comparison, real F1 numbers, SHA-256 |
+| `.specify/memory/constitution.md` | Complete | 7 non-negotiable governance rules |
 
-### Dataset & Training
+---
 
-| File | Status | Notes |
+## 4. Open Decisions / TBDs
+
+### Resolved in Phase 2 ✅
+- `eval_thresholds.yaml → classifier_macro_f1` = **0.88** (measured 0.8983)
+- `eval_thresholds.yaml → en_macro_f1` = **0.86** (measured 0.8784)
+- Three-way comparison table → now two-way: Classical ML vs LLM zero-shot (DL/ONNX dropped)
+- `model_card.md` — created and filled with real numbers
+- Artifact SHA-256 — recorded and verified at startup
+
+### Still Open
+
+**Phase 3 (RAG)**
+- `eval_thresholds.yaml → rag_hit_at_5`, `rag_mrr`, `rag_faithfulness` — `0.0` placeholder
+- Chunking strategy final choice — hypothesis: paragraph-boundary 512-token cap; confirm with measurement
+- `evals/rag_golden.json` — does not exist; 15 triples hand-labelled in Phase 3 T-031
+- Arabic chunk density — single char-limit may not serve both languages equally
+
+**Phase 4 (Agent)**
+- `eval_thresholds.yaml → agent_tool_accuracy` — `0.0` placeholder
+- `evals/agent_tool_selection.json` — does not exist; 15 examples in Phase 4
+- `max_tool_calls` config — not yet set
+
+**Phase 5 (Security)**
+- `evals/redteam_probes.json` — does not exist; 12+ probes in Phase 5
+- Red-team gate rows in `EVALS.md §6` — all `[TBD — Phase 5]`
+- Guardrails sidecar p99 under load — must validate in Phase 5
+
+**Phase 7 (Arabic)**
+- `eval_thresholds.yaml → ar_macro_f1` — `0.0`; set after Arabic dataset grows to ≥20 verified rows per cell
+- Arabizi (F1=0.50) and Lebanese (F1=0.71) cells are thin — only 5 test rows each
+
+---
+
+## 5. CI Gate Status
+
+| Gate | Threshold | Measured | Status |
+|---|---|---|---|
+| `classifier_macro_f1` | 0.88 | 0.8983 | ✅ Real value — gate active |
+| `en_macro_f1` | 0.86 | 0.8784 | ✅ Real value — gate active |
+| `ar_macro_f1` | 0.0 | 0.8117 | ⚠️ Placeholder — set in Phase 7 |
+| `agent_tool_accuracy` | 0.0 | — | ⚠️ Placeholder — Phase 4 |
+| `rag_hit_at_5` | 0.0 | — | ⚠️ Placeholder — Phase 3 |
+| `rag_mrr` | 0.0 | — | ⚠️ Placeholder — Phase 3 |
+| `rag_faithfulness` | 0.0 | — | ⚠️ Placeholder — Phase 3 |
+| `redteam_pass_rate` | 1.0 | — | ✅ Non-negotiable — never lower |
+
+**CI workflow**: `.github/workflows/ci.yml` — runs on every push. Gates: unit tests, latency p95 < 50ms (real artifact), modelserver image < 500 MB, red-team isolation probes.
+
+---
+
+## 6. Dataset State
+
+| Source | Rows | Intent | Notes |
+|---|---|---|---|
+| `build_dataset.md` (hand-crafted) | 258 | all 4 | Run `python3 build_dataset.md` to regenerate |
+| NYC 311 Kaggle (`nyc_311_2025.csv`) | ~229 | report only | Cached at `/tmp/311_data/nyc_311_2025.csv` |
+| HuggingFace `enron_spam` | ~60 | spam only | Streamed — no download needed |
+| **Total** | **547** | | |
+
+**Workflow**: `python3 build_dataset.md` → `python3 dataset_english.md` → retrain notebook.
+
+`build_dataset.md` **rewrites** the CSV from scratch. Always re-run `dataset_english.md` after it to re-append the 311/spam rows.
+
+**Known thin cells** (need more data before quoting F1):
+- `arabizi` × any intent: 5 test rows — F1 not reliable
+- `lebanese` × any intent: 5 test rows — F1 not reliable
+- `spam` × Arabic: scarce
+
+---
+
+## 7. Environment Notes
+
+| Tool | Location | Notes |
 |---|---|---|
-| `civic_intent_dataset.csv` | Seed complete | ~209 rows; split deterministic (sha1 hash); NOT production-ready for Arabic F1 |
-| `build_dataset.md` | Complete | Python script with `.md` extension — run with `python3 build_dataset.md` |
+| Python venv | `/home/usermohammad/.venv` | Python 3.11; all project deps installed |
+| Jupyter | `/home/usermohammad/.venv/bin/jupyter` | Kernel spec updated to use venv Python |
+| Kaggle credentials | `/home/usermohammad/.kaggle/kaggle.json` | User: `mohammadabouamoun` |
+| API keys | `BALADIYA CONCIERGE/.env` | `GEMINI_API_KEY`, `GROQ_API_KEY` — never commit |
+| Git remote | `https://github.com/mohammadabouamoun/Baladiya_Concierge.git` | Pushed to `main` |
+| NYC 311 dataset | `/tmp/311_data/nyc_311_2025.csv` | 68 MB; `/tmp` — not persisted across reboots |
+
+**onnxruntime WSL locale issue**: ONNX inference fails with `en_US.UTF-8 locale not found`. Fix: `sudo apt-get install locales language-pack-en && sudo locale-gen en_US.UTF-8`. This does not affect the shipped `classifier.joblib`.
+
+**uv pip**: Use `uv pip install <pkg>` for faster installs. For venv-specific: `uv pip install <pkg> --python /home/usermohammad/.venv/bin/python3`.
 
 ---
 
-## 3. Open Decisions / Unknowns (TBD)
+## 8. Next Phase Prep — Phase 3 (CMS/RAG)
 
-These are all the `[TBD]` items across the docs. None are blockers for Phase 1. Each is resolved at the phase noted.
-
-### Classifier (Phase 2)
-
-- `eval_thresholds.yaml → classifier_macro_f1` — placeholder `0.0`; set to (measured − 2pp) after Phase 2 training
-- `eval_thresholds.yaml → en_macro_f1` — same
-- `eval_thresholds.yaml → ar_macro_f1` — set in Phase 7 after Arabic retrain
-- Three-way comparison table in `DECISIONS.md §1` — all F1, latency, and cost cells are `[TBD — Phase 2]`
-- **LLM zero-shot candidate**: `Data.md` says to run both `gemini-2.5-flash` AND a Groq Arabic model (e.g., `mistral-saba-24b` or `allam-2-7b`) and compare per-variety Arabizi F1 — the winner becomes primary
-- `model_card.md` — does not exist yet; created in Phase 2 (P2-004)
-- Artifact SHA-256 — determined after training export
-
-### RAG (Phase 3)
-
-- `eval_thresholds.yaml → rag_hit_at_5`, `rag_mrr`, `rag_faithfulness` — all `0.0`
-- Chunking strategy final choice — documented as paragraph-boundary with 512-token cap, but this is a hypothesis; actual choice and measured delta committed to `DECISIONS.md §3` after Phase 3 evaluation
-- RAG improvement choice — query rewrite is the default; falls back to metadata filtering if hit@5 gain < 2pp; baseline if that also fails. Decision is confirmed with measured numbers in Phase 3
-- Arabic chunk density difference — Arabic text is denser per character; whether a single character limit serves both languages is TBD (noted in DECISIONS.md §3)
-- `evals/rag_golden.json` — does not exist yet; 15 hand-labelled triples created in Phase 3 (T-031)
-- HNSW index trigger — threshold is set (50k chunks/tenant or 500k total) but the Postgres monitor query is not yet wired
-
-### Agent (Phase 4)
-
-- `eval_thresholds.yaml → agent_tool_accuracy` — `0.0`; set after Phase 4
-- `evals/agent_tool_selection.json` — does not exist yet; 15 examples hand-labelled in Phase 4 (T-040)
-- `max_tool_calls` and `max_tokens_per_turn` config values — not yet set; determined during Phase 4 agent loop implementation
-
-### Security (Phase 5)
-
-- `evals/redteam_probes.json` — does not exist yet; 12+ probes committed in Phase 5 (P5-006)
-- Red-team result rows in `EVALS.md §6` and `SECURITY.md §4` — all `[TBD — Phase 5]`
-- Guardrails sidecar p99 latency under load — `DECISIONS.md D4` notes this must be validated in Phase 5; if p99 > 500ms under peak load, timeout may need adjustment
-
-### Arabic (Phase 7)
-
-- Arabic rows in `civic_intent_dataset.csv` have not been hand-verified; thin cells: `human × all Arabic varieties`, `electricity × Arabic`, `arabizi × any intent`
-- Per-variety F1 table in `EVALS.md §3` — all `[TBD]`; Arabic F1 is not reliable until each `(intent × variety)` cell has ≥ 20 verified examples
-
-### Infrastructure (Phase 8)
-
-- `eval_thresholds.yaml` — all placeholder values (`0.0`) must be replaced with real measured values minus 1–2pp before Phase 8 tag
-- HNSW Alembic migration — planned for Phase 3 but the trigger is a runtime count check, not a fixed migration
-
----
-
-## 4. Test / Audit Status
-
-| Gate | Current state | Filled in |
-|---|---|---|
-| Classifier macro-F1 CI | `0.0` placeholder — trivially passes, no signal | Phase 2 |
-| Agent tool-selection accuracy | `0.0` placeholder | Phase 4 |
-| RAG hit@5 / MRR / faithfulness | `0.0` placeholders | Phase 3 |
-| Red-team pass rate | `1.0` — the only non-placeholder threshold | Phase 5 |
-| PII redaction test | Not written | Phase 5 |
-| Stack smoke test | Not written | Phase 1 (gate for entire Phase 1) |
-
-**Tenant-isolation-audit skill**: installed at `.claude/skills/tenant-isolation-audit/SKILL.md` but has not been run. Run it after every merge that adds a new route or Pydantic schema. It scans all Pydantic schemas in `api/` for any field named `tenant_id` — a developer adding such a field would pass a body-supplied tenant_id to the server.
-
-**Test counts**: 0 tests written. No code exists yet.
-
-**Known dataset gaps**:
-- `human` intent: thin across all Arabic varieties — fill first before Phase 7
-- `electricity` category × Arabic: scarce
-- `arabizi` variety × any intent: hardest to verify authentically
-- Do not quote Arabic macro-F1 as reliable until per-cell count ≥ 20
-
----
-
-## 5. Next Phase Prep
-
-### Phase 1 — Ready Now
-
-1. `feature.json` already points to `specs/001-foundation-isolation` — no change needed
-2. Run `/speckit-implement` to begin
-3. The prerequisites script at `.specify/scripts/bash/check-prerequisites.sh` has been `chmod +x` — it will work
-4. **Git is not initialized** — the `extensions.yml` has a `before_constitute` hook that calls `/speckit-git-initialize`. This will run before the first speckit command. If it doesn't trigger automatically, run `/speckit-git-initialize` manually first to avoid hook failures during implementation
-
-### Phase 2 — Before Starting
-
-1. Update `.specify/feature.json` → `"feature_directory": "specs/002-classifier"`
-2. Ensure `civic_intent_dataset.csv` has been validated for near-duplicates (`sha1` split is deterministic but near-paraphrases can straddle the wall)
-3. Training runs in a notebook (Colab or local) — **not in any container**
-4. Required skill: `/rebuild-dataset` to verify counts before training
-
-### Phase 3 — Before Starting
-
-1. Update `feature.json` → `"feature_directory": "specs/003-cms-rag"`
-2. The embedding model (`gemini-embedding-001`, 1536 dims) is permanent — the pgvector column type `vector(1536)` is set in the migration and **cannot change** without re-embedding the entire corpus
+1. `feature.json` → `"feature_directory": "specs/003-cms-rag"`
+2. The embedding model (`gemini-embedding-001`, 1536 dims) is permanent — pgvector column type is set at migration and **cannot change** without re-embedding the entire corpus
 3. Hand-label 15 RAG golden triples before running any evaluation (T-031 is a hard prerequisite for T-032 and T-033)
+4. Phase 1 DB must be running (`docker-compose up db vault migrate api redis`) before implementing RAG
 
-### Phase 4 — Before Starting
+---
 
-1. Update `feature.json` → `"feature_directory": "specs/004-router-agent"`
-2. Phase 2 (classifier) must be complete and `modelserver` must be running — the router calls it over HTTP
-3. Phase 3 (CMS/RAG) must be complete — the `rag_search` tool calls `rag_service`
+## 9. Non-Obvious Facts
 
-### Phases 5–7
+**`build_dataset.md` is a Python script.** `.md` extension is intentional. Run with `python3 build_dataset.md`.
 
-Follow the cross-feature dependency map in `specs/tasks.md`:
+**`Data.md` ≠ `DATA.md`.** `Data.md` is the user's original spec with model/API key decisions. `DATA.md` is the generated dataset documentation. Both exist at root.
+
+**`feature.json` controls which phase is active.** The prerequisites script reads it. Update manually at each phase boundary.
+
+**Gemini free tier: 20 calls/day for `gemini-2.5-flash`.** Not enough to run the LLM eval on 98 test examples. The LLM zero-shot baseline uses **Groq llama-3.3-70b** (generous free tier). See `notebooks/train_classifier.ipynb` cell-17/18.
+
+**`classifier_confidence_thresholds` is now in `Settings`.** It was missing before — `router_service.py` was silently using hardcoded fallbacks. Fixed in the speckit-analyze remediation pass.
+
+**Two-way comparison, not three-way.** The spec originally said "three approaches" but DL/ONNX was dropped. The comparison is now Classical ML vs LLM zero-shot only. FR-006 in `spec.md` has been updated to reflect this.
+
+**`tenant_id` is the Redis key suffix.** Session keys: `session:{session_id}:{tenant_id}`. SCAN pattern for erasure: `session:*:{tenant_id}`. Do not change this structure.
+
+**`capture_request` never receives spam.** Spam is dropped by the classifier BEFORE any tool call. If spam reaches the tool, the router logic is broken.
+
+**Phase 8 docs already written.** `DESIGN.md`, `DECISIONS.md`, `RUNBOOK.md`, `SECURITY.md` are pre-written. Mark their Phase 8 tasks `[X]` without redoing the work.
+
+---
+
+## 10. Cross-Feature Dependency Map
+
 ```
-P1 → ALL others
-P2 (Classifier) → P4 (Router)
-P3 (CMS/RAG)   → P4 (Router)
+P1 (Foundation) → ALL others
+P2 (Classifier) → P4 (Router calls modelserver)
+P3 (CMS/RAG)   → P4 (Router calls rag_search)
 P4 (Router)    → P5 (Guardrails wraps router/agent)
 P5 (Guardrails)→ P6 (Widget calls guarded API)
 P6 (Widget)    → P7 (RTL + Arabic end-to-end)
-P7 (Arabic)    → P8 (Final evals include Arabic numbers)
+P7 (Arabic)    → P8 (Final evals include AR numbers)
 ```
 
 ---
 
-## 6. Notes for Next Agent / Future Self
-
-### Things That Are Not Obvious From the Specs
-
-**`build_dataset.md` is a Python script.** The `.md` extension is intentional — run it with `python3 build_dataset.md`. The row data is embedded directly inside the script as a Python list of dicts, not in a separate source file.
-
-**`Data.md` ≠ `DATA.md`.** Two separate files exist in the root:
-- `Data.md` — the user's original spec file; contains model/API key decisions; the authoritative source for model names and Vault key names
-- `DATA.md` — the generated documentation file for the dataset; does not contain model info
-
-**The HNSW index is in `tasks.md` for Phase 3** but must be added proactively — it is not retroactively applied cheaply to a large table. The trigger (50k chunks/tenant or 500k total) must be monitored via a Postgres row-count query in the Phase 3 CMS implementation. Do not wait until search is slow.
-
-**Gemini free tier trains on your data.** This is a decided constraint, not an oversight. Documented in `SECURITY.md §Free-Tier API Data Usage`. Tenants and residents must be informed via the widget's privacy notice. If the deployment ever moves to pay-as-you-go, it opts out automatically — that is a key-swap-only change, no code changes needed.
-
-**The embedding model is permanent.** `gemini-embedding-001` at 1536 dims is pinned in the pgvector column type. If this ever needs to change, every row in `cms_chunks` must be deleted and re-embedded. Groq never provides embeddings under any circumstances.
-
-**`check-prerequisites.sh` needed `chmod +x`** — this was done in the session that created this file. If you're in a fresh clone, you may need to run it again: `chmod +x .specify/scripts/bash/check-prerequisites.sh`.
-
-**`feature.json` was created in this session.** Before this session it did not exist. The prerequisites script used to default to `007-arabic` (alphabetically last). The file now correctly points to `001-foundation-isolation`. Update it manually at each phase boundary.
-
-**Phase 8 tasks P8-003 through P8-006** in `specs/tasks.md` list DESIGN.md, DECISIONS.md, RUNBOOK.md, and SECURITY.md as Phase 8 deliverables — these have already been written early. Mark P8-003 through P8-006 as complete (`[X]`) when you reach Phase 8 without doing the work again.
-
-**Git is not initialized in the repo.** The speckit extensions.yml has a `before_constitution` hook that calls `/speckit-git-initialize`. This should run before the first implementation command. If the hooks don't fire, the speckit `check-prerequisites.sh` will emit "Git repository not detected; skipped branch validation" warnings — these are non-fatal but branch-based FEATURE_DIR resolution won't work (use `feature.json` instead).
-
-**LLM zero-shot comparison must include Groq Arabic models.** `Data.md` specifies that both `gemini-2.5-flash` and a Groq Arabic candidate (`mistral-saba-24b` or `allam-2-7b`) should be evaluated in the Phase 2 three-way comparison. The winner on per-variety Arabizi F1 becomes the primary LLM. If a Groq Arabic model beats Gemini on Arabizi, the roles flip — document the flip in `DECISIONS.md` before shipping.
-
-**`tenant_id` is the Redis key suffix, not the prefix.** Session keys follow `session:{session_id}:{tenant_id}`. This is required for right-to-erasure: SCAN pattern `session:*:{tenant_id}` works; a prefix pattern would require knowing every `session_id` in advance. Do not change this key structure.
-
-**`capture_request` never receives a spam-classified message.** Spam is dropped by the classifier before the router makes any tool call. If you are debugging why a spam message reached `capture_request`, the classifier threshold or the router logic is wrong — not the tool.
-
-**Two files are called `spec.md`.** Each phase directory has its own `spec.md` (e.g., `specs/001-foundation-isolation/spec.md`). There is no root-level `SPEC.md`. The root `CLAUDE.md` lists `SPEC.md` as a required doc — treat each phase's `spec.md` as fulfilling this requirement, or add a root `SPEC.md` that cross-references all seven.
-
-### Manual Steps Required Before Go-Live
-
-- Add a privacy notice to the widget informing residents that messages are processed by a third-party AI provider (Gemini free tier)
-- Update the escalation section in `RUNBOOK.md §Common Incidents` with real on-call contacts (currently has placeholder text)
-- Validate `CLAUDE.md` model identifiers against live docs at `ai.google.dev` and `console.groq.com` before tagging `v0.1.0-final` — free-tier model names and quotas drift
-
----
-
-*Last updated: 2026-06-02 | Session context: documentation complete, implementation not started*
+*Last updated: 2026-06-02 | Phases 1 & 2 complete | Next: 003-cms-rag*

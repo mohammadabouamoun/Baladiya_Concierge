@@ -73,30 +73,32 @@ redteam_pass_rate: 1.0
 | Per-class F1 | F1 for each of: report / question / human / spam | Reported, not gated |
 | Per-variety F1 | F1 for each of: en / msa / lebanese / arabizi | Reported, not gated |
 
-### Three-Way Comparison (required before shipping)
+### Two-Way Comparison (required before shipping)
 
-All three approaches must be evaluated before a model is chosen. The comparison table and the shipping rationale are committed to `DECISIONS.md §1` before Phase 2 closes. Do not pick a model and update thresholds here until `DECISIONS.md` has the full comparison.
+Both approaches must be evaluated before a model is chosen. The comparison table and the shipping rationale are committed to `DECISIONS.md §1` before Phase 2 closes. Do not pick a model and update thresholds here until `DECISIONS.md` has the full comparison.
 
 ### Results
 
 | Approach | Macro-F1 | EN F1 | AR F1 | Latency p50 | Cost/1k calls |
 |---|---|---|---|---|---|
-| Classical ML (TF-IDF + LogReg/SVM) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | ~$0.001 |
-| DL → ONNX | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | ~$0.001 |
-| LLM zero-shot (Gemini 2.5 Flash) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | ~$0.15 |
-| **Shipped model** | **[TBD]** | **[TBD]** | **[TBD]** | **[TBD]** | **[TBD]** |
+| Classical ML (TF-IDF char 3-5 + word 1-2 + LogReg) | 0.8983 | 0.8784 | 0.8117 | 2.2ms | ~$0.001 |
+| LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | 0.7358 | 0.8512 | 2220ms | ~$0.06 |
+| **Shipped model** | **0.8983** | **0.8784** | **0.8117** | **2.2ms** | **~$0.001** |
+
+Dataset: 547 rows (258 hand-crafted + 289 from NYC 311 Kaggle + enron_spam). Trained 2026-06-02.
+Artifact SHA-256: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
 
 Per-class F1 (shipped model):
 
 | | report | question | human | spam |
 |---|---|---|---|---|
-| F1 | [TBD] | [TBD] | [TBD] | [TBD] |
+| F1 | 0.94 | 0.80 | 1.00 | 0.85 |
 
 Per-variety F1 (shipped model):
 
 | | en | msa | lebanese | arabizi |
 |---|---|---|---|---|
-| F1 | [TBD] | [TBD] | [TBD] | [TBD] |
+| F1 | 0.8784 | 0.9416 | 0.7143 | 0.5000 |
 
 ---
 

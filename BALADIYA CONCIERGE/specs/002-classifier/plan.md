@@ -70,7 +70,6 @@ civic_intent_dataset.csv
   → de-duplicate + near-duplicate scan
   → train/test split (deterministic sha1 hash)
   → Pipeline([
-       LanguageDetectTransformer(),        # adds lang/variety as feature
        ColumnTransformer([
          ('char_ngram', TfidfVectorizer(analyzer='char_wb', ngram_range=(3,5)), 'text'),
          ('word_ngram', TfidfVectorizer(analyzer='word', ngram_range=(1,2)), 'text'),
@@ -80,15 +79,10 @@ civic_intent_dataset.csv
   → evaluate: macro-F1, per-class F1, per-variety F1 on held-out test
   → joblib.dump(pipeline, 'classifier.joblib')
   → sha256(classifier.joblib) → model_card.md
-```
 
-### Optional DL Approach (for comparison table, may not ship)
-
-```
-  → Small 2-layer MLP or distilbert-like encoder (CPU-only torch in Colab only)
-  → Export to ONNX via torch.onnx.export
-  → Evaluate same metrics
-  → Compare: if DL macro-F1 > classical + 3pp AND latency still < 50ms → consider shipping
+Note: Language detection (langdetect) runs in ClassifierService.predict() AFTER
+sklearn inference — not as a pipeline stage. Keeps the pipeline serializable
+without custom transformers.
 ```
 
 ### LLM Zero-Shot Approach (for comparison table, never serves live traffic)

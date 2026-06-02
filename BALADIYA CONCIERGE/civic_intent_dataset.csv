@@ -8,203 +8,818 @@ en-en-006,"There's a water pipe leaking on the sidewalk, it's been running for h
 en-en-007,Our building has had no water pressure for three days.,en,en,report,water,train
 en-en-008,The power has been cut on our street since last night.,en,en,report,electricity,train
 en-en-009,"A power line is hanging low over the road, it looks dangerous.",en,en,report,electricity,train
-en-en-010,The garbage hasn't been collected on our street for over a week.,en,en,report,waste,train
-en-en-011,Someone dumped construction waste in the empty lot behind the school.,en,en,report,waste,train
-en-en-012,The dumpster on our corner is overflowing and it smells terrible.,en,en,report,waste,test
-en-en-013,There's raw sewage coming up from a manhole near the playground.,en,en,report,environment,train
-en-en-014,"A factory nearby is releasing smoke all night, it's hard to breathe.",en,en,report,environment,train
-en-en-015,There's an abandoned car blocking the road for two weeks now.,en,en,report,roads,train
-en-en-016,"I want to report a stray dog pack near the market, kids are scared.",en,en,report,environment,train
-en-en-017,The public park benches are broken and there's glass everywhere.,en,en,report,environment,train
-en-en-018,"Streetlights on the coastal road are all off, it's pitch black at night.",en,en,report,roads,test
-en-en-019,I'd like to report illegal parking blocking the ambulance entrance.,en,en,report,roads,train
-en-en-020,Water is leaking into our basement from a burst municipal main.,en,en,report,water,train
-en-en-021,Which department handles water cut-offs?,en,en,question,water,train
-en-en-022,How do I apply for a building permit?,en,en,question,permits,train
-en-en-023,What documents do I need to register my new business?,en,en,question,permits,train
-en-en-024,How can I get a proof of residence certificate?,en,en,question,permits,train
-en-en-025,When is the garbage collected in the Achrafieh area?,en,en,question,waste,train
-en-en-026,How much are the annual municipal fees for an apartment?,en,en,question,taxes,train
-en-en-027,Where can I pay my municipality bill?,en,en,question,taxes,test
-en-en-028,What are the opening hours of the municipality office?,en,en,question,general,test
-en-en-029,Where exactly is the municipality building located?,en,en,question,general,train
-en-en-030,Is there a phone number I can call for emergencies?,en,en,question,general,train
-en-en-031,Do I need an appointment to come in person?,en,en,question,general,train
-en-en-032,Who do I contact about a noisy construction site?,en,en,question,environment,test
-en-en-033,How long does a building permit usually take to be approved?,en,en,question,permits,test
-en-en-034,Can I pay my fees online or only at the office?,en,en,question,taxes,test
-en-en-035,What is the fine for late payment of municipal taxes?,en,en,question,taxes,train
-en-en-036,How do I get a birth certificate extract?,en,en,question,permits,train
-en-en-037,Which days does the recycling truck come?,en,en,question,waste,train
-en-en-038,Who is responsible for fixing public street lighting?,en,en,question,roads,train
-en-en-039,Is the water shortage affecting the whole town or just my area?,en,en,question,water,train
-en-en-040,What's the process to object to a tax assessment?,en,en,question,taxes,train
-en-en-041,"I want to speak to a real person, please.",en,en,human,none,train
-en-en-042,Can you connect me to someone in the office?,en,en,human,none,train
-en-en-043,"This isn't helping, I need to talk to a staff member.",en,en,human,none,train
-en-en-044,Please transfer me to a municipal employee.,en,en,human,none,train
-en-en-045,"I have a complaint and I need to talk to a human, not a bot.",en,en,human,none,train
-en-en-046,Give me the direct number of the responsible officer.,en,en,human,none,train
-en-en-047,Can someone from the council call me back?,en,en,human,none,train
-en-en-048,I'd like to file a formal complaint with an actual person.,en,en,human,none,train
-en-en-049,WIN a FREE iPhone now!!! Click this link to claim your prize.,en,en,spam,none,test
-en-en-050,"Make $5000 a week working from home, DM me for details.",en,en,spam,none,train
-en-en-051,"Cheap loans approved instantly, no credit check, call now.",en,en,spam,none,train
-en-en-052,"Buy followers and likes, best prices guaranteed.",en,en,spam,none,train
-en-en-053,Hot singles in your area waiting to chat with you.,en,en,spam,none,test
-en-en-054,Invest in crypto today and double your money in 24 hours.,en,en,spam,none,train
-en-en-055,asdkjf askjdf lorem ipsum random text test test,en,en,spam,none,train
-en-en-056,Congratulations you have been selected for a $1000 gift card.,en,en,spam,none,test
-en-en-057,"Best SEO services, rank #1 on Google, message us.",en,en,spam,none,train
-en-en-058,"Discount Viagra and Cialis, free shipping worldwide.",en,en,spam,none,train
-ar-msa-059,هناك حفرة كبيرة في الطريق الرئيسي قرب المخبز، كادت سيارة أن تنقلب.,ar,msa,report,roads,train
-ar-msa-060,عمود الإنارة أمام البناية رقم ١٢ مطفأ منذ أسبوع.,ar,msa,report,roads,train
-ar-msa-061,سقطت إشارة المرور عند زاوية الساحة الرئيسية.,ar,msa,report,roads,train
-ar-msa-062,الطريق غارق بالمياه بعد المطر ولا تستطيع السيارات المرور.,ar,msa,report,roads,train
-ar-msa-063,انقطعت المياه عن حيّنا منذ الصباح، أرجو المتابعة.,ar,msa,report,water,test
-ar-msa-064,هناك أنبوب مياه يتسرّب على الرصيف منذ ساعات.,ar,msa,report,water,test
-ar-msa-065,بنايتنا بلا ضغط مياه منذ ثلاثة أيام.,ar,msa,report,water,test
-ar-msa-066,انقطع التيار الكهربائي عن شارعنا منذ الليلة الماضية.,ar,msa,report,electricity,train
-ar-msa-067,هناك سلك كهرباء متدلٍّ فوق الطريق ويبدو خطيراً.,ar,msa,report,electricity,test
-ar-msa-068,لم تُجمع النفايات من شارعنا منذ أكثر من أسبوع.,ar,msa,report,waste,train
-ar-msa-069,قام أحدهم برمي مخلفات بناء في الأرض الفارغة خلف المدرسة.,ar,msa,report,waste,train
-ar-msa-070,حاوية النفايات في الزاوية ممتلئة وتفوح منها رائحة كريهة.,ar,msa,report,waste,test
-ar-msa-071,تتسرّب مياه الصرف الصحي من فتحة قرب الملعب.,ar,msa,report,environment,train
-ar-msa-072,هناك سيارة متروكة تسدّ الطريق منذ أسبوعين.,ar,msa,report,roads,train
-ar-msa-073,أودّ الإبلاغ عن أنوار الشارع المطفأة على الطريق الساحلي.,ar,msa,report,roads,train
-ar-msa-074,هناك تسرّب مياه إلى قبو منزلنا من ماسورة بلدية مكسورة.,ar,msa,report,water,train
-ar-msa-075,مصنع قريب يطلق الدخان طوال الليل ويصعب التنفّس.,ar,msa,report,environment,train
-ar-msa-076,مقاعد الحديقة العامة مكسورة وهناك زجاج في كل مكان.,ar,msa,report,environment,train
-ar-msa-077,ما هي الدائرة المسؤولة عن انقطاع المياه؟,ar,msa,question,water,train
-ar-msa-078,كيف أتقدّم بطلب رخصة بناء؟,ar,msa,question,permits,test
-ar-msa-079,ما هي المستندات المطلوبة لتسجيل عمل تجاري جديد؟,ar,msa,question,permits,train
-ar-msa-080,كيف يمكنني الحصول على إفادة سكن؟,ar,msa,question,permits,test
-ar-msa-081,متى تُجمع النفايات في منطقة الأشرفية؟,ar,msa,question,waste,train
-ar-msa-082,كم تبلغ الرسوم البلدية السنوية للشقة؟,ar,msa,question,taxes,train
-ar-msa-083,أين يمكنني دفع فاتورة البلدية؟,ar,msa,question,taxes,train
-ar-msa-084,ما هي ساعات عمل مكتب البلدية؟,ar,msa,question,general,test
-ar-msa-085,أين يقع مبنى البلدية بالتحديد؟,ar,msa,question,general,train
-ar-msa-086,هل هناك رقم هاتف للطوارئ؟,ar,msa,question,general,train
-ar-msa-087,هل أحتاج إلى موعد مسبق للحضور شخصياً؟,ar,msa,question,general,train
-ar-msa-088,بمن أتصل بشأن ورشة بناء مزعجة؟,ar,msa,question,environment,train
-ar-msa-089,كم تستغرق الموافقة على رخصة البناء عادةً؟,ar,msa,question,permits,train
-ar-msa-090,هل يمكن دفع الرسوم عبر الإنترنت أم في المكتب فقط؟,ar,msa,question,taxes,train
-ar-msa-091,ما غرامة التأخّر في دفع الرسوم البلدية؟,ar,msa,question,taxes,train
-ar-msa-092,كيف أحصل على إخراج قيد فردي؟,ar,msa,question,permits,train
-ar-msa-093,في أي أيام تمرّ شاحنة إعادة التدوير؟,ar,msa,question,waste,train
-ar-msa-094,من المسؤول عن إصلاح إنارة الشوارع العامة؟,ar,msa,question,roads,test
-ar-msa-095,أريد التحدّث إلى موظف حقيقي من فضلك.,ar,msa,human,none,train
-ar-msa-096,هل يمكنك تحويلي إلى شخص في المكتب؟,ar,msa,human,none,train
-ar-msa-097,هذا لا يفيدني، أريد التحدّث إلى أحد الموظفين.,ar,msa,human,none,train
-ar-msa-098,أرجو إعطائي الرقم المباشر للمسؤول.,ar,msa,human,none,test
-ar-msa-099,لديّ شكوى وأريد التحدّث إلى إنسان لا إلى روبوت.,ar,msa,human,none,train
-ar-msa-100,هل يمكن لأحد من البلدية معاودة الاتصال بي؟,ar,msa,human,none,train
-ar-msa-101,أودّ تقديم شكوى رسمية إلى موظف فعلي.,ar,msa,human,none,test
-ar-msa-102,اربح آيفون مجاناً الآن!!! اضغط الرابط للحصول على جائزتك.,ar,msa,spam,none,train
-ar-msa-103,اكسب ٥٠٠٠ دولار أسبوعياً من المنزل، راسلني للتفاصيل.,ar,msa,spam,none,train
-ar-msa-104,قروض رخيصة بموافقة فورية وبدون تحقّق، اتصل الآن.,ar,msa,spam,none,train
-ar-msa-105,استثمر في العملات الرقمية اليوم وضاعف أموالك خلال ٢٤ ساعة.,ar,msa,spam,none,train
-ar-msa-106,أفضل خدمات تحسين محركات البحث، تصدّر النتائج، راسلنا.,ar,msa,spam,none,train
-ar-msa-107,عقارات بأسعار مغرية جداً، اتصل الآن قبل نفاد العرض.,ar,msa,spam,none,test
-ar-msa-108,مبروك! تم اختيارك للفوز ببطاقة هدايا بقيمة ١٠٠٠ دولار.,ar,msa,spam,none,test
-ar-msa-109,زيادة متابعين ولايكات بأرخص الأسعار مضمونة.,ar,msa,spam,none,train
-ar-lebanese-110,في حفرة كبيرة بالطريق قدّام الفرن، كادت سيارة تنقلب.,ar,lebanese,report,roads,train
-ar-lebanese-111,عمود الإنارة قدّام بناية رقم ١٢ مطفّي من جمعة.,ar,lebanese,report,roads,train
-ar-lebanese-112,الطريق كلّو مي بعد الشتي وما عم تفوت السيارات.,ar,lebanese,report,roads,train
-ar-lebanese-113,في إشارة سير وقعت عند مفرق الساحة.,ar,lebanese,report,roads,train
-ar-lebanese-114,ما في مي بالحي من الصبح، فيك تشيك؟,ar,lebanese,report,water,train
-ar-lebanese-115,في ماسورة مي عم تنقّط عالرصيف من ساعات.,ar,lebanese,report,water,train
-ar-lebanese-116,بنايتنا ما في عندا ضغط مي من تلت تيام.,ar,lebanese,report,water,train
-ar-lebanese-117,الكهربا مقطوعة عن شارعنا من مبارح بالليل.,ar,lebanese,report,electricity,train
-ar-lebanese-118,في سلك كهربا نازل عالطريق وشكلو خطير.,ar,lebanese,report,electricity,train
-ar-lebanese-119,النفايات ما حدا أخدها من شارعنا من أكتر من جمعة.,ar,lebanese,report,waste,train
-ar-lebanese-120,حدا كبّ بقايا باطون بالأرض الفاضية ورا المدرسة.,ar,lebanese,report,waste,train
-ar-lebanese-121,حاوية الزبالة عالزاوية فايضة وريحتها بشعة.,ar,lebanese,report,waste,train
-ar-lebanese-122,في مجرور مفتوح عم تطلع منو مي صرف حدّ الملعب.,ar,lebanese,report,environment,train
-ar-lebanese-123,في سيارة متروكة سادّة الطريق من أسبوعين.,ar,lebanese,report,roads,train
-ar-lebanese-124,بدّي بلّغ عن أنوار الطريق المطفّية عالأوتوستراد.,ar,lebanese,report,roads,train
-ar-lebanese-125,عم تفوت مي عالقبو من ماسورة البلدية المكسورة.,ar,lebanese,report,water,train
-ar-lebanese-126,في معمل جنبنا عم يطلّع دخان طول الليل وما عم نقدر نتنفّس.,ar,lebanese,report,environment,train
-ar-lebanese-127,كراسي الحديقة العامة مكسّرة وفي قزاز بكل مكان.,ar,lebanese,report,environment,train
-ar-lebanese-128,في ريحة مجارير قوية عم تطلع من المنهول قدّام بيتنا.,ar,lebanese,report,environment,test
-ar-lebanese-129,الزبالة مكدّسة عند المستوعب وصار في فيران.,ar,lebanese,report,waste,train
-ar-lebanese-130,مين الدائرة يلّي بتهتم بقطع المي؟,ar,lebanese,question,water,train
-ar-lebanese-131,كيف بقدّم طلب رخصة بنا؟,ar,lebanese,question,permits,test
-ar-lebanese-132,شو الأوراق يلّي بدّي ياها لسجّل محل تجاري؟,ar,lebanese,question,permits,test
-ar-lebanese-133,كيف بطلّع إفادة سكن؟,ar,lebanese,question,permits,train
-ar-lebanese-134,إيمتى بياخدو الزبالة بمنطقة الأشرفية؟,ar,lebanese,question,waste,train
-ar-lebanese-135,قدّيش رسوم البلدية السنوية عالشقة؟,ar,lebanese,question,taxes,test
-ar-lebanese-136,وين فيني ادفع فاتورة البلدية؟,ar,lebanese,question,taxes,train
-ar-lebanese-137,شو أوقات دوام مكتب البلدية؟,ar,lebanese,question,general,train
-ar-lebanese-138,وين مكتب البلدية بالزبط؟,ar,lebanese,question,general,train
-ar-lebanese-139,في رقم تلفون للطوارئ؟,ar,lebanese,question,general,train
-ar-lebanese-140,بدّي موعد قبل ما إجي ولا فيي إجي دغري؟,ar,lebanese,question,general,train
-ar-lebanese-141,مع مين بحكي بخصوص ورشة بنا عم تعمل دوشة؟,ar,lebanese,question,environment,train
-ar-lebanese-142,قدّيش بياخد وقت تتطلع رخصة البنا؟,ar,lebanese,question,permits,train
-ar-lebanese-143,فيني ادفع الرسوم أونلاين ولا لازم روح عالمكتب؟,ar,lebanese,question,taxes,train
-ar-lebanese-144,قدّيش الغرامة إذا تأخّرت بدفع رسوم البلدية؟,ar,lebanese,question,taxes,train
-ar-lebanese-145,كيف بطلّع إخراج قيد؟,ar,lebanese,question,permits,train
-ar-lebanese-146,أيّ تيام بتمرق سيارة إعادة التدوير؟,ar,lebanese,question,waste,train
-ar-lebanese-147,مين مسؤول عن تصليح إنارة الشوارع؟,ar,lebanese,question,roads,train
-ar-lebanese-148,قطع المي شامل كل البلدة ولا بس منطقتنا؟,ar,lebanese,question,water,train
-ar-lebanese-149,شو الطريقة لاعترض عالرسوم؟,ar,lebanese,question,taxes,train
-ar-lebanese-150,بدّي احكي مع حدا حقيقي لو سمحت.,ar,lebanese,human,none,test
-ar-lebanese-151,فيك توصّلني لحدا بالمكتب؟,ar,lebanese,human,none,train
-ar-lebanese-152,هيدا ما عم يفيدني، بدّي احكي مع موظف.,ar,lebanese,human,none,train
-ar-lebanese-153,عطيني الرقم المباشر تبع المسؤول.,ar,lebanese,human,none,train
-ar-lebanese-154,عندي شكوى وبدّي احكي مع زلمة مش مع روبوت.,ar,lebanese,human,none,train
-ar-lebanese-155,في حدا من البلدية يرجّعلي تلفون؟,ar,lebanese,human,none,train
-ar-lebanese-156,بدّي قدّم شكوى رسمية مع موظف فعلي.,ar,lebanese,human,none,train
-ar-lebanese-157,وصّلني لموظف بليز ما بدّي بوت.,ar,lebanese,human,none,train
-ar-lebanese-158,اربح آيفون ببلاش هلّق!!! دوس عالرابط تتقبض جائزتك.,ar,lebanese,spam,none,test
-ar-lebanese-159,اكسب ٥٠٠٠ دولار بالجمعة من البيت، رسّلي خاص.,ar,lebanese,spam,none,train
-ar-lebanese-160,قروض رخيصة وموافقة عالطاير بلا أوراق، دق هلّق.,ar,lebanese,spam,none,train
-ar-lebanese-161,حطّ مصاري بالبيتكوين اليوم وضاعفهن ب٢٤ ساعة.,ar,lebanese,spam,none,train
-ar-lebanese-162,عقارات بأسعار خيالية، دق قبل ما يخلص العرض.,ar,lebanese,spam,none,train
-ar-lebanese-163,بنزيدلك متابعين ولايكات بأرخص سعر.,ar,lebanese,spam,none,train
-ar-lebanese-164,مبروك ربحت بطاقة هدايا ب١٠٠٠ دولار، أكّد بياناتك.,ar,lebanese,spam,none,train
-ar-arabizi-165,"fi 7afra kbire bel tari2 2eddem el fern, kedet syyara ten2leb.",ar,arabizi,report,roads,train
-ar-arabizi-166,3amoud el inara 2eddem bineye ra2am 12 mou6fe men jem3a.,ar,arabizi,report,roads,train
-ar-arabizi-167,el tari2 kello may ba3d el sheti w ma 3am tfout el syyarat.,ar,arabizi,report,roads,train
-ar-arabizi-168,"ma fi may bel 7ay men el sob7, fik tcheck?",ar,arabizi,report,water,train
-ar-arabizi-169,fi masoura may 3am tno22o6 3al rasif men se3at.,ar,arabizi,report,water,test
-ar-arabizi-170,el kahraba ma26ou3a 3an share3na men mbere7 bel layl.,ar,arabizi,report,electricity,train
-ar-arabizi-171,fi selk kahraba nezel 3al tari2 w shaklo khater.,ar,arabizi,report,electricity,test
-ar-arabizi-172,el nfeyet ma 7ada akhada men share3na men aktar men jem3a.,ar,arabizi,report,waste,train
-ar-arabizi-173,7awiyet el zbele fayme w ri7ta bshe3a.,ar,arabizi,report,waste,train
-ar-arabizi-174,fi majrour maftou7 3am tetla3 menno may sarf 7add el mal3ab.,ar,arabizi,report,environment,train
-ar-arabizi-175,fi syyara matrouke sadde el tari2 men esbou3ayn.,ar,arabizi,report,roads,train
-ar-arabizi-176,baddi ballegh 3an anwar el tari2 el mou6fiye 3al autostrad.,ar,arabizi,report,roads,train
-ar-arabizi-177,3am tfout may 3al 2abo men masoura el baladiye el meksoura.,ar,arabizi,report,water,test
-ar-arabizi-178,fi ma3mal jambna 3am ytalle3 dekhen toul el layl.,ar,arabizi,report,environment,train
-ar-arabizi-179,el zbele mkaddase 3and el mostaw3ab w sar fi firan.,ar,arabizi,report,waste,train
-ar-arabizi-180,fi ri7it majarir 2awiye 3am tetla3 men el manhole 2eddem baytna.,ar,arabizi,report,environment,test
-ar-arabizi-181,min el da2ira yalli btehtam b2at3 el may?,ar,arabizi,question,water,test
-ar-arabizi-182,kif 2addem talab rokh9et bina?,ar,arabizi,question,permits,test
-ar-arabizi-183,shou el awra2 yalli baddi yehon la sajjel ma7al tijari?,ar,arabizi,question,permits,train
-ar-arabizi-184,kif 6alle3 ifedet sakan?,ar,arabizi,question,permits,train
-ar-arabizi-185,emta byekhdo el zbele b mante2et el ashrafiye?,ar,arabizi,question,waste,train
-ar-arabizi-186,2addaysh rsoum el baladiye el sanawiye 3al she22a?,ar,arabizi,question,taxes,train
-ar-arabizi-187,wen fini edfa3 fatourit el baladiye?,ar,arabizi,question,taxes,train
-ar-arabizi-188,shou aw2at dawem maktab el baladiye?,ar,arabizi,question,general,train
-ar-arabizi-189,wen maktab el baladiye bel zab6?,ar,arabizi,question,general,train
-ar-arabizi-190,fi ra2am telephone lal 6awari2?,ar,arabizi,question,general,train
-ar-arabizi-191,baddi maw3ad 2abel ma eje wella fini eje daghre?,ar,arabizi,question,general,test
-ar-arabizi-192,ma3 min be7ki bi5sous warshe 3am ta3mol dawshe?,ar,arabizi,question,environment,train
-ar-arabizi-193,2addaysh byekhod wa2et ta yetla3 rokh9et el bina?,ar,arabizi,question,permits,train
-ar-arabizi-194,fini edfa3 el rsoum online wella lezem rou7 3al maktab?,ar,arabizi,question,taxes,train
-ar-arabizi-195,kif 6alle3 ekhraj 2ayd?,ar,arabizi,question,permits,train
-ar-arabizi-196,min mas2oul 3an ta9li7 inaret el shawer3?,ar,arabizi,question,roads,train
-ar-arabizi-197,baddi e7ki ma3 7ada 7a2i2i law sama7t.,ar,arabizi,human,none,train
-ar-arabizi-198,fik twa9elne la 7ada bel maktab?,ar,arabizi,human,none,train
-ar-arabizi-199,"hayda ma 3am yfidne, baddi e7ki ma3 mwazzaf.",ar,arabizi,human,none,train
-ar-arabizi-200,3a6ine el ra2am el mbesher taba3 el mas2oul.,ar,arabizi,human,none,train
-ar-arabizi-201,3andi shakwa w baddi e7ki ma3 zalame mish ma3 bot.,ar,arabizi,human,none,train
-ar-arabizi-202,fi 7ada men el baladiye yrajje3le telephone?,ar,arabizi,human,none,train
-ar-arabizi-203,wa9elne la mwazzaf please ma baddi bot.,ar,arabizi,human,none,train
-ar-arabizi-204,erba7 iphone bb balash hala2!!! dous 3al link ta to2bod jeztak.,ar,arabizi,spam,none,test
-ar-arabizi-205,"eksab 5000 dollar bel jem3a men el bayt, rasselle khass.",ar,arabizi,spam,none,test
-ar-arabizi-206,7ot ma9are bel bitcoin el yom w da3efon b 24 se3a.,ar,arabizi,spam,none,train
-ar-arabizi-207,"3a2arat b as3ar 5ayaliye, do2 2abel ma yekhlas el 3ard.",ar,arabizi,spam,none,train
-ar-arabizi-208,"mabrouk reb7et bita2a hadaya b 1000 dollar, 2akked bayanatak.",ar,arabizi,spam,none,train
-ar-arabizi-209,bnzidlak mtab3in w likes b ar5as se3er.,ar,arabizi,spam,none,train
+en-en-010,There has been no electricity in our building for three days now.,en,en,report,electricity,test
+en-en-011,"The electricity keeps going out every few hours, it's affecting our appliances.",en,en,report,electricity,train
+en-en-012,A transformer on our block exploded last night and we still have no power.,en,en,report,electricity,train
+en-en-013,The power outage has been going on since this morning with no update.,en,en,report,electricity,train
+en-en-014,Sparks are coming out of the electrical box on the corner of our street.,en,en,report,electricity,train
+en-en-015,The street lights on our entire road went out and haven't been fixed for a week.,en,en,report,electricity,train
+en-en-016,Our neighbourhood has been experiencing rolling blackouts every evening.,en,en,report,electricity,train
+en-en-017,An electricity pole fell over during the storm and is blocking the road.,en,en,report,electricity,train
+en-en-018,"There is exposed electrical wiring near the playground, it's a safety hazard.",en,en,report,electricity,train
+en-en-019,The electricity meter box outside our building is open and sparking.,en,en,report,electricity,train
+en-en-020,"We've had no power for two days, the municipality hasn't responded.",en,en,report,electricity,train
+en-en-021,"The power cut is affecting the whole neighbourhood, not just our building.",en,en,report,electricity,train
+en-en-022,An overhead power cable snapped and is lying across the pavement.,en,en,report,electricity,train
+en-en-023,Our building's power is out and the backup generator is also not working.,en,en,report,electricity,train
+en-en-024,The public lighting on the main road near the school has been out for days.,en,en,report,electricity,train
+en-en-025,There is a burning smell coming from the electricity junction box on our street.,en,en,report,electricity,train
+en-en-026,"The power voltage is extremely low, our appliances can't function properly.",en,en,report,electricity,train
+en-en-027,Electricity is cut every day between 6 and 10 pm with no warning.,en,en,report,electricity,train
+en-en-028,"The lights in the underpass have been out for a month, it's dangerous at night.",en,en,report,electricity,train
+en-en-029,A fallen power line is touching a metal fence near children's play area.,en,en,report,electricity,train
+en-en-030,Our building has been without power since the maintenance crew last visited.,en,en,report,electricity,train
+en-en-031,The electrical substation near our street is making a loud buzzing noise.,en,en,report,electricity,train
+en-en-032,Power goes out every time it rains — the wiring seems to be exposed.,en,en,report,electricity,test
+en-en-033,Half of our street has electricity while the other half has been dark for days.,en,en,report,electricity,train
+en-en-034,The electricity cut is affecting the water pumps in our building too.,en,en,report,electricity,test
+en-en-035,There is a broken electricity pole leaning dangerously over the road.,en,en,report,electricity,train
+en-en-036,We have been submitting electricity outage reports for two weeks with no fix.,en,en,report,electricity,test
+en-en-037,The power outage is affecting traffic lights at the main intersection.,en,en,report,electricity,train
+en-en-038,Our neighbourhood electricity went out after a construction crew accidentally cut a cable.,en,en,report,electricity,train
+en-en-039,The circuit breaker for the whole block trips every evening around dinner time.,en,en,report,electricity,train
+en-en-040,"Street lights flicker on and off all night, keeping residents awake.",en,en,report,electricity,train
+en-en-041,There's a live wire on the ground after last night's wind storm.,en,en,report,electricity,train
+en-en-042,The electricity is very unstable — it goes on and off several times a day.,en,en,report,electricity,train
+en-en-043,"Our building lost power right before an important public holiday, please prioritise.",en,en,report,electricity,test
+en-en-044,The public lighting in the park has never worked since it was installed last year.,en,en,report,electricity,train
+en-en-045,An electricity cable is touching a tree branch and catching sparks when it's windy.,en,en,report,electricity,train
+en-en-046,"No electricity since the flooding last week, repair crews have not arrived.",en,en,report,electricity,train
+en-en-047,The junction box at the corner of our street was hit by a car and is now open.,en,en,report,electricity,train
+en-en-048,Our area loses power every time the load on the grid increases in summer.,en,en,report,electricity,train
+en-en-049,There is a power line running too close to the roof of a residential building.,en,en,report,electricity,train
+en-en-050,The electricity has been off since the maintenance work that started three days ago.,en,en,report,electricity,train
+en-en-051,Multiple homes on our block have had no power since the line was cut by a truck.,en,en,report,electricity,train
+en-en-052,The electricity switchboard in our building's basement is flooded and unsafe.,en,en,report,electricity,train
+en-en-053,"One side of the street has power, the other does not — this has been the case for days.",en,en,report,electricity,train
+en-en-054,We received no notice of the planned power cut which lasted over eight hours.,en,en,report,electricity,train
+en-en-055,The outdoor lighting near the mosque has been broken for three weeks.,en,en,report,electricity,train
+en-en-056,"There is a short circuit happening somewhere near our building, lights keep blinking.",en,en,report,electricity,test
+en-en-057,The electricity meter has been stuck at the same reading for a month despite usage.,en,en,report,electricity,train
+en-en-058,A power cable is dangling from a cracked pole in front of the supermarket.,en,en,report,electricity,train
+en-en-059,The garbage hasn't been collected on our street for over a week.,en,en,report,waste,train
+en-en-060,Someone dumped construction waste in the empty lot behind the school.,en,en,report,waste,train
+en-en-061,The dumpster on our corner is overflowing and it smells terrible.,en,en,report,waste,test
+en-en-062,There's raw sewage coming up from a manhole near the playground.,en,en,report,environment,train
+en-en-063,"A factory nearby is releasing smoke all night, it's hard to breathe.",en,en,report,environment,train
+en-en-064,There's an abandoned car blocking the road for two weeks now.,en,en,report,roads,train
+en-en-065,"I want to report a stray dog pack near the market, kids are scared.",en,en,report,environment,train
+en-en-066,The public park benches are broken and there's glass everywhere.,en,en,report,environment,train
+en-en-067,"Streetlights on the coastal road are all off, it's pitch black at night.",en,en,report,roads,test
+en-en-068,I'd like to report illegal parking blocking the ambulance entrance.,en,en,report,roads,train
+en-en-069,Water is leaking into our basement from a burst municipal main.,en,en,report,water,train
+en-en-070,Which department handles water cut-offs?,en,en,question,water,train
+en-en-071,How do I apply for a building permit?,en,en,question,permits,train
+en-en-072,What documents do I need to register my new business?,en,en,question,permits,train
+en-en-073,How can I get a proof of residence certificate?,en,en,question,permits,train
+en-en-074,When is the garbage collected in the Achrafieh area?,en,en,question,waste,train
+en-en-075,How much are the annual municipal fees for an apartment?,en,en,question,taxes,train
+en-en-076,Where can I pay my municipality bill?,en,en,question,taxes,test
+en-en-077,What are the opening hours of the municipality office?,en,en,question,general,test
+en-en-078,Where exactly is the municipality building located?,en,en,question,general,train
+en-en-079,Is there a phone number I can call for emergencies?,en,en,question,general,train
+en-en-080,Do I need an appointment to come in person?,en,en,question,general,train
+en-en-081,Who do I contact about a noisy construction site?,en,en,question,environment,test
+en-en-082,How long does a building permit usually take to be approved?,en,en,question,permits,test
+en-en-083,Can I pay my fees online or only at the office?,en,en,question,taxes,test
+en-en-084,What is the fine for late payment of municipal taxes?,en,en,question,taxes,train
+en-en-085,How do I get a birth certificate extract?,en,en,question,permits,train
+en-en-086,Which days does the recycling truck come?,en,en,question,waste,train
+en-en-087,Who is responsible for fixing public street lighting?,en,en,question,roads,train
+en-en-088,Is the water shortage affecting the whole town or just my area?,en,en,question,water,train
+en-en-089,What's the process to object to a tax assessment?,en,en,question,taxes,train
+en-en-090,"I want to speak to a real person, please.",en,en,human,none,train
+en-en-091,Can you connect me to someone in the office?,en,en,human,none,train
+en-en-092,"This isn't helping, I need to talk to a staff member.",en,en,human,none,train
+en-en-093,Please transfer me to a municipal employee.,en,en,human,none,train
+en-en-094,"I have a complaint and I need to talk to a human, not a bot.",en,en,human,none,train
+en-en-095,Give me the direct number of the responsible officer.,en,en,human,none,train
+en-en-096,Can someone from the council call me back?,en,en,human,none,train
+en-en-097,I'd like to file a formal complaint with an actual person.,en,en,human,none,train
+en-en-098,WIN a FREE iPhone now!!! Click this link to claim your prize.,en,en,spam,none,test
+en-en-099,"Make $5000 a week working from home, DM me for details.",en,en,spam,none,train
+en-en-100,"Cheap loans approved instantly, no credit check, call now.",en,en,spam,none,train
+en-en-101,"Buy followers and likes, best prices guaranteed.",en,en,spam,none,train
+en-en-102,Hot singles in your area waiting to chat with you.,en,en,spam,none,test
+en-en-103,Invest in crypto today and double your money in 24 hours.,en,en,spam,none,train
+en-en-104,asdkjf askjdf lorem ipsum random text test test,en,en,spam,none,train
+en-en-105,Congratulations you have been selected for a $1000 gift card.,en,en,spam,none,test
+en-en-106,"Best SEO services, rank #1 on Google, message us.",en,en,spam,none,train
+en-en-107,"Discount Viagra and Cialis, free shipping worldwide.",en,en,spam,none,train
+ar-msa-108,هناك حفرة كبيرة في الطريق الرئيسي قرب المخبز، كادت سيارة أن تنقلب.,ar,msa,report,roads,train
+ar-msa-109,عمود الإنارة أمام البناية رقم ١٢ مطفأ منذ أسبوع.,ar,msa,report,roads,train
+ar-msa-110,سقطت إشارة المرور عند زاوية الساحة الرئيسية.,ar,msa,report,roads,train
+ar-msa-111,الطريق غارق بالمياه بعد المطر ولا تستطيع السيارات المرور.,ar,msa,report,roads,train
+ar-msa-112,انقطعت المياه عن حيّنا منذ الصباح، أرجو المتابعة.,ar,msa,report,water,test
+ar-msa-113,هناك أنبوب مياه يتسرّب على الرصيف منذ ساعات.,ar,msa,report,water,test
+ar-msa-114,بنايتنا بلا ضغط مياه منذ ثلاثة أيام.,ar,msa,report,water,test
+ar-msa-115,انقطع التيار الكهربائي عن شارعنا منذ الليلة الماضية.,ar,msa,report,electricity,train
+ar-msa-116,هناك سلك كهرباء متدلٍّ فوق الطريق ويبدو خطيراً.,ar,msa,report,electricity,test
+ar-msa-117,لم تُجمع النفايات من شارعنا منذ أكثر من أسبوع.,ar,msa,report,waste,train
+ar-msa-118,قام أحدهم برمي مخلفات بناء في الأرض الفارغة خلف المدرسة.,ar,msa,report,waste,train
+ar-msa-119,حاوية النفايات في الزاوية ممتلئة وتفوح منها رائحة كريهة.,ar,msa,report,waste,test
+ar-msa-120,تتسرّب مياه الصرف الصحي من فتحة قرب الملعب.,ar,msa,report,environment,train
+ar-msa-121,هناك سيارة متروكة تسدّ الطريق منذ أسبوعين.,ar,msa,report,roads,train
+ar-msa-122,أودّ الإبلاغ عن أنوار الشارع المطفأة على الطريق الساحلي.,ar,msa,report,roads,train
+ar-msa-123,هناك تسرّب مياه إلى قبو منزلنا من ماسورة بلدية مكسورة.,ar,msa,report,water,train
+ar-msa-124,مصنع قريب يطلق الدخان طوال الليل ويصعب التنفّس.,ar,msa,report,environment,train
+ar-msa-125,مقاعد الحديقة العامة مكسورة وهناك زجاج في كل مكان.,ar,msa,report,environment,train
+ar-msa-126,ما هي الدائرة المسؤولة عن انقطاع المياه؟,ar,msa,question,water,train
+ar-msa-127,كيف أتقدّم بطلب رخصة بناء؟,ar,msa,question,permits,test
+ar-msa-128,ما هي المستندات المطلوبة لتسجيل عمل تجاري جديد؟,ar,msa,question,permits,train
+ar-msa-129,كيف يمكنني الحصول على إفادة سكن؟,ar,msa,question,permits,test
+ar-msa-130,متى تُجمع النفايات في منطقة الأشرفية؟,ar,msa,question,waste,train
+ar-msa-131,كم تبلغ الرسوم البلدية السنوية للشقة؟,ar,msa,question,taxes,train
+ar-msa-132,أين يمكنني دفع فاتورة البلدية؟,ar,msa,question,taxes,train
+ar-msa-133,ما هي ساعات عمل مكتب البلدية؟,ar,msa,question,general,test
+ar-msa-134,أين يقع مبنى البلدية بالتحديد؟,ar,msa,question,general,train
+ar-msa-135,هل هناك رقم هاتف للطوارئ؟,ar,msa,question,general,train
+ar-msa-136,هل أحتاج إلى موعد مسبق للحضور شخصياً؟,ar,msa,question,general,train
+ar-msa-137,بمن أتصل بشأن ورشة بناء مزعجة؟,ar,msa,question,environment,train
+ar-msa-138,كم تستغرق الموافقة على رخصة البناء عادةً؟,ar,msa,question,permits,train
+ar-msa-139,هل يمكن دفع الرسوم عبر الإنترنت أم في المكتب فقط؟,ar,msa,question,taxes,train
+ar-msa-140,ما غرامة التأخّر في دفع الرسوم البلدية؟,ar,msa,question,taxes,train
+ar-msa-141,كيف أحصل على إخراج قيد فردي؟,ar,msa,question,permits,train
+ar-msa-142,في أي أيام تمرّ شاحنة إعادة التدوير؟,ar,msa,question,waste,train
+ar-msa-143,من المسؤول عن إصلاح إنارة الشوارع العامة؟,ar,msa,question,roads,test
+ar-msa-144,أريد التحدّث إلى موظف حقيقي من فضلك.,ar,msa,human,none,train
+ar-msa-145,هل يمكنك تحويلي إلى شخص في المكتب؟,ar,msa,human,none,train
+ar-msa-146,هذا لا يفيدني، أريد التحدّث إلى أحد الموظفين.,ar,msa,human,none,train
+ar-msa-147,أرجو إعطائي الرقم المباشر للمسؤول.,ar,msa,human,none,test
+ar-msa-148,لديّ شكوى وأريد التحدّث إلى إنسان لا إلى روبوت.,ar,msa,human,none,train
+ar-msa-149,هل يمكن لأحد من البلدية معاودة الاتصال بي؟,ar,msa,human,none,train
+ar-msa-150,أودّ تقديم شكوى رسمية إلى موظف فعلي.,ar,msa,human,none,test
+ar-msa-151,اربح آيفون مجاناً الآن!!! اضغط الرابط للحصول على جائزتك.,ar,msa,spam,none,train
+ar-msa-152,اكسب ٥٠٠٠ دولار أسبوعياً من المنزل، راسلني للتفاصيل.,ar,msa,spam,none,train
+ar-msa-153,قروض رخيصة بموافقة فورية وبدون تحقّق، اتصل الآن.,ar,msa,spam,none,train
+ar-msa-154,استثمر في العملات الرقمية اليوم وضاعف أموالك خلال ٢٤ ساعة.,ar,msa,spam,none,train
+ar-msa-155,أفضل خدمات تحسين محركات البحث، تصدّر النتائج، راسلنا.,ar,msa,spam,none,train
+ar-msa-156,عقارات بأسعار مغرية جداً، اتصل الآن قبل نفاد العرض.,ar,msa,spam,none,test
+ar-msa-157,مبروك! تم اختيارك للفوز ببطاقة هدايا بقيمة ١٠٠٠ دولار.,ar,msa,spam,none,test
+ar-msa-158,زيادة متابعين ولايكات بأرخص الأسعار مضمونة.,ar,msa,spam,none,train
+ar-lebanese-159,في حفرة كبيرة بالطريق قدّام الفرن، كادت سيارة تنقلب.,ar,lebanese,report,roads,train
+ar-lebanese-160,عمود الإنارة قدّام بناية رقم ١٢ مطفّي من جمعة.,ar,lebanese,report,roads,train
+ar-lebanese-161,الطريق كلّو مي بعد الشتي وما عم تفوت السيارات.,ar,lebanese,report,roads,train
+ar-lebanese-162,في إشارة سير وقعت عند مفرق الساحة.,ar,lebanese,report,roads,train
+ar-lebanese-163,ما في مي بالحي من الصبح، فيك تشيك؟,ar,lebanese,report,water,train
+ar-lebanese-164,في ماسورة مي عم تنقّط عالرصيف من ساعات.,ar,lebanese,report,water,train
+ar-lebanese-165,بنايتنا ما في عندا ضغط مي من تلت تيام.,ar,lebanese,report,water,train
+ar-lebanese-166,الكهربا مقطوعة عن شارعنا من مبارح بالليل.,ar,lebanese,report,electricity,train
+ar-lebanese-167,في سلك كهربا نازل عالطريق وشكلو خطير.,ar,lebanese,report,electricity,train
+ar-lebanese-168,النفايات ما حدا أخدها من شارعنا من أكتر من جمعة.,ar,lebanese,report,waste,train
+ar-lebanese-169,حدا كبّ بقايا باطون بالأرض الفاضية ورا المدرسة.,ar,lebanese,report,waste,train
+ar-lebanese-170,حاوية الزبالة عالزاوية فايضة وريحتها بشعة.,ar,lebanese,report,waste,train
+ar-lebanese-171,في مجرور مفتوح عم تطلع منو مي صرف حدّ الملعب.,ar,lebanese,report,environment,train
+ar-lebanese-172,في سيارة متروكة سادّة الطريق من أسبوعين.,ar,lebanese,report,roads,train
+ar-lebanese-173,بدّي بلّغ عن أنوار الطريق المطفّية عالأوتوستراد.,ar,lebanese,report,roads,train
+ar-lebanese-174,عم تفوت مي عالقبو من ماسورة البلدية المكسورة.,ar,lebanese,report,water,train
+ar-lebanese-175,في معمل جنبنا عم يطلّع دخان طول الليل وما عم نقدر نتنفّس.,ar,lebanese,report,environment,train
+ar-lebanese-176,كراسي الحديقة العامة مكسّرة وفي قزاز بكل مكان.,ar,lebanese,report,environment,train
+ar-lebanese-177,في ريحة مجارير قوية عم تطلع من المنهول قدّام بيتنا.,ar,lebanese,report,environment,test
+ar-lebanese-178,الزبالة مكدّسة عند المستوعب وصار في فيران.,ar,lebanese,report,waste,train
+ar-lebanese-179,مين الدائرة يلّي بتهتم بقطع المي؟,ar,lebanese,question,water,train
+ar-lebanese-180,كيف بقدّم طلب رخصة بنا؟,ar,lebanese,question,permits,test
+ar-lebanese-181,شو الأوراق يلّي بدّي ياها لسجّل محل تجاري؟,ar,lebanese,question,permits,test
+ar-lebanese-182,كيف بطلّع إفادة سكن؟,ar,lebanese,question,permits,train
+ar-lebanese-183,إيمتى بياخدو الزبالة بمنطقة الأشرفية؟,ar,lebanese,question,waste,train
+ar-lebanese-184,قدّيش رسوم البلدية السنوية عالشقة؟,ar,lebanese,question,taxes,test
+ar-lebanese-185,وين فيني ادفع فاتورة البلدية؟,ar,lebanese,question,taxes,train
+ar-lebanese-186,شو أوقات دوام مكتب البلدية؟,ar,lebanese,question,general,train
+ar-lebanese-187,وين مكتب البلدية بالزبط؟,ar,lebanese,question,general,train
+ar-lebanese-188,في رقم تلفون للطوارئ؟,ar,lebanese,question,general,train
+ar-lebanese-189,بدّي موعد قبل ما إجي ولا فيي إجي دغري؟,ar,lebanese,question,general,train
+ar-lebanese-190,مع مين بحكي بخصوص ورشة بنا عم تعمل دوشة؟,ar,lebanese,question,environment,train
+ar-lebanese-191,قدّيش بياخد وقت تتطلع رخصة البنا؟,ar,lebanese,question,permits,train
+ar-lebanese-192,فيني ادفع الرسوم أونلاين ولا لازم روح عالمكتب؟,ar,lebanese,question,taxes,train
+ar-lebanese-193,قدّيش الغرامة إذا تأخّرت بدفع رسوم البلدية؟,ar,lebanese,question,taxes,train
+ar-lebanese-194,كيف بطلّع إخراج قيد؟,ar,lebanese,question,permits,train
+ar-lebanese-195,أيّ تيام بتمرق سيارة إعادة التدوير؟,ar,lebanese,question,waste,train
+ar-lebanese-196,مين مسؤول عن تصليح إنارة الشوارع؟,ar,lebanese,question,roads,train
+ar-lebanese-197,قطع المي شامل كل البلدة ولا بس منطقتنا؟,ar,lebanese,question,water,train
+ar-lebanese-198,شو الطريقة لاعترض عالرسوم؟,ar,lebanese,question,taxes,train
+ar-lebanese-199,بدّي احكي مع حدا حقيقي لو سمحت.,ar,lebanese,human,none,test
+ar-lebanese-200,فيك توصّلني لحدا بالمكتب؟,ar,lebanese,human,none,train
+ar-lebanese-201,هيدا ما عم يفيدني، بدّي احكي مع موظف.,ar,lebanese,human,none,train
+ar-lebanese-202,عطيني الرقم المباشر تبع المسؤول.,ar,lebanese,human,none,train
+ar-lebanese-203,عندي شكوى وبدّي احكي مع زلمة مش مع روبوت.,ar,lebanese,human,none,train
+ar-lebanese-204,في حدا من البلدية يرجّعلي تلفون؟,ar,lebanese,human,none,train
+ar-lebanese-205,بدّي قدّم شكوى رسمية مع موظف فعلي.,ar,lebanese,human,none,train
+ar-lebanese-206,وصّلني لموظف بليز ما بدّي بوت.,ar,lebanese,human,none,train
+ar-lebanese-207,اربح آيفون ببلاش هلّق!!! دوس عالرابط تتقبض جائزتك.,ar,lebanese,spam,none,test
+ar-lebanese-208,اكسب ٥٠٠٠ دولار بالجمعة من البيت، رسّلي خاص.,ar,lebanese,spam,none,train
+ar-lebanese-209,قروض رخيصة وموافقة عالطاير بلا أوراق، دق هلّق.,ar,lebanese,spam,none,train
+ar-lebanese-210,حطّ مصاري بالبيتكوين اليوم وضاعفهن ب٢٤ ساعة.,ar,lebanese,spam,none,train
+ar-lebanese-211,عقارات بأسعار خيالية، دق قبل ما يخلص العرض.,ar,lebanese,spam,none,train
+ar-lebanese-212,بنزيدلك متابعين ولايكات بأرخص سعر.,ar,lebanese,spam,none,train
+ar-lebanese-213,مبروك ربحت بطاقة هدايا ب١٠٠٠ دولار، أكّد بياناتك.,ar,lebanese,spam,none,train
+ar-arabizi-214,"fi 7afra kbire bel tari2 2eddem el fern, kedet syyara ten2leb.",ar,arabizi,report,roads,train
+ar-arabizi-215,3amoud el inara 2eddem bineye ra2am 12 mou6fe men jem3a.,ar,arabizi,report,roads,train
+ar-arabizi-216,el tari2 kello may ba3d el sheti w ma 3am tfout el syyarat.,ar,arabizi,report,roads,train
+ar-arabizi-217,"ma fi may bel 7ay men el sob7, fik tcheck?",ar,arabizi,report,water,train
+ar-arabizi-218,fi masoura may 3am tno22o6 3al rasif men se3at.,ar,arabizi,report,water,test
+ar-arabizi-219,el kahraba ma26ou3a 3an share3na men mbere7 bel layl.,ar,arabizi,report,electricity,train
+ar-arabizi-220,fi selk kahraba nezel 3al tari2 w shaklo khater.,ar,arabizi,report,electricity,test
+ar-arabizi-221,el nfeyet ma 7ada akhada men share3na men aktar men jem3a.,ar,arabizi,report,waste,train
+ar-arabizi-222,7awiyet el zbele fayme w ri7ta bshe3a.,ar,arabizi,report,waste,train
+ar-arabizi-223,fi majrour maftou7 3am tetla3 menno may sarf 7add el mal3ab.,ar,arabizi,report,environment,train
+ar-arabizi-224,fi syyara matrouke sadde el tari2 men esbou3ayn.,ar,arabizi,report,roads,train
+ar-arabizi-225,baddi ballegh 3an anwar el tari2 el mou6fiye 3al autostrad.,ar,arabizi,report,roads,train
+ar-arabizi-226,3am tfout may 3al 2abo men masoura el baladiye el meksoura.,ar,arabizi,report,water,test
+ar-arabizi-227,fi ma3mal jambna 3am ytalle3 dekhen toul el layl.,ar,arabizi,report,environment,train
+ar-arabizi-228,el zbele mkaddase 3and el mostaw3ab w sar fi firan.,ar,arabizi,report,waste,train
+ar-arabizi-229,fi ri7it majarir 2awiye 3am tetla3 men el manhole 2eddem baytna.,ar,arabizi,report,environment,test
+ar-arabizi-230,min el da2ira yalli btehtam b2at3 el may?,ar,arabizi,question,water,test
+ar-arabizi-231,kif 2addem talab rokh9et bina?,ar,arabizi,question,permits,test
+ar-arabizi-232,shou el awra2 yalli baddi yehon la sajjel ma7al tijari?,ar,arabizi,question,permits,train
+ar-arabizi-233,kif 6alle3 ifedet sakan?,ar,arabizi,question,permits,train
+ar-arabizi-234,emta byekhdo el zbele b mante2et el ashrafiye?,ar,arabizi,question,waste,train
+ar-arabizi-235,2addaysh rsoum el baladiye el sanawiye 3al she22a?,ar,arabizi,question,taxes,train
+ar-arabizi-236,wen fini edfa3 fatourit el baladiye?,ar,arabizi,question,taxes,train
+ar-arabizi-237,shou aw2at dawem maktab el baladiye?,ar,arabizi,question,general,train
+ar-arabizi-238,wen maktab el baladiye bel zab6?,ar,arabizi,question,general,train
+ar-arabizi-239,fi ra2am telephone lal 6awari2?,ar,arabizi,question,general,train
+ar-arabizi-240,baddi maw3ad 2abel ma eje wella fini eje daghre?,ar,arabizi,question,general,test
+ar-arabizi-241,ma3 min be7ki bi5sous warshe 3am ta3mol dawshe?,ar,arabizi,question,environment,train
+ar-arabizi-242,2addaysh byekhod wa2et ta yetla3 rokh9et el bina?,ar,arabizi,question,permits,train
+ar-arabizi-243,fini edfa3 el rsoum online wella lezem rou7 3al maktab?,ar,arabizi,question,taxes,train
+ar-arabizi-244,kif 6alle3 ekhraj 2ayd?,ar,arabizi,question,permits,train
+ar-arabizi-245,min mas2oul 3an ta9li7 inaret el shawer3?,ar,arabizi,question,roads,train
+ar-arabizi-246,baddi e7ki ma3 7ada 7a2i2i law sama7t.,ar,arabizi,human,none,train
+ar-arabizi-247,fik twa9elne la 7ada bel maktab?,ar,arabizi,human,none,train
+ar-arabizi-248,"hayda ma 3am yfidne, baddi e7ki ma3 mwazzaf.",ar,arabizi,human,none,train
+ar-arabizi-249,3a6ine el ra2am el mbesher taba3 el mas2oul.,ar,arabizi,human,none,train
+ar-arabizi-250,3andi shakwa w baddi e7ki ma3 zalame mish ma3 bot.,ar,arabizi,human,none,train
+ar-arabizi-251,fi 7ada men el baladiye yrajje3le telephone?,ar,arabizi,human,none,train
+ar-arabizi-252,wa9elne la mwazzaf please ma baddi bot.,ar,arabizi,human,none,train
+ar-arabizi-253,erba7 iphone bb balash hala2!!! dous 3al link ta to2bod jeztak.,ar,arabizi,spam,none,test
+ar-arabizi-254,"eksab 5000 dollar bel jem3a men el bayt, rasselle khass.",ar,arabizi,spam,none,test
+ar-arabizi-255,7ot ma9are bel bitcoin el yom w da3efon b 24 se3a.,ar,arabizi,spam,none,train
+ar-arabizi-256,"3a2arat b as3ar 5ayaliye, do2 2abel ma yekhlas el 3ard.",ar,arabizi,spam,none,train
+ar-arabizi-257,"mabrouk reb7et bita2a hadaya b 1000 dollar, 2akked bayanatak.",ar,arabizi,spam,none,train
+ar-arabizi-258,bnzidlak mtab3in w likes b ar5as se3er.,ar,arabizi,spam,none,train
+en-en-300000,Entire Tree Has Fallen Down,en,en,report,environment,train
+en-en-300001,Sewer Backup (Use Comments) (SA),en,en,report,environment,train
+en-en-300002,Banging/Pounding,en,en,report,environment,train
+en-en-300003,"Air: Odor/Fumes, Vehicle Idling (AD3)",en,en,report,environment,train
+en-en-300004,Noise: Construction Before/After Hours (NM1),en,en,report,environment,test
+en-en-300005,Tree Alive - in Poor Condition,en,en,report,environment,train
+en-en-300006,Catch Basin Clogged/Flooding (Use Comments) (SC),en,en,report,environment,train
+en-en-300007,Branch or Limb Has Fallen Down,en,en,report,environment,train
+en-en-300008,"Noise, Barking Dog (NR5)",en,en,report,environment,train
+en-en-300009,Car/Truck Horn,en,en,report,environment,train
+en-en-300010,Noise: air condition/ventilation equipment (NV1),en,en,report,environment,train
+en-en-300011,"Noise: Boat(Engine,Music,Etc) (NR10)",en,en,report,environment,train
+en-en-300012,Catch Basin Search (SC2),en,en,report,environment,train
+en-en-300013,Engine Idling,en,en,report,environment,train
+en-en-300014,Branch Cracked and Will Fall,en,en,report,environment,test
+en-en-300015,Street Flooding (SJ),en,en,report,environment,train
+en-en-300016,Manhole Cover Missing (Emergency) (SA3),en,en,report,environment,train
+en-en-300017,News Gathering,en,en,report,environment,test
+en-en-300018,Loud Television,en,en,report,environment,train
+en-en-300019,Noise: Construction Equipment (NC1),en,en,report,environment,train
+en-en-300020,Catch Basin Sunken/Damaged/Raised (SC1),en,en,report,environment,train
+en-en-300021,Car/Truck Music,en,en,report,environment,train
+en-en-300022,"Noise, Ice Cream Truck (NR4)",en,en,report,environment,test
+en-en-300023,Sewer Odor (SA2),en,en,report,environment,train
+en-en-300024,Tree Leaning/Uprooted,en,en,report,environment,test
+en-en-300025,Noise: Alarms (NR3),en,en,report,environment,train
+en-en-300026,Noise: Private Carting Noise (NQ1),en,en,report,environment,train
+en-en-300027,Catch Basin Grating Missing (SA4),en,en,report,environment,train
+en-en-300028,Culvert Blocked/Needs Cleaning (SE),en,en,report,environment,train
+en-en-300029,"Air: Smoke, Chimney or vent (AS1)",en,en,report,environment,train
+en-en-300030,"Air: Smoke, Vehicular (AA4)",en,en,report,environment,train
+en-en-300031,Dust from Construction,en,en,report,environment,test
+en-en-300032,Noise: Jack Hammering (NC2),en,en,report,environment,train
+en-en-300033,"Air: Odor/Fumes, Restaurant (AD2)",en,en,report,environment,train
+en-en-300034,Police Report Not Requested,en,en,report,environment,train
+en-en-300035,Defective/Missing Curb Piece (SC4),en,en,report,environment,test
+en-en-300036,Manhole Overflow (Use Comments) (SA1),en,en,report,environment,train
+en-en-300037,Tree Trunk Split,en,en,report,environment,train
+en-en-300038,RAIN GARDEN DEBRIS (GIRGD),en,en,report,environment,test
+en-en-300039,Noise:  lawn care equipment (NCL),en,en,report,environment,train
+en-en-300040,Police Report Requested,en,en,report,environment,train
+en-en-300041,"Noise, Other Animals (NR6)",en,en,report,environment,test
+en-en-300042,Ventilation,en,en,report,environment,train
+en-en-300043,Other Sewer Problem (Use Comments) (SZZ),en,en,report,environment,train
+en-en-300044,Air: Other Air Problem (Use Comments) (AZZ),en,en,report,environment,test
+en-en-300045,RAIN GARDEN STRUCTURE (GIRGS),en,en,report,environment,train
+en-en-300046,"Air: Dust, Construction/Demolition (AE4)",en,en,report,environment,train
+en-en-300047,Highway Flooding (SH),en,en,report,environment,train
+en-en-300048,"Air: Odor, Nail Salon (AD8)",en,en,report,environment,test
+en-en-300049,"Air: Dust, Other (Use Comments) (AE5)",en,en,report,environment,train
+en-en-300050,RAIN GARDEN PLANTING (GIRGP),en,en,report,environment,test
+en-en-300051,Other (Explain Below),en,en,report,environment,train
+en-en-300052,Noise: Manufacturing Noise (NK1),en,en,report,environment,train
+en-en-300053,Noise: Other Noise Sources (Use Comments) (NZZ),en,en,report,environment,train
+en-en-300054,"Air: Odor, Sweet From Unknown Source (AZ1)",en,en,report,environment,test
+en-en-300055,Sewage Odor,en,en,report,environment,train
+en-en-300056,Chemical Vapors/Gases/Odors,en,en,report,environment,train
+en-en-300057,RAIN GARDEN DEBRIS (SRGDBR),en,en,report,environment,train
+en-en-300058,Unauthorized Bus Layover,en,en,report,roads,train
+en-en-300059,Loud Music/Party,en,en,report,roads,train
+en-en-300060,Street Light Out,en,en,report,roads,test
+en-en-300061,Blocked Hydrant,en,en,report,roads,train
+en-en-300062,License Plate Obscured,en,en,report,roads,train
+en-en-300063,Blocked Crosswalk,en,en,report,roads,train
+en-en-300064,Blocked - Construction,en,en,report,roads,train
+en-en-300065,Posted Parking Sign Violation,en,en,report,roads,train
+en-en-300066,Double Parked Blocking Traffic,en,en,report,roads,test
+en-en-300067,Blocked Sidewalk,en,en,report,roads,train
+en-en-300068,Partial Access,en,en,report,roads,train
+en-en-300069,Loud Talking,en,en,report,roads,train
+en-en-300070,With License Plate,en,en,report,roads,train
+en-en-300071,Parking Permit Improper Use,en,en,report,roads,test
+en-en-300072,Failed Street Repair,en,en,report,roads,test
+en-en-300073,Push Button,en,en,report,roads,train
+en-en-300074,Controller,en,en,report,roads,test
+en-en-300075,Defective Hardware,en,en,report,roads,train
+en-en-300076,Commercial Overnight Parking,en,en,report,roads,train
+en-en-300077,Line/Marking - After Repaving,en,en,report,roads,train
+en-en-300078,Pedestrian Signal,en,en,report,roads,train
+en-en-300079,Trees and Sidewalks Program,en,en,report,roads,test
+en-en-300080,Pedestrian Ramp Defective,en,en,report,roads,train
+en-en-300081,Traffic Signal Light,en,en,report,roads,train
+en-en-300082,Lamppost Wire Exposed,en,en,report,roads,train
+en-en-300083,Lamppost Base Door/Cover Open,en,en,report,roads,train
+en-en-300084,Double Parked Blocking Vehicle,en,en,report,roads,test
+en-en-300085,Paper License Plates,en,en,report,roads,test
+en-en-300086,Veh Signal Lamp,en,en,report,roads,train
+en-en-300087,"Rough, Pitted or Cracked Roads",en,en,report,roads,train
+en-en-300088,Ped Multiple Lamps,en,en,report,roads,test
+en-en-300089,Broken Sidewalk,en,en,report,roads,train
+en-en-300090,Fixture/Luminaire Out Of Position,en,en,report,roads,train
+en-en-300091,Lamppost Base Door/Cover Missing,en,en,report,roads,train
+en-en-300092,Lamppost Knocked Down,en,en,report,roads,train
+en-en-300093,Sidewalk Violation,en,en,report,roads,train
+en-en-300094,Blocked Bike Lane,en,en,report,roads,train
+en-en-300095,Veh Signal Head,en,en,report,roads,train
+en-en-300096,Vehicle Signal,en,en,report,roads,train
+en-en-300097,Street Light Dayburning,en,en,report,roads,train
+en-en-300098,Fixture/Luminaire Hanging,en,en,report,roads,train
+en-en-300099,Lamppost Damaged,en,en,report,roads,train
+en-en-300100,New Con Ed Service Request,en,en,report,roads,train
+en-en-300101,Sidewalk Collapsed,en,en,report,roads,train
+en-en-300102,Lamppost Leaning,en,en,report,roads,train
+en-en-300103,Multiple Street Lights Out,en,en,report,roads,train
+en-en-300104,Ver Mesage Sign RTPI,en,en,report,roads,train
+en-en-300105,Plate Condition - Shifted,en,en,report,roads,train
+en-en-300106,Dumpster - Construction Waste,en,en,report,roads,test
+en-en-300107,Street Light Cycling,en,en,report,roads,train
+en-en-300108,Veh Sgnl Mult Lamps,en,en,report,roads,train
+en-en-300109,Line/Marking - Faded,en,en,report,roads,test
+en-en-300110,BBS Failure,en,en,report,roads,train
+en-en-300111,Lamppost Missing,en,en,report,roads,test
+en-en-300112,Street Light Lamp Missing,en,en,report,roads,train
+en-en-300113,Overnight Commercial Storage,en,en,report,roads,train
+en-en-300114,Underground,en,en,report,roads,test
+en-en-300115,Detached Trailer,en,en,report,roads,train
+en-en-300116,Crash Cushion Defect,en,en,report,roads,train
+en-en-300117,Guard Rail - Street,en,en,report,roads,train
+en-en-300118,ENTIRE BUILDING,en,en,report,water,test
+en-en-300119,Working Contrary To Stop Work Order,en,en,report,water,train
+en-en-300120,APARTMENT ONLY,en,en,report,water,train
+en-en-300121,HEAVY FLOW,en,en,report,water,train
+en-en-300122,WATER SUPPLY,en,en,report,water,train
+en-en-300123,Hydrant Running Full (WA4),en,en,report,water,train
+en-en-300124,Excessive Water In Basement (WEFB),en,en,report,water,train
+en-en-300125,STEAM PIPE/RISER,en,en,report,water,train
+en-en-300126,Hydrant Leaking (WC1),en,en,report,water,train
+en-en-300127,Sidewalk Shed/Pipe Scafford - Inadequate Defective/None,en,en,report,water,train
+en-en-300128,Dirty Water (WE),en,en,report,water,train
+en-en-300129,Leak (Use Comments) (WA2),en,en,report,water,train
+en-en-300130,BATHTUB/SHOWER,en,en,report,water,test
+en-en-300131,Building Permit - None,en,en,report,water,train
+en-en-300132,Hydrant Running (WC3),en,en,report,water,train
+en-en-300133,Curb Cut/Driveway/Carport - Illegal,en,en,report,water,train
+en-en-300134,BASIN/SINK,en,en,report,water,train
+en-en-300135,Site Conditions Endangering Workers,en,en,report,water,train
+en-en-300136,Water Meter Broken/Leaking - Other (CMO),en,en,report,water,train
+en-en-300137,Hydrant Defective (WC2),en,en,report,water,train
+en-en-300138,Hydrant Knocked Over/Missing (WC),en,en,report,water,train
+en-en-300139,Safety Netting/Guard Rails - Damaged/Inadequate/None (6 Stories/75 Feet Or Less),en,en,report,water,train
+en-en-300140,Building Shaking/Vibrating/Structural Stability,en,en,report,water,train
+en-en-300141,Illegal Conversion Of Commercial Bldg/Space To Other Uses,en,en,report,water,train
+en-en-300142,Gas Hook-Up/Piping - Illegal Or Defective,en,en,report,water,train
+en-en-300143,Failure To Maintain,en,en,report,water,train
+en-en-300144,Cons - Contrary/Beyond Approved Plans/Permits,en,en,report,water,test
+en-en-300145,Possible Water Main Break (Use Comments) (WA1),en,en,report,water,test
+en-en-300146,Vent/Exhaust - Illegal/Improper,en,en,report,water,train
+en-en-300147,Egress - Doors Locked/Blocked/Improper/No Secondary Means,en,en,report,water,train
+en-en-300148,Hydrant Locking Device Request (Use Comments) (WC5),en,en,report,water,train
+en-en-300149,Fence - None/Inadequate,en,en,report,water,train
+en-en-300150,Debris - Excessive,en,en,report,water,train
+en-en-300151,"Wasting Faucets,Sinks,Flushometer,Urinal,Etc. - Other (CWO)",en,en,report,water,train
+en-en-300152,Illegal Use Of A Hydrant (CIN),en,en,report,water,train
+en-en-300153,Container - Over 5 Gallons,en,en,report,water,train
+en-en-300154,Sewer or Drain,en,en,report,water,train
+en-en-300155,"Building - Vacant, Open And Unguarded",en,en,report,water,train
+en-en-300156,No Water (WNW),en,en,report,water,train
+en-en-300157,Debris - Falling Or In Danger Of Falling,en,en,report,water,train
+en-en-300158,Plumbing Work - Illegal/No Permit/Standpipe/Sprinkler,en,en,report,water,test
+en-en-300159,Plumbing-Defective/Leaking/Not Maintained,en,en,report,water,train
+en-en-300160,Posted Notice Or Order Removed/Tampered With,en,en,report,water,test
+en-en-300161,Puddle in Ground,en,en,report,water,train
+en-en-300162,Water Meter Broken/Leaking - Private Residence (CMR),en,en,report,water,train
+en-en-300163,LOW WATER PRESSURE - WLWP,en,en,report,water,train
+en-en-300164,Construction - Change Grade/Watercourse,en,en,report,water,train
+en-en-300165,Failure To Retain Water/Improper Drainage- (LL103/89),en,en,report,water,train
+en-en-300166,Cloudy Or Milky Water (QB1),en,en,report,water,train
+en-en-300167,Adjacent Buildings Not Protected,en,en,report,water,test
+en-en-300168,Wall/Retaining Wall - Bulging/Cracked,en,en,report,water,train
+en-en-300169,"No Sampling Required, Requested Information (QG2)",en,en,report,water,test
+en-en-300170,Sprinkler System - Inadequate,en,en,report,water,train
+en-en-300171,"Taste/Odor, Bitter/Metallic (QA3)",en,en,report,water,train
+en-en-300172,Other - Explain Below,en,en,report,water,train
+en-en-300173,Failure to Comply with Vacate Order,en,en,report,water,train
+en-en-300174,"Taste/Odor, Musty/Stale (QA4)",en,en,report,water,test
+en-en-300175,"Taste/Odor, Chemical (QA2)",en,en,report,water,train
+en-en-300176,"Wasting Faucets,Sinks,Flushometer,Urinal,Etc. - Private Residence (CWR)",en,en,report,water,train
+en-en-300177,Illness Caused by Drinking Water,en,en,report,water,test
+en-en-300178,Recycling - Paper,en,en,report,waste,train
+en-en-300179,Bulky Recycling,en,en,report,waste,test
+en-en-300180,Recycling - Paper/Metal/Glass/Rigid Plastic,en,en,report,waste,train
+en-en-300181,Removal Request,en,en,report,waste,train
+en-en-300182,Condition Attracting Rodents,en,en,report,waste,train
+en-en-300183,Rat Sighting,en,en,report,waste,train
+en-en-300184,Signs of Rodents,en,en,report,waste,train
+en-en-300185,Pigeon Waste,en,en,report,waste,train
+en-en-300186,Spilled Garbage,en,en,report,waste,train
+en-en-300187,GARBAGE/RECYCLING STORAGE,en,en,report,waste,train
+en-en-300188,Chronic Dumping,en,en,report,waste,train
+en-en-300189,New Basket,en,en,report,waste,train
+en-en-300190,Trash and Bulky Trash,en,en,report,waste,train
+en-en-300191,15 Street Cond/Dump-Out/Drop-Off,en,en,report,waste,train
+en-en-300192,Broken Glass,en,en,report,waste,train
+en-en-300193,Idling or Blocking Traffic,en,en,report,waste,train
+en-en-300194,Mouse Sighting,en,en,report,waste,train
+en-en-300195,Unsafe Driving,en,en,report,waste,train
+en-en-300196,2 Bulk-Missed Collection,en,en,report,waste,train
+en-en-300197,Dirt or Gravel,en,en,report,waste,train
+en-en-300198,Bulky Trash,en,en,report,waste,train
+en-en-300199,Overflowing,en,en,report,waste,train
+en-en-300200,12 Dead Animals,en,en,report,waste,test
+en-en-300201,1 Missed Collection,en,en,report,waste,test
+en-en-300202,Replacement Basket,en,en,report,waste,train
+en-en-300203,Recycling - Metal/Glass/Rigid Plastic,en,en,report,waste,train
+en-en-300204,Inappropriate Behavior,en,en,report,waste,train
+en-en-300205,6 Overflowing Litter Baskets,en,en,report,waste,train
+en-en-300206,2R Bulk-Missed Recy Collection,en,en,report,waste,train
+en-en-300207,Debris from Car Accident,en,en,report,waste,train
+en-en-300208,1RB Missed Recycling - M/G/Pl,en,en,report,waste,train
+en-en-300209,1RG Missed Recycling Paper,en,en,report,waste,train
+en-en-300210,E3A Dirty Area/Alleyway,en,en,report,waste,train
+en-en-300211,E12 Illegal Dumping Surveillance,en,en,report,waste,train
+en-en-300212,Pigeon Odor,en,en,report,waste,test
+en-en-300213,1R Missed Recycling-All Materials,en,en,report,waste,train
+en-en-300214,E3 Dirty Sidewalk,en,en,report,waste,train
+en-en-300215,E8 Canine Violation,en,en,report,waste,train
+en-en-300216,E1 Improper Disposal,en,en,report,waste,train
+en-en-300217,Other Animal,en,en,report,waste,train
+en-en-300218,E5 Loose Rubbish,en,en,report,waste,train
+en-en-300219,10 Litter Basket / Request,en,en,report,waste,test
+en-en-300220,E13 Throw-Out,en,en,report,waste,train
+en-en-300221,E11 Litter Surveillance,en,en,report,waste,test
+en-en-300222,"E4 18"" Law",en,en,report,waste,test
+en-en-300223,15N Needle/Syringe on Street/Sidewalk,en,en,report,waste,train
+en-en-300224,E2 Receptacle Violation,en,en,report,waste,train
+en-en-300225,POWER OUTAGE,en,en,report,electricity,train
+en-en-300226,NO LIGHTING,en,en,report,electricity,train
+en-en-300227,Electrical Wiring Defective/Exposed,en,en,report,electricity,train
+en-en-300228,OUTLET/SWITCH,en,en,report,electricity,train
+en-en-400000,"understanding oem software
+lead me not into temptation ; i can find the way myself .
+# 3533 . the law disregards trifles .",en,en,spam,none,train
+en-en-400001,"viagra at $ 1 . 12 per dose
+ready to boost your sex life ? positive ?
+time to do it right now . order viagra at incredibly low prices
+$ 1 . 12 per dose . unbelivable
+remove",en,en,spam,none,train
+en-en-400002,"water past also , burn , course . gave country , mass lot . act north
+good . from , learn form most brother vary . when more for . up
+stick , century put , song be . test , describe , plain , against wood
+star . began dress ever group . here oh , most world stay .",en,en,spam,none,test
+en-en-400003,"i noticed that you have visited illegal websites .
+see the name in the list !
++ + + + attachment : no virus found
++ + + + norman antivirus - www . norman . com",en,en,spam,none,train
+en-en-400004,"click here to see the bang busit is wild ! ! ! ! ! !
+tepyycemkckiflbsvpcyi",en,en,spam,none,train
+en-en-400005,bands leonardo di caprio in 1939 ? ? ? ? ? ? shania twain french hospitals,en,en,spam,none,train
+en-en-400006,"buy your own rolex for only
+200 $
+and you - vip =
+person
+you won ' t believe your eyes with =
+the quality and the expert craftmanship =
+our watches have .
+the high profile jewelry
+you ' re looking for at the lowest prices in the =
+nation !
+click =
+here and choose from our collection
+of rolex =
+watches .",en,en,spam,none,train
+en-en-400007,"software should be easy to use !
+all leaders strive to turn their followers into children .
+dance is the hidden language of the soul of the body .",en,en,spam,none,train
+en-en-400008,"= ? utf - 8 ? q ? ty monetary value ! ? =
+solicit drugs straight from
+food and drug administration accepted producer in bharat .
+safe up to 70 % on indian narcotics .
+our site",en,en,spam,none,train
+en-en-400009,"your message to :
+- > antonioa @ icb . ufmg . br
+was considered unsolicited bulk e - mail ( ube ) .
+subject : just to her . . .
+return - path :
+our internal reference code for your message is 25973 - 03 .
+delivery of the email was stopped !",en,en,spam,none,train
+en-en-400010,"we have the hottest pornostars pics and videos inside . thousands of new photo and clips , including pornostars movies . see hot pornostars videos now ! click here for http : / / dais . biz . lediesnight . biz  cool photos and video clips and dvd movies
+- - - - - - - - - - - - - -
+accretion cart calico berg
+coriolanus assimilate dogmatic africa
+chatty ashmolean arcade cookbook",en,en,spam,none,train
+en-en-400011,"email loading . . . @
+ingenuous therein success entourage immaculate perseverance autocratic loudspeaking catalytic grief regressive boniface schizoid depositor cowpox cylindric fermion doleful den you ailanthus crevice aniseikonic cartographer rendezvous alps demurring aylesbury snick aaron hairpin fruehauf brook lutanist",en,en,spam,none,train
+en-en-400012,"appro over dogaadruit gas
+of tree online consult action ax
+fully config dential
+no embargo rash smelt nottv
+no appointments an
+secure order ring pm
+disco pre pet and over night ship ping on
+generic avid ago rat
+super avid ago rat ( co idealism )
+co idealism soft
+max as max
+hang over
+fat blasted
+virgin lit my patch
+spew rom a max
+prop zac
+human growth horn monetary",en,en,spam,none,train
+en-en-400013,"identical to the brandname drugs , low prices , international shipping .
+intense love does not measure , it just gives .
+ninety percent of all mental errors are in your head .
+man without religion is the creature of circumstances .
+study the past if you would define the future .",en,en,spam,none,train
+en-en-400014,"thank you very much for your mortgage refinance
+application .
+the company that best suited your needs is requesting
+applicant verification in order to process your claim .
+( company id : p - 035 )
+thanks ,
+rachel clemons
+broker ( p - 531 - 842 )",en,en,spam,none,train
+en-en-400015,"- these recipients of your message have been processed by the mail server :
+lucaballiano @ aliceposta . it ; failed ; 5 . 7 . 1 ( delivery not authorized , message refused )
+mbertozzi @ aliceposta . it ; failed ; 5 . 7 . 1 ( delivery not authorized , message refused )",en,en,spam,none,train
+en-en-400016,"thanks for requesting this information
+push button income
+come on , why wait join us today http : / / shaumbra . fxtrainer . biz",en,en,spam,none,test
+en-en-400017,"ticket stipulate propionate amoeba mantic minefield bane aphasia
+get any prescription drug you want !
+simple , quick and affordable !
+we deliver quality medications to your door !
+stop getting brochures here
+westbound aseptic albania devout croix destitute bran coffin",en,en,spam,none,train
+en-en-400018,"the men is rich when he is healthy !
+let your life be a counter friction to stop the machine .
+human reason is by nature architectonic .
+all professions are conspiracies against the laity .",en,en,spam,none,test
+en-en-400019,"you have not tried cialls yet ?
+than you cannot even imagine what it is like to be a real man in bed !
+the thing is that a great errrectlon is provided for you exactly when you want .
+cialls has a iot of advantages over viagra
+- the effect lasts 36 hours !
+- you are ready to start within just 10 minutes !
+- you can mix it with alcohol ! we ship to any country !
+get it riqht now ! .",en,en,spam,none,train
+en-en-400020,"get your peace of mind with our affordable softw @ re :
+order now
+acapulco globeveldt oligarchy alohagilmore
+scapula sombreturnery seaside colloqmighty
+historian trainmenserve never reveriejostle
+emitter babysatloiter essen braceletbeograd
+bois javelinpray",en,en,spam,none,test
+en-en-400021,"obtain pharmaceuticals with the internet .
+there is need for doctor or prescription .
+pay one half price of any other pharm .
+copy and paste the site below into your address bar .
+yesuf . pils - r - us . com / ? wid = 209085
+bernardo armour fame confute culprit . susanne bus emphysematous elan foley . elisabeth brag corpulent elisha inspect . grant shuttle dendritic meant einsteinium satiety .",en,en,spam,none,test
+en-en-400022,"cheap oem soft shipping worldwide
+if you can count your money , you don ' t have a billion dollars .
+live in the sunshine , swim the sea , drink the wild air",en,en,spam,none,train
+en-en-400023,"get software cds and download under $ 15 - $ 99
+a straw vote only shows which way the hot air blows .
+poverty is the parent of revolution and crime .",en,en,spam,none,train
+en-en-400024,"once taken its effective for 36 hrs with fewer side effects .
+time is fun when you ' re eating flies .
+you have to be deviant if you ' re going to do anything new .
+a single death is a tragedy , a million deaths is a statistic .
+they are never alone that are accompanied with noble thoughts .",en,en,spam,none,test
+en-en-400025,"you get the medications you request !
+if you are not criticized , you may not be doing much .
+he who knows others is wise ; he who know himself is enlightened .
+there is no such thing as a lover ' s oath .
+war is just to those to whom war is necessary .",en,en,spam,none,train
+en-en-400026,"wa mention nt to know how to save over 60 % on your medlcatlon hieroglyph s ?
+http : / / www . tr granitic adepet . com - successfull franciscan and proven way to save your mo unhorse ney .
+treadmill best prlces .
+fillip high quaiity .
+worldwide aristocrat shlpplng .
+total confidentiai profilingmachine ity .
+more than 200 popu poorly lar medlcatlons
+have a wellintentioned nice day !",en,en,spam,none,train
+en-en-400027,"college parties with drunk girls
+don ' t want anymore
+still secretly admire her from tissue , caricature her you ? with where . cells feels nagging remorse , and box . steal pencils from square .",en,en,spam,none,train
+en-en-400028,"now you can have sex when you want again and again !
+whenever you have an efficient government you have a dictatorship .
+i sing all kinds .
+to follow by faith alone is to follow blindly .",en,en,spam,none,train
+en-en-400029,"unsubscribe
+cheater bakelitecargoes scholar arbiterdid
+coco miceproletariat mcallister auditorcruel
+weatherstrip arbitragethermofax detract prematureombudsperson
+transfinite choose microneden
+revel implausibleriverine",en,en,spam,none,train
+en-en-400030,"lncrease your spurm volum , and orgzm duration
+main benifits are ;
+- the longest most intense orgaasms of your life
+- eerctions like steeel
+- enhancced libido / desire
+- stronger ejacuulaton
+- multple 0 - rgsms
+- up to 4 oo % more volume ( cover her fully )
+- recent surveys show it tastes much sweeter !
+dlscreet same day shlpplng - try lt ,
+you ' ll love it ! !
+( and so ' ll she ! )
+no morepls",en,en,spam,none,train
+en-en-400031,"os - adobe - macromedia etc all under $ 15 - $ 99 cds
+this is the best kind of voyeurism , hearing joy from your neighbors .
+words form the thread on which we string our experiences .",en,en,spam,none,test
+en-en-400032,"want gladiolus to know how to save over 60 % on your med damnify lcatlons ?
+http legerity : / / www . tradepet . com - s ancestry uccessfull and proven way to save your mone lordly y .
+bes bazooka t prlces .
+high qua ladysmock iity .
+worl alphabetically dwide shlpplng .
+total confident wolfcub iaiity .
+more th torpor an 200 popular medlcatlons
+have a nice discomposedly day !",en,en,spam,none,train
+en-en-400033,"this is not an attempt to sell you anything .
+i would like to pay you monthly to advertise on your website .
+if you are interested , please simply reply to this email , or call me directly .
+regards ,
+colin burr
+usa ( 954 ) 608 - 1116
+executive advertising / marketing director
+molo - cure research , inc .",en,en,spam,none,train
+en-en-400034,"first - time sex !
+young boy fuck young girls !
+young girls hardcore !
+big guys fuck innocent girls !
+virgin lesbians movies !
+real virgin girls home video !
+just click here and be happy ; )
+remove your email",en,en,spam,none,test
+en-en-400035,"vlagra - $ 7 o
+vallum - $ 7 o
+clalls - $ 7 o
+amblen - $ llo
+soma - $ 6 o
+and more . .
+visit site here
+remo . ve",en,en,spam,none,train
+en-en-400036,want a cheap watch ? http : / / litv . nepel . com,en,en,spam,none,train
+en-en-400037,"o seu email foi registado na base de dados da heart soul .
+se desejar ser removido desta base de dados , envie um email para remove @ heartandsoul . pt",en,en,spam,none,train
+en-en-400038,"advanced penis development
+more info here
+nucleate adl defunct xxs earthshaking cli irk mru airframe yx dubitable kh ac fwx desiderata hto tent bje dreamboat dyz
+anthropogenic njs brant bfn ivanhoe sqq mcleod hy
+redemption lms beryllium cmv azure gd antoinette ttq impropriety ik advert kln
+no",en,en,spam,none,train
+en-en-400039,"% q
+news ; blogs ; white papers ; downloads ; reviews ; prices . go . alerts | ; newsletters | ;
+rss feeds . click here . enterprise news . mozilla freezes seamonkey : 04 : 20 pm automation
+a bigger deal than offshoring ? 03 : 33 pm . time to kill it for the",en,en,spam,none,train
+en-en-400040,"hello , would you like to spennd less on your medlcatlons ?
+visit medlcations by mail shoop and save over 75 % with us .
+va
+u
+ag
+c
+is
+ll
+mvl
+ra
+lal
+xandmanyother
+have a nice day .
+p . s . you will be pleassantly surprised with our prices !",en,en,spam,none,train
+en-en-400041,"hey man , stop throwing away your money
+http : / / www . gretan . com / ss /
+to err is human ; to forgive , infrequent .
+sacred cows make the best hamburgers .
+remorse : beholding heaven and feeling hell .
+use missteps as stepping stones to deeper understanding and greater achievement .
+if women understood and exercised their power they could remake the world .",en,en,spam,none,train
+en-en-400042,"get your peace of mind with our affordable softw @ re :
+order today
+scription subtletyinfamy algebraic sickmontclair
+retaliatory brainstormbecker dialup buffhunter
+pigeonhole haikustrict busch honoluluspiny
+weep hatfieldtupelo dylan treasonousvilify
+psychology bellicoseaugustan",en,en,spam,none,train
+en-en-400043,"download underground zoo movies now !
+unscribe from list",en,en,spam,none,train
+en-en-400044,"how did it go on wednesday ?
+feeling good is around the corner !
+click now and get more power http : / / buychepmeds . com / ? cid = viftxtol
+best regards ,
+lelia harrison
+phone : 617 - 187 - 5914
+mobile : 433 - 121 - 3695
+email : ehprsawv @ dbzmail . com
+r . e ' m . o ^ v ^ e http : / / buychepmeds . com / emover . php",en,en,spam,none,train
+en-en-400045,click here to be removed,en,en,spam,none,train
+en-en-400046,"thank you for your mail regarding our site . we will reply as soon as possible . in the meantime please continue to enjoy our site .
+tight lines
+bray sea anglers .",en,en,spam,none,train
+en-en-400047,"we have $ 100 of soda or a
+$ 100 restaurant gift card for your opinion on coke ® * vs . pepsi ® * .
+ybgsaxgq",en,en,spam,none,test
+en-en-400048,"home
+book
+topics
+readexcerpt # 1
+readexcerpt # 2
+intent of this book
+order book
+need advice ?
+about author",en,en,spam,none,train
+en-en-400049,"actual reproductions wrist - watches
+we offer the following brands available also :
+harry winston
+chopard
+iwc
+alain silberstein
+omega",en,en,spam,none,test
+en-en-400050,"hello !
+viagra is the # 1 med to struggle with mens ' erectile dysfunction .
+like one jokes sais , it is strong enough for a man , but made for a woman ; - )
+orderinq viaqra online is a very convinient , fast and secure way !
+millions of people do it daily to save their privacy and money
+order here . . .",en,en,spam,none,train
+en-en-400051,"best software prices .
+i exist as i am , that is enough .
+envy is the ulcer of the soul .",en,en,spam,none,train
+en-en-400052,"20 minutes is all it takes
+more info here . . .
+insular il tuft zqz russula vw antisemitism hv
+cafe vq pipeline sud confuse jhc lotion iz determinant qqv swarthout unx autonomic pxa assume kp architect mx loire iyc
+o ' dwyer ki dunce cwh conversant yx plot jfq
+no",en,en,spam,none,train
+en-en-400053,"a loose cabooseyou better shake your . . .
+honeybuns ! shake your honeybuns !
+shake that cosmic thing , shake that thing ,
+shake it , ohhhh yeah ! don ' t let it rest on the president ' s desk , rock the
+house !
+this second one was a rain of
+people - and - horse - and - buggy
+brajenovlc hrid hno 3 hrotti",en,en,spam,none,train
+en-en-400054,"your message to mxo 0 . mail . bellsouth . net was rejected .
+i said :
+rcpt to :
+and mxo 0 . mail . bellsouth . net [ 205 . 152 . 59 . 32 ] responded with
+550 invalid recipient :",en,en,spam,none,train
+en-en-400055,"duplicator 923 saw mill river road suite 175 ardsley , new york 10502
+to be taken off future mailings , please see this link
+if the image above doesn ' t load please g oh e r e .
+p . o . box 7897 g . p . o . shahalam , 40732 shahalam , selangord . e . malaysia .",en,en,spam,none,train
+en-en-400056,"feel insecure about your penis size ?
+http : / / www . okmpoi . com / ss /
+to grow mature is to separate more distinctly , to connect more closely .
+all men by nature desire knowledge .
+am i not destroying my enemies when i make friends of them ?
+. . . it is better to succeed with success than failure .
+no one ever understood disaster until it came .",en,en,spam,none,train
+en-en-400057,"there is this free date site filled with a bunch of sexoholics .
+no flowers , no walk on the beach , just meet up for sex : )
+there are also some people who want serious relationships though
+so if you want a long - termer , or a one - nighter , you got it ; )
+whatever floats your boat pretty much !
+http : / / www . better - then - ever . com /",en,en,spam,none,train
+en-en-400058,"aredit cpproved
+no cecks
+do it now
+3115107654333222221111",en,en,spam,none,train
+en-en-400059,"hello , young lovers ! : )
+sewa
+and a very good morning to you ! : )
+cheveryn
+hallo !
+nagemizhehesai",en,en,spam,none,train

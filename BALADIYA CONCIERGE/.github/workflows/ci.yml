@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Unit + non-integration tests ──────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run unit tests (no live services)
+        run: pytest tests/ -m "not integration" -v --tb=short
+
+  # ── Classifier artifact latency gate (SC-002) ────────────────────────────
+  classifier-latency:
+    name: Classifier Latency Gate (SC-002)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install modelserver deps
+        run: pip install scikit-learn numpy joblib langdetect pytest
+
+      - name: Assert real artifact p95 < 50ms
+        run: pytest tests/test_classifier/test_modelserver.py::test_real_artifact_latency_p95 -m integration -v
+        env:
+          MODELSERVER_ARTIFACT_PATH: modelserver/artifacts/classifier.joblib
+
+  # ── modelserver Docker image size gate (SC-004) ───────────────────────────
+  modelserver-image-size:
+    name: modelserver Image Size Gate (SC-004)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build modelserver image
+        run: docker build modelserver/ -t baladiya-modelserver:ci -f modelserver/Dockerfile
+
+      - name: Assert image < 500 MB
+        run: bash scripts/check_image_size.sh baladiya-modelserver:ci
+
+  # ── Isolation red-team gate (redteam_pass_rate: 1.0) ────────────────────
+  redteam:
+    name: Red-Team Isolation Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run red-team isolation probes
+        run: pytest tests/test_isolation/test_redteam.py tests/test_isolation/test_rls.py tests/test_isolation/test_session_reset.py -v --tb=short
+        env:
+          ENV: testing

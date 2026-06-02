@@ -42,6 +42,17 @@ class Settings(BaseSettings):
     # ── Rate limiting defaults ─────────────────────────────────
     default_requests_per_minute: int = 60
 
+    # ── Classifier confidence thresholds (FR-010) ──────────────
+    # Below threshold → falls through to agent (fail safe, not fail cheap).
+    # Values mirror eval_thresholds.yaml; override via env var if needed.
+    classifier_confidence_thresholds: dict = Field(
+        default={"report": 0.75, "question": 0.75, "human": 0.65, "spam": 0.90},
+        description="Per-intent confidence thresholds loaded from settings",
+    )
+
+    # ── Modelserver ────────────────────────────────────────────
+    modelserver_service_token: str = ""
+
     # ── LLM cost-control ──────────────────────────────────────
     max_tool_iterations: int = 5
     max_tokens_per_turn: int = 4096
