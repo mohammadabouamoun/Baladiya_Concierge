@@ -57,6 +57,15 @@ class Settings(BaseSettings):
     max_tool_iterations: int = 5
     max_tokens_per_turn: int = 4096
 
+    # ── CMS / RAG ─────────────────────────────────────────────
+    # Token approximation: 4 chars ≈ 1 token (English & mixed content)
+    chunk_max_chars: int = 2048    # 512 tokens × 4
+    chunk_min_chars: int = 400     # 100 tokens × 4
+    chunk_overlap_chars: int = 200  # 50 tokens × 4
+    rag_top_k: int = 5
+    embedding_model: str = "gemini-embedding-001"
+    embedding_dimensions: int = 1536
+
     @field_validator("database_url")
     @classmethod
     def _database_url_not_empty_in_prod(cls, v: str, info) -> str:

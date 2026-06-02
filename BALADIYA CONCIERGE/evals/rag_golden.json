@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "created": "2026-06-02",
+  "embedding_model": "gemini-embedding-001",
+  "embedding_dimensions": 1536,
+  "notes": [
+    "15 hand-labelled triples for RAG evaluation.",
+    "Each triple contains a question, expected content keywords that must appear",
+    "in retrieved chunks, and the source entry body used to seed the test DB.",
+    "Cross-language triples (G-009 to G-012) use Arabic questions against English content",
+    "to verify multilingual embedding cross-language retrieval.",
+    "Seed the test DB via evals/seed_eval_content.py before running test_rag_gate.py."
+  ],
+  "triples": [
+    {
+      "id": "G-001",
+      "lang": "en",
+      "category": "water",
+      "question": "How can I pay my water bill?",
+      "ideal_answer": "Water bills can be paid online at baladiya.gov, at the municipal office during working hours, or via the mobile app.",
+      "expected_keywords": ["water", "bill", "pay", "online", "municipal"],
+      "source_entry": {
+        "title": "Water Bill Payment Options",
+        "body": "Water bill payment options: Residents may pay their water bills online at baladiya.gov, visit the municipal office between 8 AM and 3 PM Sunday through Thursday, or use the Baladiya mobile application. Payments are accepted by credit card, debit card, or bank transfer. Late payments incur a 5% monthly surcharge.",
+        "category": "water",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-002",
+      "lang": "en",
+      "category": "permits",
+      "question": "What documents do I need for a building permit?",
+      "ideal_answer": "A building permit requires: ownership deed, architectural drawings stamped by a licensed engineer, municipality application form, and fee payment receipt.",
+      "expected_keywords": ["building permit", "documents", "ownership deed", "engineer"],
+      "source_entry": {
+        "title": "Building Permit Requirements",
+        "body": "Building permit application requirements:\n\nRequired documents:\n- Original ownership deed (tapu) or lease agreement\n- Architectural drawings stamped and signed by a licensed structural engineer\n- Completed municipality building permit application form (Form BP-01)\n- Fee payment receipt (fees calculated based on construction area)\n- Copy of national ID\n\nProcessing time: 15-30 business days. Applications submitted online via baladiya.gov/permits.",
+        "category": "permits",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-003",
+      "lang": "en",
+      "category": "roads",
+      "question": "How do I report a pothole?",
+      "ideal_answer": "Report potholes through the municipality's online portal, by calling the roads hotline, or via the Baladiya mobile app. Include location and photo.",
+      "expected_keywords": ["pothole", "report", "roads", "hotline", "location"],
+      "source_entry": {
+        "title": "Reporting Road Damage",
+        "body": "How to report road damage (potholes, cracks, damaged street signs):\n\nOnline: Submit a report at baladiya.gov/report with the GPS location and a photo attachment.\n\nPhone: Call the roads maintenance hotline at 1700 (available 7 AM to 9 PM daily).\n\nMobile app: Use the 'Report Issue' button in the Baladiya app and your location will be automatically captured.\n\nResponse time: Critical road damage is addressed within 48 hours. Standard reports within 7 business days.",
+        "category": "roads",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-004",
+      "lang": "en",
+      "category": "waste",
+      "question": "When is garbage collection in my area?",
+      "ideal_answer": "Garbage collection schedule varies by district. Residential areas are collected Sunday, Tuesday, and Thursday. Recyclables are collected on Saturdays.",
+      "expected_keywords": ["garbage", "collection", "schedule", "residential", "recycl"],
+      "source_entry": {
+        "title": "Waste Collection Schedule",
+        "body": "Municipal waste collection schedule:\n\nResidential areas: Sunday, Tuesday, and Thursday between 6 AM and 12 PM.\n\nCommercial areas: Daily except Friday, 5 AM to 9 AM.\n\nRecyclable materials (paper, plastic, glass): Every Saturday. Use the blue recycling bins provided by the municipality.\n\nBulk waste (furniture, appliances): By appointment only. Call 1700 or submit a request online at baladiya.gov/bulk-waste.\n\nHazardous waste: Quarterly collection events announced on the municipality website.",
+        "category": "waste",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-005",
+      "lang": "en",
+      "category": "electricity",
+      "question": "How do I report a street light that is not working?",
+      "ideal_answer": "Report street light outages via the municipality portal, mobile app, or by calling the electricity department. Provide the pole number if visible.",
+      "expected_keywords": ["street light", "report", "outage", "pole", "electricity"],
+      "source_entry": {
+        "title": "Street Lighting — Reporting Outages",
+        "body": "Reporting a street light outage:\n\nOnline: Go to baladiya.gov/report and select 'Street Lighting' category. Enter the pole number (printed on the pole) and location.\n\nMobile app: Select 'Street Lighting' from the report categories and attach a photo.\n\nPhone: Contact the electricity department at 1711 (24-hour emergency line).\n\nRepair target: Outages in main streets resolved within 72 hours. Side streets within 7 days.",
+        "category": "electricity",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-006",
+      "lang": "en",
+      "category": "taxes",
+      "question": "How do I object to my property tax assessment?",
+      "ideal_answer": "File an objection within 30 days of receiving the assessment notice by submitting Form TX-04 with supporting evidence to the tax department.",
+      "expected_keywords": ["property tax", "objection", "assessment", "30 days", "form"],
+      "source_entry": {
+        "title": "Property Tax Assessment Objections",
+        "body": "Objecting to a property tax assessment:\n\nDeadline: Objections must be filed within 30 days of receiving the assessment notice.\n\nProcess:\n1. Obtain Form TX-04 from the municipal tax office or download from baladiya.gov/taxes\n2. Complete the form with your property registration number and grounds for objection\n3. Attach supporting evidence (recent property valuation report, comparable property assessments)\n4. Submit to the Tax Objections Office, Ground Floor, Municipal Building\n\nThe objection committee meets monthly. You will receive a written decision within 60 days.",
+        "category": "taxes",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-007",
+      "lang": "en",
+      "category": "environment",
+      "question": "Where can I find the nearest recycling centre?",
+      "ideal_answer": "Recycling centres are located in each district. Use the map at baladiya.gov/recycling or the mobile app to find the nearest one.",
+      "expected_keywords": ["recycling", "centre", "map", "district", "location"],
+      "source_entry": {
+        "title": "Recycling Centres",
+        "body": "Municipal recycling centres:\n\nThere are five recycling centres located across the municipality, one in each district. To find the nearest centre:\n\n- Online map: baladiya.gov/recycling shows all centres with operating hours\n- Mobile app: Enable location services and tap 'Find Recycling Centre'\n\nAccepted materials: Paper, cardboard, plastic bottles, glass, aluminium cans, and small electronics.\n\nOperating hours: Monday to Saturday, 8 AM to 6 PM. Centres are closed on Sundays and public holidays.",
+        "category": "environment",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-008",
+      "lang": "en",
+      "category": "general",
+      "question": "What are the municipality office hours?",
+      "ideal_answer": "The municipal office is open Sunday to Thursday, 8 AM to 3 PM. Some services are also available online 24/7 at baladiya.gov.",
+      "expected_keywords": ["office", "hours", "Sunday", "Thursday", "8", "3"],
+      "source_entry": {
+        "title": "Municipality Office Hours and Contact",
+        "body": "Municipality office hours and contact information:\n\nMain office: Sunday to Thursday, 8:00 AM to 3:00 PM.\nFriday and Saturday: Closed.\n\nOnline services: Available 24/7 at baladiya.gov — pay bills, submit reports, download forms, track applications.\n\nPhone (general enquiries): 1700, Sunday to Thursday 8 AM to 4 PM.\nEmergency line: 1711, available 24/7.\n\nAddress: Municipal Building, Central Square, City Centre.",
+        "category": "general",
+        "lang": "en"
+      }
+    },
+    {
+      "id": "G-009",
+      "lang": "ar",
+      "category": "water",
+      "question": "كيف يمكنني دفع فاتورة المياه؟",
+      "ideal_answer": "يمكن دفع فاتورة المياه عبر الإنترنت على موقع baladiya.gov أو بزيارة مكتب البلدية أو عبر تطبيق Baladiya.",
+      "expected_keywords": ["water", "bill", "pay", "online", "municipal"],
+      "source_entry_ref": "G-001",
+      "notes": "Arabic question against English content G-001 — tests cross-language retrieval"
+    },
+    {
+      "id": "G-010",
+      "lang": "ar",
+      "category": "permits",
+      "question": "ما هي المستندات المطلوبة لرخصة البناء؟",
+      "ideal_answer": "تتطلب رخصة البناء: صك الملكية، ورسومات معمارية مختومة من مهندس مرخص، ونموذج الطلب، وإيصال دفع الرسوم.",
+      "expected_keywords": ["building permit", "documents", "ownership deed", "engineer"],
+      "source_entry_ref": "G-002",
+      "notes": "Arabic question against English content G-002 — tests cross-language retrieval"
+    },
+    {
+      "id": "G-011",
+      "lang": "ar",
+      "category": "roads",
+      "question": "كيف أبلغ عن حفرة في الطريق؟",
+      "ideal_answer": "يمكن الإبلاغ عن الحفر عبر البوابة الإلكترونية للبلدية، أو عن طريق الاتصال بالخط الساخن، أو عبر تطبيق Baladiya.",
+      "expected_keywords": ["pothole", "report", "roads", "hotline", "location"],
+      "source_entry_ref": "G-003",
+      "notes": "Arabic question against English content G-003 — tests cross-language retrieval"
+    },
+    {
+      "id": "G-012",
+      "lang": "ar",
+      "category": "waste",
+      "question": "متى يكون موعد جمع النفايات في منطقتي؟",
+      "ideal_answer": "يتم جمع النفايات السكنية أيام الأحد والثلاثاء والخميس. يتم جمع مواد إعادة التدوير كل يوم سبت.",
+      "expected_keywords": ["garbage", "collection", "schedule", "residential"],
+      "source_entry_ref": "G-004",
+      "notes": "Arabic question against English content G-004 — tests cross-language retrieval"
+    },
+    {
+      "id": "G-013",
+      "lang": "en",
+      "category": "permits",
+      "question": "How long does it take to process a building permit?",
+      "ideal_answer": "Building permits take 15-30 business days to process.",
+      "expected_keywords": ["15", "30", "business days", "processing"],
+      "source_entry_ref": "G-002",
+      "notes": "Different question, same source entry as G-002 — tests within-entry retrieval diversity"
+    },
+    {
+      "id": "G-014",
+      "lang": "en",
+      "category": "electricity",
+      "question": "What number do I call for a power emergency at night?",
+      "ideal_answer": "Call the 24-hour emergency line at 1711 for electricity emergencies.",
+      "expected_keywords": ["1711", "emergency", "24-hour"],
+      "source_entry_ref": "G-005",
+      "notes": "Tests retrieval of contact/number information"
+    },
+    {
+      "id": "G-015",
+      "lang": "en",
+      "category": "taxes",
+      "question": "I received a property tax notice — what if I disagree with it?",
+      "ideal_answer": "File an objection within 30 days by completing Form TX-04 with supporting evidence.",
+      "expected_keywords": ["objection", "30 days", "TX-04", "evidence"],
+      "source_entry_ref": "G-006",
+      "notes": "Rephrased question for G-006 — tests paraphrase robustness"
+    }
+  ]
+}

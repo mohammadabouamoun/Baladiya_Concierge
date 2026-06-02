@@ -12,7 +12,7 @@ Implement the tenant CMS (CRUD content entries in Streamlit), chunk and embed co
 
 **Primary Dependencies**: FastAPI, async SQLAlchemy, pgvector, httpx (hosted embedding API), streamlit, asyncpg
 
-**Storage**: PostgreSQL 16 + pgvector (`cms_entries`, `cms_chunks` tables); MinIO for CMS media attachments
+**Storage**: PostgreSQL 16 + pgvector (`cms_entries`, `cms_chunks` tables). CMS content is text-only in v1 — no media attachments.
 
 **Testing**: pytest + pytest-asyncio; real DB with two seeded tenants; 15-triple golden set in `evals/rag_golden.json`
 

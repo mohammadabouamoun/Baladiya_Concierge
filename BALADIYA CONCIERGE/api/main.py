@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.core.config import StartupError, get_settings
 from api.core.logging import configure_logging, set_tenant_id, set_trace_id
 from api.infra.db import close_db, init_db
+from api.infra.embedding_client import close_embedding_client, init_embedding_client
 from api.infra.redis import close_redis, init_redis
 
 logger = structlog.get_logger(__name__)
@@ -27,14 +28,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     try:
         await init_db(settings.database_url)
         await init_redis(settings.redis_url)
+        await init_embedding_client()
     except Exception as exc:
         raise StartupError(f"Startup failed: {exc}") from exc
+
+    # Retry any CMS entries that failed to embed in a previous run (T-023)
+    try:
+        from api.services.cms_service import retry_all_pending_entries
+        await retry_all_pending_entries()
+    except Exception as exc:
+        # Non-fatal: log and continue — the retry will be attempted on next restart
+        logger.warning("startup.cms_retry_failed", error=str(exc))
 
     log.info("ready")
     yield
 
     await close_db()
     await close_redis()
+    await close_embedding_client()
     log.info("shutdown complete")
 
 
@@ -73,5 +84,11 @@ async def healthz() -> dict:
 
 # ── Routers ────────────────────────────────────────────────────────────────
 from api.api.platform.router import router as platform_router  # noqa: E402
+from api.api.cms.router import router as cms_router  # noqa: E402
+from api.api.rag.router import router as rag_router  # noqa: E402
+from api.api.auth.router import router as auth_router  # noqa: E402
 
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(platform_router, prefix="/platform", tags=["platform"])
+app.include_router(cms_router, prefix="/cms", tags=["cms"])
+app.include_router(rag_router, prefix="/rag", tags=["rag"])

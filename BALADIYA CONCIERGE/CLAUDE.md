@@ -30,7 +30,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Secrets | HashiCorp Vault — never in `.env` beyond the Vault root token + ports |
 | Guardrails | NeMo Guardrails sidecar, called over HTTP with service credential |
 | Classifier | sklearn/joblib (classical) + optional ONNX — served by lean `modelserver` HTTP service |
-| Embeddings | `gemini-embedding-001` (Gemini API, pinned at 1536 dims, MTEB-multilingual; NEVER falls back — entire pgvector corpus lives in one model's vector space) |
+| Embeddings | `gemini-embedding-001` (Gemini API, native 3072 dims truncated to 1536 via `outputDimensionality`; MTEB-multilingual; NEVER falls back — entire pgvector corpus lives in one model's vector space) |
 | LLM (primary) | `gemini-2.5-flash` via Gemini API — EN + MSA + Lebanese; wrap in `tenacity` retry-with-backoff |
 | LLM (fallback) | Groq `llama-3.3-70b-versatile` — tool-calling capable; activated only on sustained Gemini failure / 429s after retries |
 | Vector store | pgvector, tenant-filtered at query time |

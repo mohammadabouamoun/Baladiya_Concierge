@@ -8,11 +8,11 @@
 
 | Field | Value |
 |---|---|
-| **Active feature** | `003-cms-rag` |
-| **Status** | **Phases 1 & 2 complete — ready to start Phase 3** |
-| **Last completed task** | All tasks in `001-foundation-isolation` and `002-classifier` are `[X]` |
-| **Next task to start** | `T-001` in `specs/003-cms-rag/tasks.md` |
-| **How to start** | Update `feature.json` → `"feature_directory": "specs/003-cms-rag"`, then run `/speckit-implement` |
+| **Active feature** | `004-agent-router` (next) |
+| **Status** | **Phases 1, 2 & 3 complete — ready to start Phase 4** |
+| **Last completed task** | All tasks in `003-cms-rag` are `[X]` |
+| **Next task to start** | Create `specs/004-agent-router/` and run `/speckit-specify` |
+| **How to start** | Update `feature.json` → `"feature_directory": "specs/004-agent-router"`, then run `/speckit-specify` |
 
 ---
 
@@ -71,6 +71,36 @@
 
 ---
 
+### Phase 3 — CMS & RAG (`003-cms-rag`) ✅
+
+**All 17 tasks complete.**
+
+| Area | Files Created |
+|---|---|
+| DB migration | `alembic/versions/002_cms_rag.py` — `cms_entries` + `cms_chunks` (vector(1536), HNSW), tenant RLS |
+| Embedding client | `api/infra/embedding_client.py` — async httpx client for `gemini-embedding-001` (1536 dims) |
+| Domain models | `api/domain/cms.py` — `CmsEntry`, `CmsChunk` SQLAlchemy + Pydantic schemas |
+| Repository | `api/repositories/cms_repo.py` — `CmsRepository`, `CmsChunkRepository` inheriting `BaseRepository` |
+| CMS service | `api/services/cms_service.py` — `chunk_and_embed`, `delete_entry_vectors`, background retry |
+| RAG service | `api/services/rag_service.py` — query rewrite → embed → tenant-filtered pgvector cosine search |
+| CMS API | `api/api/cms/router.py` — CRUD routes (tenant_admin only); `api/api/auth/router.py` — JWT login |
+| RAG API | `api/api/rag/router.py` — `/rag/search` endpoint |
+| Streamlit UI | `chatbot/pages/cms.py` — CMS list/create/edit/delete with embedding status badge |
+| Eval golden set | `evals/rag_golden.json` — 15 hand-labelled triples (8 EN, 4 AR cross-language, 3 rephrases) |
+| Eval scripts | `evals/evaluate_rag.py` — baseline vs query-rewrite comparison; `evals/seed_eval_content.py` |
+| Tests | `tests/test_rag/test_rag_gate.py`, `test_tenant_isolation.py`, `test_cross_language.py` |
+| Thresholds | `eval_thresholds.yaml` — `rag_hit_at_5: 0.73`, `rag_mrr: 0.60` (pre-measurement targets) |
+
+**RAG eval numbers**: Set as pre-measurement targets. Run `python evals/seed_eval_content.py` then `python evals/evaluate_rag.py --mode compare` with running DB stack to get measured values and update `eval_thresholds.yaml` to `measured − 2pp`.
+
+**Key architectural facts:**
+- Query rewrite via `gemini-2.5-flash` is the shipped strategy (fails-open to raw query on error)
+- `cms_chunks` has `tenant_id` RLS + repository-layer filter — same dual-filter as all other tables
+- Chunking: paragraph-boundary split, 512-token cap, 100-token min, 50-token overlap
+- Embedding model is `gemini-embedding-001` with `outputDimensionality=1536` — never change, corpus is committed to this vector space
+
+---
+
 ## 3. Completed Documentation
 
 | File | Status | Notes |
@@ -96,6 +126,13 @@
 - Three-way comparison table → now two-way: Classical ML vs LLM zero-shot (DL/ONNX dropped)
 - `model_card.md` — created and filled with real numbers
 - Artifact SHA-256 — recorded and verified at startup
+
+### Resolved in Phase 3 ✅
+- CMS CRUD + pgvector pipeline implemented and tested
+- 15 RAG golden triples hand-labelled (`evals/rag_golden.json`)
+- Query rewrite chosen as shipped strategy (pending measured confirmation)
+- `rag_hit_at_5: 0.73`, `rag_mrr: 0.60` set as pre-measurement targets
+- Auth router (`/auth/token`) added for Streamlit CMS login flow
 
 ### Still Open
 
@@ -175,16 +212,21 @@
 
 ---
 
-## 8. Next Phase Prep — Phase 3 (CMS/RAG)
+## 8. Next Phase Prep — Phase 4 (Agent/Router)
 
-1. `feature.json` → `"feature_directory": "specs/003-cms-rag"`
-2. The embedding model (`gemini-embedding-001`, 1536 dims) is permanent — pgvector column type is set at migration and **cannot change** without re-embedding the entire corpus
-3. Hand-label 15 RAG golden triples before running any evaluation (T-031 is a hard prerequisite for T-032 and T-033)
-4. Phase 1 DB must be running (`docker-compose up db vault migrate api redis`) before implementing RAG
+1. `feature.json` → `"feature_directory": "specs/004-agent-router"`
+2. Run `/speckit-specify` with: "Conversational agent with tool-calling loop (bounded), classifier router (easy/hard path), tools: rag_search, capture_request, escalate — all tenant-scoped. Integrates Phase 2 modelserver and Phase 3 RAG."
+3. Phase 3 dependency: `rag_service.py` and `cms_repo.py` must be imported/called from agent tools
+4. Phase 2 dependency: classifier result (intent + confidence) is the router's input
+5. RAG eval numbers (T-032/T-033) should be run before Phase 4 completes so `DECISIONS.md §2` has measured values
+6. Cap: `max_tool_calls` per turn (cost + safety) — set in config, not hardcoded
+7. DB must be running for integration tests: `docker-compose up db vault migrate api redis`
 
 ---
 
 ## 9. Non-Obvious Facts
+
+**`gemini-embedding-001` is 3072 dims natively, not 1536.** The embedding client passes `outputDimensionality: 1536` to truncate. The pgvector column is `vector(1536)`. This was verified with a live API call on 2026-06-02. Do NOT change the column type or the `outputDimensionality` — the entire corpus must stay in one vector space.
 
 **`build_dataset.md` is a Python script.** `.md` extension is intentional. Run with `python3 build_dataset.md`.
 

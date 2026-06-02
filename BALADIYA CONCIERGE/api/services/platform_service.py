@@ -126,7 +126,20 @@ async def erase_tenant(
                 break
         logger.info("erase.redis_done", tenant_id=str(tenant_id))
 
-    # 2. pgvector embeddings — table exists in feature 003; skip if not present
+    # 2. pgvector embeddings — cms_chunks and cms_entries (feature 003+)
+    try:
+        from api.repositories.cms_repo import CmsChunkRepository
+        from sqlalchemy import delete as sa_delete
+        from api.domain.cms import CmsEntry as CmsEntryModel
+        chunk_repo = CmsChunkRepository(session=session, tenant_id=tenant_id)
+        await chunk_repo.delete_by_tenant()
+        await session.execute(
+            sa_delete(CmsEntryModel).where(CmsEntryModel.tenant_id == tenant_id)
+        )
+        logger.info("erase.pgvector_done", tenant_id=str(tenant_id))
+    except ImportError:
+        pass  # CMS tables not yet created in this deployment
+
     # 3. Content/conversation/request tables — exist in later features; skip if not present
 
     # 4. MinIO blobs

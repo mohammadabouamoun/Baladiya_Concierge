@@ -183,13 +183,18 @@ services:
     networks:
       - baladiya
 
-  # ── Chatbot/agent service — stubbed ───────────────────────
+  # ── Chatbot/Admin Streamlit UI (feature 003) ─────────────
   chatbot:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: docker/chatbot.Dockerfile
     restart: unless-stopped
-    profiles:
-      - agent
-    command: ["echo", "chatbot stub — build in feature 003"]
+    environment:
+      API_BASE_URL: "http://api:8000"
+    ports:
+      - "${CHATBOT_PORT:-8501}:8501"
+    depends_on:
+      - api
     networks:
       - baladiya
 

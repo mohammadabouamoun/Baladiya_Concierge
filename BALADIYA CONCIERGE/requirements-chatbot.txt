@@ -1,0 +1,4 @@
+# Baladiya Concierge — Streamlit chatbot/admin UI dependencies
+# Separate from API requirements — chatbot has no DB or ML inference
+streamlit==1.36.0
+httpx==0.27.0

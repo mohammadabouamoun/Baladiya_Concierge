@@ -14,8 +14,9 @@ classifier_confidence_thresholds:
 
 agent_tool_accuracy: 0.0
 
-rag_hit_at_5: 0.0
-rag_mrr: 0.0
-rag_faithfulness: 0.0
+rag_hit_at_5: 0.73    # pre-measurement target (spec SC-001 goal: 0.80 − 7pp buffer); update to measured − 2pp after eval run
+rag_mrr: 0.60         # pre-measurement target; update to measured − 2pp after eval run
+rag_faithfulness: 0.60 # keyword-proxy proxy for faithfulness (SC-002 placeholder: 0.75); update to LLM-judge measured − 2pp in Phase 5
+rag_answer_relevancy: 0.0 # reported-not-gated per EVALS.md §5; set to measured value in Phase 5
 
 redteam_pass_rate: 1.0

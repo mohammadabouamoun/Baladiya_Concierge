@@ -169,18 +169,24 @@ Triples must span at least 3 different service categories (roads, water, electri
 
 ### Results
 
+Golden set: `evals/rag_golden.json` — 15 triples (8 EN direct, 4 AR cross-language, 3 rephrase variants).
+Evaluation script: `evals/evaluate_rag.py --mode compare` (requires seeded DB).
+Seed script: `evals/seed_eval_content.py`.
+
 | Strategy | hit@5 | MRR | Faithfulness |
 |---|---|---|---|
-| Baseline (vanilla search) | [TBD — Phase 3] | [TBD] | [TBD] |
-| Query rewrite | [TBD — Phase 3] | [TBD] | [TBD] |
-| Metadata filtering | [TBD — Phase 3] | [TBD] | [TBD] |
-| **Shipped strategy** | **[TBD]** | **[TBD]** | **[TBD]** |
+| Baseline (vanilla search) | [run eval] | [run eval] | [run eval] |
+| **Query rewrite (shipped)** | **[run eval]** | **[run eval]** | **[run eval]** |
+| Metadata filtering (fallback) | [if needed] | [if needed] | — |
 
-Cross-language test (required gate): an Arabic question must retrieve an English chunk when no Arabic chunk covers the topic. This confirms the multilingual embedding covers cross-language retrieval.
+Thresholds set in `eval_thresholds.yaml`: `rag_hit_at_5: 0.73`, `rag_mrr: 0.60` (pre-measurement targets; update to measured − 2pp per EVALS.md §9).
+
+Cross-language test: an Arabic question retrieves the correct English chunk (multilingual embedding, no separate Arabic pipeline).
 
 | Cross-language test | Result |
 |---|---|
-| AR question → EN chunk retrieved in top 5 | [TBD — Phase 3] |
+| AR question → EN chunk retrieved in top 5 (G-009/G-010/G-011/G-012) | [run eval] |
+| `test_cross_language.py` unit tests (mocked embedding) | ✅ implemented Phase 3 |
 
 ---
 

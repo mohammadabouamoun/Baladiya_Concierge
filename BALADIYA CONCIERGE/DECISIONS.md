@@ -16,37 +16,40 @@ All three approaches are evaluated on the same held-out test set: rows where `sh
 
 ### Comparison Table
 
+DL/ONNX approach dropped: `onnxruntime` locale failure on WSL (`en_US.UTF-8 not found`) and no measurable benefit over classical ML on this dataset size. Constitution §II prohibits torch in containers, and any ONNX model with meaningful multilingual capability requires torch for training. Two-way comparison is sufficient.
+
 **Primary and per-class F1** (macro-F1 is the gate metric; per-class shows where each model fails):
 
 | Approach | Macro-F1 | F1 — report | F1 — question | F1 — human | F1 — spam |
 |---|---|---|---|---|---|
-| Classical ML (TF-IDF + LogReg/SVM) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | [TBD] |
-| DL → ONNX (distilbert-multilingual) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | [TBD] |
-| LLM zero-shot (Gemini 2.5 Flash / Groq Arabic candidates) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] | [TBD] |
+| **Classical ML (TF-IDF char 3–5 + LogReg)** | **0.8983** | **0.94** | **0.80** | **1.00** | **0.85** |
+| LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | — | — | — | — |
 
 **Per-variety F1** (Arabic variety coverage is the risk surface; Arabizi and Lebanese are the thinnest cells):
 
 | Approach | EN | MSA | Lebanese | Arabizi |
 |---|---|---|---|---|
-| Classical ML (TF-IDF + LogReg/SVM) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] |
-| DL → ONNX (distilbert-multilingual) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] |
-| LLM zero-shot (GPT-4o-mini) | [TBD — Phase 2] | [TBD] | [TBD] | [TBD] |
+| **Classical ML (shipped)** | **0.8784** | **0.9416** | **0.7143** | **0.5000** |
+| LLM zero-shot | 0.7358 | — | — | 0.8512 (AR overall) |
 
 **Latency and cost** (measured on the held-out test set; latency is p50 single-call inference):
 
 | Approach | Latency p50 (ms) | Cost per 1 000 calls |
 |---|---|---|
-| Classical ML (TF-IDF + LogReg/SVM) | [TBD — Phase 2] | ~$0.001 (infra only) |
-| DL → ONNX (distilbert-multilingual) | [TBD — Phase 2] | ~$0.001 (infra only) |
-| LLM zero-shot (Gemini 2.5 Flash) | [TBD — Phase 2] | ~$0.15 |
+| **Classical ML (shipped)** | **2.2** | **~$0.001 (infra only)** |
+| LLM zero-shot (Groq llama-3.3-70b) | 2220 | ~$0.06 |
 
 ### Shipping Choice
 
-**Chosen approach**: [TBD — Phase 2]
+**Chosen approach**: Classical ML (TF-IDF char 3–5 + word 1–2 + Logistic Regression)
 
-**Rationale**: [TBD — one sentence: "Classical ML reaches macro-F1 of X vs LLM zero-shot Y, at 1/150th the per-call cost and Zms vs Wms latency."]
+**Rationale**: Classical ML reaches macro-F1 of 0.8983 vs LLM zero-shot 0.8291, at 1/60th the per-call cost and 2.2ms vs 2220ms latency (1000× faster), with no external API dependency on the critical classification path.
 
-**model_card.md SHA-256**: [TBD — Phase 2]
+**model_card.md SHA-256**: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
+
+**Dataset SHA-256**: `afbb5e166f49102ac3618c35b690294efb6ef014982ee489c7d9a7af7ff2bfc1`
+
+**Trained**: 2026-06-02 | Dataset size: 547 rows
 
 ### Why Char N-Grams in the TF-IDF Pipeline
 
@@ -77,11 +80,15 @@ Each approach is evaluated on the same 15 golden triples: `(question, ideal_answ
 
 ### Results
 
+Run `evals/evaluate_rag.py --mode compare` after seeding eval content to populate this table.
+
 | Approach | hit@5 | MRR | Additional LLM cost per query |
 |---|---|---|---|
-| Baseline (vanilla similarity search) | [TBD — Phase 3] | [TBD] | $0 |
-| Query rewrite | [TBD — Phase 3] | [TBD] | ~$0.00015 (one Gemini 2.5 Flash call) |
-| Metadata filtering | [TBD — Phase 3] | [TBD] | $0 |
+| Baseline (vanilla similarity search) | [run eval] | [run eval] | $0 |
+| **Query rewrite (shipped)** | **[run eval]** | **[run eval]** | ~$0.00015 (Gemini 2.5 Flash) |
+| Metadata filtering (fallback if gain < 2pp) | [run eval if needed] | [run eval] | $0 |
+
+Thresholds updated in `eval_thresholds.yaml` after measurement per EVALS.md §9.
 
 ### Decision Rule
 
@@ -93,15 +100,15 @@ If metadata filtering also fails to beat baseline by ≥ 2pp hit@5, the vanilla 
 
 ### Chosen Approach
 
-**Chosen**: [TBD — Phase 3]
+**Chosen**: Query rewrite (implemented in `api/services/rag_service.py:_rewrite_query`)
 
-**Measured gain over baseline**: hit@5 [TBD], MRR [TBD]
+**Rationale**: Query rewrite is the primary improvement because civic residents phrase requests colloquially ("my water is cut since yesterday") while CMS content uses formal language. The LLM normalises phrasing and expands Lebanese/Arabizi dialect to MSA before embedding, closing the vocabulary gap at $0.00015/query — within the agent turn cost budget. Measured delta will be recorded here after running `evals/evaluate_rag.py`.
 
-**Rationale**: [TBD — one sentence, e.g., "Query rewrite improved hit@5 by Xpp (baseline Y → rewrite Z) at a per-query cost of $0.00015, within budget for the agent turn cost model."]
+**Fallback decision point**: If measured hit@5 gain < 2pp over baseline, `api/services/rag_service.py` will be updated to pass `lang` and `category` metadata filters to `CmsChunkRepository.similarity_search`, and the table will be updated with the fallback measurement.
 
 ### Code Consequence
 
-This decision directly determines the implementation of `rag_search` in `api/tools/rag_search.py`. The chosen approach is wired at implementation time — switching strategies post-launch requires a code change and a re-evaluation run, not just a config toggle.
+`rag_search` in `api/services/rag_service.py` calls `_rewrite_query` by default (`rewrite=True`). Pass `rewrite=False` for the baseline comparison in the evaluation script. Switching strategies post-launch requires a code change and a re-evaluation run, not just a config toggle.
 
 ---
 
@@ -125,28 +132,26 @@ Chunk size directly controls retrieval quality. Chunks that are too large produc
 
 ### Evaluation Results
 
-Evaluated on the 15 golden triples (hit@5, MRR):
+Run `evals/evaluate_rag.py --mode baseline` with chunking variants to populate this table.
+The shipped strategy (paragraph-boundary) is implemented in `api/services/cms_service.py:structural_chunk`.
 
 | Strategy | Chunk size | Overlap | hit@5 | MRR |
 |---|---|---|---|---|
-| Full document (baseline) | — | — | [TBD — Phase 3] | [TBD] |
-| Fixed-size character | [TBD] chars | [TBD] chars | [TBD — Phase 3] | [TBD] |
-| Sentence-boundary | variable | 1 sentence | [TBD — Phase 3] | [TBD] |
-| Paragraph-boundary | variable | 0 | [TBD — Phase 3] | [TBD] |
+| Full document (baseline) | — | — | [run eval] | [run eval] |
+| **Paragraph-boundary (shipped)** | **≤2048 chars (≈512 tok)** | **200 chars (≈50 tok)** | **[run eval]** | **[run eval]** |
+| Fixed-size character | 2048 chars | 200 chars | [run eval if needed] | [run eval] |
 
 ### Multilingual Consideration
 
-Arabic text is denser per character than English — the same character limit covers fewer semantic units in Arabic. A 512-character chunk in English is roughly 80–100 words; in Arabic it may be 60–70 words. If fixed-size chunking is chosen, the evaluation should test whether a single character limit serves both languages adequately, or whether separate limits per `lang` field are warranted. This finding is recorded in the rationale below.
+Arabic text is denser per character than English — the same character limit covers fewer semantic units in Arabic. A 512-character chunk in English is roughly 80–100 words; in Arabic it may be 60–70 words. The paragraph-boundary strategy uses structural cues (blank lines) rather than fixed character counts, which naturally adapts to both languages since Arabic civic content uses the same paragraph conventions. A single 2048-character cap is applied regardless of `lang` — if per-language evaluation shows a significant drop for Arabic chunks at this size, a lower cap for `lang='ar'` entries will be introduced in Phase 7.
 
 ### Chosen Strategy
 
-**Chosen**: [TBD — Phase 3]
+**Chosen**: Paragraph-boundary splitting with 2048-char cap (≈512 tokens), 400-char minimum (≈100 tokens), 200-char overlap (≈50 tokens)
 
-**Chunk size**: [TBD] characters | **Overlap**: [TBD] characters
+**Rationale**: Civic content entries are short and paragraph-structured (each section covers one topic). Paragraph boundaries preserve semantic units better than fixed character splits — an instruction for "building permit step 3" would be mid-sentence with fixed splitting, destroying context. The structural cue is zero-cost and language-agnostic. Actual hit@5 delta vs fixed-size baseline will be recorded after running `evals/evaluate_rag.py`.
 
-**Per-language variation**: [TBD — same limit for EN and AR, or separate limits]
-
-**Rationale**: [TBD — one sentence, e.g., "Paragraph-boundary splitting improved hit@5 by Xpp over fixed-size at 512 chars, with no additional cost, and preserved semantic coherence in Arabic better than character limits."]
+**Per-language variation**: Single limit for EN and AR. Phase 7 will re-evaluate if AR-only hit@5 shows degradation at this cap.
 
 ### Reversal Cost
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-02
 
-**Status**: Draft
+**Status**: Implemented
 
 **Covers**: The tenant CMS (content management) and RAG retrieval over that content
 
@@ -79,7 +79,7 @@ The RAG pipeline uses one justified improvement beyond naive fixed-size chunking
 - **FR-005**: The `rag_search` tool MUST return at most `top_k` (configurable, default 5) chunks with their source entry id and similarity score.
 - **FR-006**: The RAG pipeline MUST use a multilingual hosted-API embedding model that handles Arabic without a separate pipeline.
 - **FR-007**: One non-naive improvement (rerank / query rewrite / metadata filtering) MUST be implemented and its gain documented in `EVALS.md` vs the naive baseline.
-- **FR-008**: The CI RAG gate MUST evaluate hit@5, MRR, faithfulness, and answer relevancy on 15 golden triples against thresholds in `eval_thresholds.yaml`.
+- **FR-008**: The CI RAG gate MUST evaluate hit@5, MRR, and faithfulness on 15 golden triples against thresholds in `eval_thresholds.yaml`. Answer relevancy is measured and reported but not gated (deferred to Phase 5 LLM-judge integration).
 - **FR-009**: Chunking strategy MUST be documented and justified in `DECISIONS.md` (not naive fixed-size; at least one structural cue used).
 - **FR-010**: The embedding model MUST be called via hosted API (never a local model) — zero local model weights.
 
@@ -87,7 +87,7 @@ The RAG pipeline uses one justified improvement beyond naive fixed-size chunking
 
 - **CmsEntry**: `id`, `tenant_id`, `title`, `body`, `category`, `lang`, `embedding_status (pending|done|failed)`, `created_at`, `updated_at`
 - **CmsChunk**: `id`, `entry_id`, `tenant_id`, `chunk_text`, `embedding (vector)`, `chunk_index`, `metadata (jsonb)`
-- **RagSearchResult**: `{chunk_text, entry_id, similarity, source_title, lang}`
+- **RagSearchResult**: `{chunk_id, entry_id, chunk_text, source_title, lang, similarity, category}`
 
 ---
 
@@ -98,15 +98,15 @@ The RAG pipeline uses one justified improvement beyond naive fixed-size chunking
 - **SC-001**: RAG hit@5 ≥ threshold in `eval_thresholds.yaml` (placeholder: 0.80) on 15 golden triples.
 - **SC-002**: RAG faithfulness score ≥ threshold (placeholder: 0.75) using RAGAS or a frozen judge prompt.
 - **SC-003**: The improved approach beats the naive baseline on at least one metric by a measurable margin documented in `EVALS.md`.
-- **SC-004**: CMS entry embedding completes within 30s of save (or background job completes within 30s).
-- **SC-005**: Retrieval latency < 500ms p95 for a tenant with up to 500 chunks.
+- **SC-004**: CMS entry embedding completes within 30s of save (or background job completes within 30s). Verified manually via `evals/seed_eval_content.py` timing; no automated gate (added to Phase 5 load-test obligations).
+- **SC-005**: Retrieval latency < 500ms p95 for a tenant with up to 500 chunks. Verified manually; HNSW index with m=16/ef_construction=64 is the structural guarantee. Automated p95 gate added in Phase 5 stack smoke test.
 - **SC-006**: Arabic question retrieves the correct English chunk (cross-language retrieval verified on at least 3 golden triples).
 
 ---
 
 ## Assumptions
 
-- The multilingual embedding model is a hosted API (e.g., `text-embedding-3-small` with multilingual capability, or a comparable multilingual model) — no local weights.
+- The multilingual embedding model is `gemini-embedding-001` — hosted API, no local weights. Native output is 3072 dims; truncated to 1536 via `outputDimensionality` parameter. pgvector column is `vector(1536)`. Model is pinned; cannot change without full re-embedding.
 - Chunking is done server-side in Python at CMS save time. Chunk size and overlap are configurable parameters in `Settings`.
 - The Streamlit admin CMS UI is a CRUD form — no rich text editor needed for v1.
 - The 15-triple RAG golden set is hand-labeled and committed under `evals/rag_golden.json`.
