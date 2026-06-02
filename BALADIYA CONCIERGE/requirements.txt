@@ -1,0 +1,53 @@
+# ============================================================
+# Baladiya Concierge — Python dependencies
+# NO torch, NO transformers — constraint from constitution
+# ============================================================
+
+# Web framework
+fastapi==0.111.1
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+
+# Async HTTP client
+httpx==0.27.0
+
+# Database
+sqlalchemy[asyncio]==2.0.31
+asyncpg==0.29.0
+alembic==1.13.2
+pgvector==0.3.2
+
+# Secrets
+hvac==2.3.0
+
+# Auth
+PyJWT==2.8.0
+bcrypt==4.1.3
+passlib[bcrypt]==1.7.4
+
+# Cache
+redis[hiredis]==5.0.7
+
+# Blob storage
+minio==7.2.7
+
+# Settings & validation
+pydantic==2.8.2
+pydantic-settings==2.3.4
+pydantic[email]==2.8.2
+
+# Logging
+structlog==24.2.0
+
+# Retries
+tenacity==8.5.0
+
+# LLM clients (no torch — API-based only)
+google-generativeai==0.7.2
+groq==0.9.0
+
+# ML (inference only — no training in containers)
+scikit-learn==1.5.1
+numpy==1.26.4
+onnxruntime==1.18.1
+joblib==1.4.2

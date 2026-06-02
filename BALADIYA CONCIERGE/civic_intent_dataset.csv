@@ -1,0 +1,210 @@
+id,text,lang,variety,intent,category,split
+en-en-001,"There's a big pothole on Main Street near the bakery, someone almost crashed.",en,en,report,roads,train
+en-en-002,The street light in front of building 12 has been out for a week.,en,en,report,roads,test
+en-en-003,A traffic sign got knocked down at the corner of Independence Square.,en,en,report,roads,train
+en-en-004,"The road is completely flooded after the rain, cars can't pass.",en,en,report,roads,train
+en-en-005,"No water in our neighbourhood since this morning, can you check?",en,en,report,water,train
+en-en-006,"There's a water pipe leaking on the sidewalk, it's been running for hours.",en,en,report,water,train
+en-en-007,Our building has had no water pressure for three days.,en,en,report,water,train
+en-en-008,The power has been cut on our street since last night.,en,en,report,electricity,train
+en-en-009,"A power line is hanging low over the road, it looks dangerous.",en,en,report,electricity,train
+en-en-010,The garbage hasn't been collected on our street for over a week.,en,en,report,waste,train
+en-en-011,Someone dumped construction waste in the empty lot behind the school.,en,en,report,waste,train
+en-en-012,The dumpster on our corner is overflowing and it smells terrible.,en,en,report,waste,test
+en-en-013,There's raw sewage coming up from a manhole near the playground.,en,en,report,environment,train
+en-en-014,"A factory nearby is releasing smoke all night, it's hard to breathe.",en,en,report,environment,train
+en-en-015,There's an abandoned car blocking the road for two weeks now.,en,en,report,roads,train
+en-en-016,"I want to report a stray dog pack near the market, kids are scared.",en,en,report,environment,train
+en-en-017,The public park benches are broken and there's glass everywhere.,en,en,report,environment,train
+en-en-018,"Streetlights on the coastal road are all off, it's pitch black at night.",en,en,report,roads,test
+en-en-019,I'd like to report illegal parking blocking the ambulance entrance.,en,en,report,roads,train
+en-en-020,Water is leaking into our basement from a burst municipal main.,en,en,report,water,train
+en-en-021,Which department handles water cut-offs?,en,en,question,water,train
+en-en-022,How do I apply for a building permit?,en,en,question,permits,train
+en-en-023,What documents do I need to register my new business?,en,en,question,permits,train
+en-en-024,How can I get a proof of residence certificate?,en,en,question,permits,train
+en-en-025,When is the garbage collected in the Achrafieh area?,en,en,question,waste,train
+en-en-026,How much are the annual municipal fees for an apartment?,en,en,question,taxes,train
+en-en-027,Where can I pay my municipality bill?,en,en,question,taxes,test
+en-en-028,What are the opening hours of the municipality office?,en,en,question,general,test
+en-en-029,Where exactly is the municipality building located?,en,en,question,general,train
+en-en-030,Is there a phone number I can call for emergencies?,en,en,question,general,train
+en-en-031,Do I need an appointment to come in person?,en,en,question,general,train
+en-en-032,Who do I contact about a noisy construction site?,en,en,question,environment,test
+en-en-033,How long does a building permit usually take to be approved?,en,en,question,permits,test
+en-en-034,Can I pay my fees online or only at the office?,en,en,question,taxes,test
+en-en-035,What is the fine for late payment of municipal taxes?,en,en,question,taxes,train
+en-en-036,How do I get a birth certificate extract?,en,en,question,permits,train
+en-en-037,Which days does the recycling truck come?,en,en,question,waste,train
+en-en-038,Who is responsible for fixing public street lighting?,en,en,question,roads,train
+en-en-039,Is the water shortage affecting the whole town or just my area?,en,en,question,water,train
+en-en-040,What's the process to object to a tax assessment?,en,en,question,taxes,train
+en-en-041,"I want to speak to a real person, please.",en,en,human,none,train
+en-en-042,Can you connect me to someone in the office?,en,en,human,none,train
+en-en-043,"This isn't helping, I need to talk to a staff member.",en,en,human,none,train
+en-en-044,Please transfer me to a municipal employee.,en,en,human,none,train
+en-en-045,"I have a complaint and I need to talk to a human, not a bot.",en,en,human,none,train
+en-en-046,Give me the direct number of the responsible officer.,en,en,human,none,train
+en-en-047,Can someone from the council call me back?,en,en,human,none,train
+en-en-048,I'd like to file a formal complaint with an actual person.,en,en,human,none,train
+en-en-049,WIN a FREE iPhone now!!! Click this link to claim your prize.,en,en,spam,none,test
+en-en-050,"Make $5000 a week working from home, DM me for details.",en,en,spam,none,train
+en-en-051,"Cheap loans approved instantly, no credit check, call now.",en,en,spam,none,train
+en-en-052,"Buy followers and likes, best prices guaranteed.",en,en,spam,none,train
+en-en-053,Hot singles in your area waiting to chat with you.,en,en,spam,none,test
+en-en-054,Invest in crypto today and double your money in 24 hours.,en,en,spam,none,train
+en-en-055,asdkjf askjdf lorem ipsum random text test test,en,en,spam,none,train
+en-en-056,Congratulations you have been selected for a $1000 gift card.,en,en,spam,none,test
+en-en-057,"Best SEO services, rank #1 on Google, message us.",en,en,spam,none,train
+en-en-058,"Discount Viagra and Cialis, free shipping worldwide.",en,en,spam,none,train
+ar-msa-059,هناك حفرة كبيرة في الطريق الرئيسي قرب المخبز، كادت سيارة أن تنقلب.,ar,msa,report,roads,train
+ar-msa-060,عمود الإنارة أمام البناية رقم ١٢ مطفأ منذ أسبوع.,ar,msa,report,roads,train
+ar-msa-061,سقطت إشارة المرور عند زاوية الساحة الرئيسية.,ar,msa,report,roads,train
+ar-msa-062,الطريق غارق بالمياه بعد المطر ولا تستطيع السيارات المرور.,ar,msa,report,roads,train
+ar-msa-063,انقطعت المياه عن حيّنا منذ الصباح، أرجو المتابعة.,ar,msa,report,water,test
+ar-msa-064,هناك أنبوب مياه يتسرّب على الرصيف منذ ساعات.,ar,msa,report,water,test
+ar-msa-065,بنايتنا بلا ضغط مياه منذ ثلاثة أيام.,ar,msa,report,water,test
+ar-msa-066,انقطع التيار الكهربائي عن شارعنا منذ الليلة الماضية.,ar,msa,report,electricity,train
+ar-msa-067,هناك سلك كهرباء متدلٍّ فوق الطريق ويبدو خطيراً.,ar,msa,report,electricity,test
+ar-msa-068,لم تُجمع النفايات من شارعنا منذ أكثر من أسبوع.,ar,msa,report,waste,train
+ar-msa-069,قام أحدهم برمي مخلفات بناء في الأرض الفارغة خلف المدرسة.,ar,msa,report,waste,train
+ar-msa-070,حاوية النفايات في الزاوية ممتلئة وتفوح منها رائحة كريهة.,ar,msa,report,waste,test
+ar-msa-071,تتسرّب مياه الصرف الصحي من فتحة قرب الملعب.,ar,msa,report,environment,train
+ar-msa-072,هناك سيارة متروكة تسدّ الطريق منذ أسبوعين.,ar,msa,report,roads,train
+ar-msa-073,أودّ الإبلاغ عن أنوار الشارع المطفأة على الطريق الساحلي.,ar,msa,report,roads,train
+ar-msa-074,هناك تسرّب مياه إلى قبو منزلنا من ماسورة بلدية مكسورة.,ar,msa,report,water,train
+ar-msa-075,مصنع قريب يطلق الدخان طوال الليل ويصعب التنفّس.,ar,msa,report,environment,train
+ar-msa-076,مقاعد الحديقة العامة مكسورة وهناك زجاج في كل مكان.,ar,msa,report,environment,train
+ar-msa-077,ما هي الدائرة المسؤولة عن انقطاع المياه؟,ar,msa,question,water,train
+ar-msa-078,كيف أتقدّم بطلب رخصة بناء؟,ar,msa,question,permits,test
+ar-msa-079,ما هي المستندات المطلوبة لتسجيل عمل تجاري جديد؟,ar,msa,question,permits,train
+ar-msa-080,كيف يمكنني الحصول على إفادة سكن؟,ar,msa,question,permits,test
+ar-msa-081,متى تُجمع النفايات في منطقة الأشرفية؟,ar,msa,question,waste,train
+ar-msa-082,كم تبلغ الرسوم البلدية السنوية للشقة؟,ar,msa,question,taxes,train
+ar-msa-083,أين يمكنني دفع فاتورة البلدية؟,ar,msa,question,taxes,train
+ar-msa-084,ما هي ساعات عمل مكتب البلدية؟,ar,msa,question,general,test
+ar-msa-085,أين يقع مبنى البلدية بالتحديد؟,ar,msa,question,general,train
+ar-msa-086,هل هناك رقم هاتف للطوارئ؟,ar,msa,question,general,train
+ar-msa-087,هل أحتاج إلى موعد مسبق للحضور شخصياً؟,ar,msa,question,general,train
+ar-msa-088,بمن أتصل بشأن ورشة بناء مزعجة؟,ar,msa,question,environment,train
+ar-msa-089,كم تستغرق الموافقة على رخصة البناء عادةً؟,ar,msa,question,permits,train
+ar-msa-090,هل يمكن دفع الرسوم عبر الإنترنت أم في المكتب فقط؟,ar,msa,question,taxes,train
+ar-msa-091,ما غرامة التأخّر في دفع الرسوم البلدية؟,ar,msa,question,taxes,train
+ar-msa-092,كيف أحصل على إخراج قيد فردي؟,ar,msa,question,permits,train
+ar-msa-093,في أي أيام تمرّ شاحنة إعادة التدوير؟,ar,msa,question,waste,train
+ar-msa-094,من المسؤول عن إصلاح إنارة الشوارع العامة؟,ar,msa,question,roads,test
+ar-msa-095,أريد التحدّث إلى موظف حقيقي من فضلك.,ar,msa,human,none,train
+ar-msa-096,هل يمكنك تحويلي إلى شخص في المكتب؟,ar,msa,human,none,train
+ar-msa-097,هذا لا يفيدني، أريد التحدّث إلى أحد الموظفين.,ar,msa,human,none,train
+ar-msa-098,أرجو إعطائي الرقم المباشر للمسؤول.,ar,msa,human,none,test
+ar-msa-099,لديّ شكوى وأريد التحدّث إلى إنسان لا إلى روبوت.,ar,msa,human,none,train
+ar-msa-100,هل يمكن لأحد من البلدية معاودة الاتصال بي؟,ar,msa,human,none,train
+ar-msa-101,أودّ تقديم شكوى رسمية إلى موظف فعلي.,ar,msa,human,none,test
+ar-msa-102,اربح آيفون مجاناً الآن!!! اضغط الرابط للحصول على جائزتك.,ar,msa,spam,none,train
+ar-msa-103,اكسب ٥٠٠٠ دولار أسبوعياً من المنزل، راسلني للتفاصيل.,ar,msa,spam,none,train
+ar-msa-104,قروض رخيصة بموافقة فورية وبدون تحقّق، اتصل الآن.,ar,msa,spam,none,train
+ar-msa-105,استثمر في العملات الرقمية اليوم وضاعف أموالك خلال ٢٤ ساعة.,ar,msa,spam,none,train
+ar-msa-106,أفضل خدمات تحسين محركات البحث، تصدّر النتائج، راسلنا.,ar,msa,spam,none,train
+ar-msa-107,عقارات بأسعار مغرية جداً، اتصل الآن قبل نفاد العرض.,ar,msa,spam,none,test
+ar-msa-108,مبروك! تم اختيارك للفوز ببطاقة هدايا بقيمة ١٠٠٠ دولار.,ar,msa,spam,none,test
+ar-msa-109,زيادة متابعين ولايكات بأرخص الأسعار مضمونة.,ar,msa,spam,none,train
+ar-lebanese-110,في حفرة كبيرة بالطريق قدّام الفرن، كادت سيارة تنقلب.,ar,lebanese,report,roads,train
+ar-lebanese-111,عمود الإنارة قدّام بناية رقم ١٢ مطفّي من جمعة.,ar,lebanese,report,roads,train
+ar-lebanese-112,الطريق كلّو مي بعد الشتي وما عم تفوت السيارات.,ar,lebanese,report,roads,train
+ar-lebanese-113,في إشارة سير وقعت عند مفرق الساحة.,ar,lebanese,report,roads,train
+ar-lebanese-114,ما في مي بالحي من الصبح، فيك تشيك؟,ar,lebanese,report,water,train
+ar-lebanese-115,في ماسورة مي عم تنقّط عالرصيف من ساعات.,ar,lebanese,report,water,train
+ar-lebanese-116,بنايتنا ما في عندا ضغط مي من تلت تيام.,ar,lebanese,report,water,train
+ar-lebanese-117,الكهربا مقطوعة عن شارعنا من مبارح بالليل.,ar,lebanese,report,electricity,train
+ar-lebanese-118,في سلك كهربا نازل عالطريق وشكلو خطير.,ar,lebanese,report,electricity,train
+ar-lebanese-119,النفايات ما حدا أخدها من شارعنا من أكتر من جمعة.,ar,lebanese,report,waste,train
+ar-lebanese-120,حدا كبّ بقايا باطون بالأرض الفاضية ورا المدرسة.,ar,lebanese,report,waste,train
+ar-lebanese-121,حاوية الزبالة عالزاوية فايضة وريحتها بشعة.,ar,lebanese,report,waste,train
+ar-lebanese-122,في مجرور مفتوح عم تطلع منو مي صرف حدّ الملعب.,ar,lebanese,report,environment,train
+ar-lebanese-123,في سيارة متروكة سادّة الطريق من أسبوعين.,ar,lebanese,report,roads,train
+ar-lebanese-124,بدّي بلّغ عن أنوار الطريق المطفّية عالأوتوستراد.,ar,lebanese,report,roads,train
+ar-lebanese-125,عم تفوت مي عالقبو من ماسورة البلدية المكسورة.,ar,lebanese,report,water,train
+ar-lebanese-126,في معمل جنبنا عم يطلّع دخان طول الليل وما عم نقدر نتنفّس.,ar,lebanese,report,environment,train
+ar-lebanese-127,كراسي الحديقة العامة مكسّرة وفي قزاز بكل مكان.,ar,lebanese,report,environment,train
+ar-lebanese-128,في ريحة مجارير قوية عم تطلع من المنهول قدّام بيتنا.,ar,lebanese,report,environment,test
+ar-lebanese-129,الزبالة مكدّسة عند المستوعب وصار في فيران.,ar,lebanese,report,waste,train
+ar-lebanese-130,مين الدائرة يلّي بتهتم بقطع المي؟,ar,lebanese,question,water,train
+ar-lebanese-131,كيف بقدّم طلب رخصة بنا؟,ar,lebanese,question,permits,test
+ar-lebanese-132,شو الأوراق يلّي بدّي ياها لسجّل محل تجاري؟,ar,lebanese,question,permits,test
+ar-lebanese-133,كيف بطلّع إفادة سكن؟,ar,lebanese,question,permits,train
+ar-lebanese-134,إيمتى بياخدو الزبالة بمنطقة الأشرفية؟,ar,lebanese,question,waste,train
+ar-lebanese-135,قدّيش رسوم البلدية السنوية عالشقة؟,ar,lebanese,question,taxes,test
+ar-lebanese-136,وين فيني ادفع فاتورة البلدية؟,ar,lebanese,question,taxes,train
+ar-lebanese-137,شو أوقات دوام مكتب البلدية؟,ar,lebanese,question,general,train
+ar-lebanese-138,وين مكتب البلدية بالزبط؟,ar,lebanese,question,general,train
+ar-lebanese-139,في رقم تلفون للطوارئ؟,ar,lebanese,question,general,train
+ar-lebanese-140,بدّي موعد قبل ما إجي ولا فيي إجي دغري؟,ar,lebanese,question,general,train
+ar-lebanese-141,مع مين بحكي بخصوص ورشة بنا عم تعمل دوشة؟,ar,lebanese,question,environment,train
+ar-lebanese-142,قدّيش بياخد وقت تتطلع رخصة البنا؟,ar,lebanese,question,permits,train
+ar-lebanese-143,فيني ادفع الرسوم أونلاين ولا لازم روح عالمكتب؟,ar,lebanese,question,taxes,train
+ar-lebanese-144,قدّيش الغرامة إذا تأخّرت بدفع رسوم البلدية؟,ar,lebanese,question,taxes,train
+ar-lebanese-145,كيف بطلّع إخراج قيد؟,ar,lebanese,question,permits,train
+ar-lebanese-146,أيّ تيام بتمرق سيارة إعادة التدوير؟,ar,lebanese,question,waste,train
+ar-lebanese-147,مين مسؤول عن تصليح إنارة الشوارع؟,ar,lebanese,question,roads,train
+ar-lebanese-148,قطع المي شامل كل البلدة ولا بس منطقتنا؟,ar,lebanese,question,water,train
+ar-lebanese-149,شو الطريقة لاعترض عالرسوم؟,ar,lebanese,question,taxes,train
+ar-lebanese-150,بدّي احكي مع حدا حقيقي لو سمحت.,ar,lebanese,human,none,test
+ar-lebanese-151,فيك توصّلني لحدا بالمكتب؟,ar,lebanese,human,none,train
+ar-lebanese-152,هيدا ما عم يفيدني، بدّي احكي مع موظف.,ar,lebanese,human,none,train
+ar-lebanese-153,عطيني الرقم المباشر تبع المسؤول.,ar,lebanese,human,none,train
+ar-lebanese-154,عندي شكوى وبدّي احكي مع زلمة مش مع روبوت.,ar,lebanese,human,none,train
+ar-lebanese-155,في حدا من البلدية يرجّعلي تلفون؟,ar,lebanese,human,none,train
+ar-lebanese-156,بدّي قدّم شكوى رسمية مع موظف فعلي.,ar,lebanese,human,none,train
+ar-lebanese-157,وصّلني لموظف بليز ما بدّي بوت.,ar,lebanese,human,none,train
+ar-lebanese-158,اربح آيفون ببلاش هلّق!!! دوس عالرابط تتقبض جائزتك.,ar,lebanese,spam,none,test
+ar-lebanese-159,اكسب ٥٠٠٠ دولار بالجمعة من البيت، رسّلي خاص.,ar,lebanese,spam,none,train
+ar-lebanese-160,قروض رخيصة وموافقة عالطاير بلا أوراق، دق هلّق.,ar,lebanese,spam,none,train
+ar-lebanese-161,حطّ مصاري بالبيتكوين اليوم وضاعفهن ب٢٤ ساعة.,ar,lebanese,spam,none,train
+ar-lebanese-162,عقارات بأسعار خيالية، دق قبل ما يخلص العرض.,ar,lebanese,spam,none,train
+ar-lebanese-163,بنزيدلك متابعين ولايكات بأرخص سعر.,ar,lebanese,spam,none,train
+ar-lebanese-164,مبروك ربحت بطاقة هدايا ب١٠٠٠ دولار، أكّد بياناتك.,ar,lebanese,spam,none,train
+ar-arabizi-165,"fi 7afra kbire bel tari2 2eddem el fern, kedet syyara ten2leb.",ar,arabizi,report,roads,train
+ar-arabizi-166,3amoud el inara 2eddem bineye ra2am 12 mou6fe men jem3a.,ar,arabizi,report,roads,train
+ar-arabizi-167,el tari2 kello may ba3d el sheti w ma 3am tfout el syyarat.,ar,arabizi,report,roads,train
+ar-arabizi-168,"ma fi may bel 7ay men el sob7, fik tcheck?",ar,arabizi,report,water,train
+ar-arabizi-169,fi masoura may 3am tno22o6 3al rasif men se3at.,ar,arabizi,report,water,test
+ar-arabizi-170,el kahraba ma26ou3a 3an share3na men mbere7 bel layl.,ar,arabizi,report,electricity,train
+ar-arabizi-171,fi selk kahraba nezel 3al tari2 w shaklo khater.,ar,arabizi,report,electricity,test
+ar-arabizi-172,el nfeyet ma 7ada akhada men share3na men aktar men jem3a.,ar,arabizi,report,waste,train
+ar-arabizi-173,7awiyet el zbele fayme w ri7ta bshe3a.,ar,arabizi,report,waste,train
+ar-arabizi-174,fi majrour maftou7 3am tetla3 menno may sarf 7add el mal3ab.,ar,arabizi,report,environment,train
+ar-arabizi-175,fi syyara matrouke sadde el tari2 men esbou3ayn.,ar,arabizi,report,roads,train
+ar-arabizi-176,baddi ballegh 3an anwar el tari2 el mou6fiye 3al autostrad.,ar,arabizi,report,roads,train
+ar-arabizi-177,3am tfout may 3al 2abo men masoura el baladiye el meksoura.,ar,arabizi,report,water,test
+ar-arabizi-178,fi ma3mal jambna 3am ytalle3 dekhen toul el layl.,ar,arabizi,report,environment,train
+ar-arabizi-179,el zbele mkaddase 3and el mostaw3ab w sar fi firan.,ar,arabizi,report,waste,train
+ar-arabizi-180,fi ri7it majarir 2awiye 3am tetla3 men el manhole 2eddem baytna.,ar,arabizi,report,environment,test
+ar-arabizi-181,min el da2ira yalli btehtam b2at3 el may?,ar,arabizi,question,water,test
+ar-arabizi-182,kif 2addem talab rokh9et bina?,ar,arabizi,question,permits,test
+ar-arabizi-183,shou el awra2 yalli baddi yehon la sajjel ma7al tijari?,ar,arabizi,question,permits,train
+ar-arabizi-184,kif 6alle3 ifedet sakan?,ar,arabizi,question,permits,train
+ar-arabizi-185,emta byekhdo el zbele b mante2et el ashrafiye?,ar,arabizi,question,waste,train
+ar-arabizi-186,2addaysh rsoum el baladiye el sanawiye 3al she22a?,ar,arabizi,question,taxes,train
+ar-arabizi-187,wen fini edfa3 fatourit el baladiye?,ar,arabizi,question,taxes,train
+ar-arabizi-188,shou aw2at dawem maktab el baladiye?,ar,arabizi,question,general,train
+ar-arabizi-189,wen maktab el baladiye bel zab6?,ar,arabizi,question,general,train
+ar-arabizi-190,fi ra2am telephone lal 6awari2?,ar,arabizi,question,general,train
+ar-arabizi-191,baddi maw3ad 2abel ma eje wella fini eje daghre?,ar,arabizi,question,general,test
+ar-arabizi-192,ma3 min be7ki bi5sous warshe 3am ta3mol dawshe?,ar,arabizi,question,environment,train
+ar-arabizi-193,2addaysh byekhod wa2et ta yetla3 rokh9et el bina?,ar,arabizi,question,permits,train
+ar-arabizi-194,fini edfa3 el rsoum online wella lezem rou7 3al maktab?,ar,arabizi,question,taxes,train
+ar-arabizi-195,kif 6alle3 ekhraj 2ayd?,ar,arabizi,question,permits,train
+ar-arabizi-196,min mas2oul 3an ta9li7 inaret el shawer3?,ar,arabizi,question,roads,train
+ar-arabizi-197,baddi e7ki ma3 7ada 7a2i2i law sama7t.,ar,arabizi,human,none,train
+ar-arabizi-198,fik twa9elne la 7ada bel maktab?,ar,arabizi,human,none,train
+ar-arabizi-199,"hayda ma 3am yfidne, baddi e7ki ma3 mwazzaf.",ar,arabizi,human,none,train
+ar-arabizi-200,3a6ine el ra2am el mbesher taba3 el mas2oul.,ar,arabizi,human,none,train
+ar-arabizi-201,3andi shakwa w baddi e7ki ma3 zalame mish ma3 bot.,ar,arabizi,human,none,train
+ar-arabizi-202,fi 7ada men el baladiye yrajje3le telephone?,ar,arabizi,human,none,train
+ar-arabizi-203,wa9elne la mwazzaf please ma baddi bot.,ar,arabizi,human,none,train
+ar-arabizi-204,erba7 iphone bb balash hala2!!! dous 3al link ta to2bod jeztak.,ar,arabizi,spam,none,test
+ar-arabizi-205,"eksab 5000 dollar bel jem3a men el bayt, rasselle khass.",ar,arabizi,spam,none,test
+ar-arabizi-206,7ot ma9are bel bitcoin el yom w da3efon b 24 se3a.,ar,arabizi,spam,none,train
+ar-arabizi-207,"3a2arat b as3ar 5ayaliye, do2 2abel ma yekhlas el 3ard.",ar,arabizi,spam,none,train
+ar-arabizi-208,"mabrouk reb7et bita2a hadaya b 1000 dollar, 2akked bayanatak.",ar,arabizi,spam,none,train
+ar-arabizi-209,bnzidlak mtab3in w likes b ar5as se3er.,ar,arabizi,spam,none,train
