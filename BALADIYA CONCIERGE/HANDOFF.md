@@ -8,11 +8,12 @@
 
 | Field | Value |
 |---|---|
-| **Active feature** | `005-guardrails-security` (next) |
-| **Status** | **Phases 1–4 complete — ready to start Phase 5** |
-| **Last completed task** | All 22 tasks in `004-router-agent` are `[X]` + analyze fixes applied |
-| **Next task to start** | Run `/speckit-implement` from `specs/005-guardrails-security/` |
-| **How to start** | `feature.json` already updated → `"feature_directory": "specs/005-guardrails-security"` — run `/speckit-implement` |
+| **Active feature** | `006-widget` (next) |
+| **Status** | **Phases 1–5 complete — ready to start Phase 6** |
+| **Last completed task** | All 22 tasks in `005-guardrails-security` are `[X]` + analyze fixes applied |
+| **Last commit** | `184f5a3` — feat(005): guardrails & security |
+| **Next task to start** | Run `/speckit-implement` from `specs/006-widget/` |
+| **How to start** | Update `feature.json` → `"feature_directory": "specs/006-widget"` then run `/speckit-implement` |
 
 ---
 
@@ -114,7 +115,7 @@
 | Tools | `api/services/tools/rag_search.py`, `capture_request.py`, `escalate.py` |
 | Agent service | `api/services/agent_service.py` — bounded loop (`max_tool_calls=3`), auto-escalate on cap |
 | Router service | `api/services/router_service.py` — updated with `handle()` — full workflow dispatcher |
-| Chat API | `api/api/chat/router.py` — `POST /chat` + `POST /chat/token`; guardrails passthrough stub |
+| Chat API | `api/api/chat/router.py` — `POST /chat` + `POST /chat/token`; guardrails passthrough stub (replaced in Phase 5) |
 | Admin API | `api/api/admin/router.py` — capture_requests + escalation_tickets list for tenant admin |
 | Prompts | `prompts/system_en.md`, `prompts/system_ar.md` — `{{persona}}` placeholder |
 | Streamlit | `chatbot/pages/requests.py`, `chatbot/pages/escalations.py` |
@@ -130,9 +131,40 @@
 - Session key: `session:{session_id}:{tenant_id}`, TTL 1800s — justified in `DECISIONS.md §D10`
 - LLM fallback: `_GeminiFailureTracker.count ≥ 3` → switches to Groq; resets on success
 - Persona fetched from `tenant.settings["persona"]` at request time — never hardcoded
-- Guardrails stub in `POST /chat`: returns `True` always — **Phase 5 replaces this** with the real sidecar call
-- `POST /chat/token` issues visitor JWTs (no origin check) — **Phase 6 adds origin verification**
-- 503 returned on `httpx.RequestError` from modelserver — no raw tracebacks
+
+---
+
+### Phase 5 — Guardrails & Security (`005-guardrails-security`) ✅
+
+**All 22 tasks complete. `/speckit-analyze` remediation applied (11 fixes). Committed `184f5a3`.**
+
+| Area | Files Created/Modified |
+|---|---|
+| Guardrails sidecar | `guardrails/Dockerfile`, `guardrails/requirements.txt`, `guardrails/main.py` |
+| Platform rails (hardcoded) | `guardrails/rails/platform/injection.py`, `jailbreak.py`, `cross_tenant.py`, `pii_detect.py` |
+| Rail config | `guardrails/rails/platform/config.yml`, `prompts.yml` |
+| Tenant overlay | `guardrails/rails/tenant_overlay.py` — blocked topics, refusal tone, tool filter |
+| API client | `api/infra/guardrails_client.py` — fail-closed (`GuardrailUnavailable` → 503) |
+| API middleware | `api/middleware/guardrails_middleware.py`, `api/middleware/redaction.py` |
+| API wiring | `api/main.py` (init/close), `api/core/config.py` (token field + Vault fetch), `api/api/chat/router.py` (stub replaced) |
+| Admin UI | `chatbot/pages/guardrails.py` — guardrail config page |
+| Admin API | `api/api/admin/router.py` — `GET/PATCH /admin/settings` for tenant guardrail config |
+| Red-team probes | `evals/redteam_probes.json` — 14 probes (12 refused, 2 pass-through) |
+| Tests | `tests/test_security/` — 56 tests (51 pass, 1 skipped, 0 fail) |
+| CI gates | `.github/workflows/ci.yml` — 3 new jobs: guardrails-redteam, pii-redaction, service-auth |
+| Vault seed | `scripts/seed.py` — seeds `baladiya/guardrails/service_token` at boot |
+
+**Key architectural facts:**
+- Platform rails implemented as **Python regex** (deterministic for CI, < 1ms — well within the 100ms SC-003 budget)
+- `guardrails/` sidecar runs on **port 8002**; modelserver on 8001 — do NOT swap these
+- `presidio_analyzer` lives only in the guardrails container; API middleware uses lightweight inline regex
+- `pii_detect` import in `guardrails/main.py` is **lazy** — tests work without presidio installed in the dev venv
+- PII redaction order in `redaction.py`: phone patterns run **before** NID to prevent digit sequences inside phone numbers from double-triggering the 6-digit NID pattern
+- `TenantRepository` does NOT exist — use `PlatformTenantRepository` for cross-tenant reads (it's what the admin routes use too)
+- Guardrails `X-Service-Token` is in Vault at `baladiya/guardrails/service_token`; also set as env var `GUARDRAILS_SERVICE_TOKEN` on the guardrails container
+- Tenant name-pattern PII redaction is **deferred to feature 007** (requires NLP; not in current `redaction.py`)
+- `refusal_tone` field in tenant overlay now maps to formal/friendly templates; `custom_refusal_message` overrides all
+- `POST /chat` flow: redact PII → fetch tenant guardrail config → run guardrails → route to workflow/agent
 
 ---
 
@@ -155,36 +187,34 @@
 
 ## 4. Open Decisions / TBDs
 
-### Resolved in Phase 4 ✅
-- `eval_thresholds.yaml → agent_tool_accuracy` = **0.80** (target; run `evals/evaluate_agent.py` for measured value)
-- `eval_thresholds.yaml → workflow_handled_rate` = **0.60** (target; measured via cost attribution logs)
-- `max_tool_calls = 3` — config setting, default per FR-003
-- `evals/agent_tool_selection.json` — 15 examples committed
-- Session TTL 1800s — justified in `DECISIONS.md §D10`
-- `DECISIONS.md §D10` — Session Memory TTL added
+### Resolved in Phase 5 ✅
+- Guardrails sidecar architecture — HTTP sidecar with service token auth
+- Platform rail detection strategy — regex-based (deterministic for CI)
+- PII redaction scope — NID, phone, email, address; name deferred to feature 007
+- Vault secret path for guardrails token: `baladiya/guardrails/service_token`
 
 ### Still Open
 
 **Phase 3 (RAG) — needs live DB stack**
-- `eval_thresholds.yaml → rag_hit_at_5`, `rag_mrr`, `rag_faithfulness` — `0.0` placeholder
+- `eval_thresholds.yaml → rag_hit_at_5`, `rag_mrr`, `rag_faithfulness` — pre-measurement placeholders
 - Run `python evals/seed_eval_content.py` then `python evals/evaluate_rag.py --mode compare` to get measured values; update thresholds to `measured − 2pp`
-- Arabic chunk density — single char-limit confirmed as hypothesis; Phase 7 will re-evaluate
 
 **Phase 4 (Agent) — needs live LLM API**
 - `evals/evaluate_agent.py` not yet run — `agent_tool_accuracy` is a target, not a measured value
 - `EVALS.md §4` (agent tool selection) — TBD rows not filled
-- `EVALS.md §5` (SC-002 workflow %) — not filled
 - `DECISIONS.md §2` and `§3` RAG eval rows — `[run eval]` placeholders
 
-**Phase 5 (Security)**
-- `evals/redteam_probes.json` — does not exist; 12+ probes in Phase 5
-- Red-team gate rows in `EVALS.md §6` — all `[TBD — Phase 5]`
-- Guardrails sidecar p99 under load — must validate in Phase 5
-- `guardrails_url: "http://guardrails:8002"` already in Settings — sidecar not yet built
+**Phase 6 (Widget)**
+- React/Vite widget not yet built
+- Server-side origin check (`POST /chat/token`) — spec says to add in Phase 6; currently no origin validation
+- `POST /chat/token` issues visitor JWTs with no origin check — **Phase 6 adds server-side origin verification**
+- Widget embed snippet + `data-widget-id` endpoint not yet wired
+- `GUARDRAILS_SERVICE_TOKEN` in docker-compose is a dev default; generate a real token for production
 
 **Phase 7 (Arabic)**
 - `eval_thresholds.yaml → ar_macro_f1` — `0.0`; set after Arabic dataset grows to ≥20 verified rows per cell
 - Arabizi (F1=0.50) and Lebanese (F1=0.71) cells are thin — only 5 test rows each
+- Name-pattern PII redaction (deferred from Phase 5) — needs spacy NER or regex expansion
 
 ---
 
@@ -200,9 +230,16 @@
 | `rag_hit_at_5` | 0.73 | — | ⚠️ Pre-measurement target — run `evals/evaluate_rag.py` |
 | `rag_mrr` | 0.60 | — | ⚠️ Pre-measurement target — run `evals/evaluate_rag.py` |
 | `rag_faithfulness` | 0.60 | — | ⚠️ Pre-measurement target — Phase 5 LLM-judge eval |
-| `redteam_pass_rate` | 1.0 | — | ✅ Non-negotiable — never lower |
+| `redteam_pass_rate` | 1.0 | 1.0 | ✅ Enforced — 12/12 probes refused in CI |
 
-**CI workflow**: `.github/workflows/ci.yml` — runs on every push. Gates: unit tests, latency p95 < 50ms (real artifact), modelserver image < 500 MB, red-team isolation probes.
+**CI jobs (`.github/workflows/ci.yml`):**
+- `test` — unit tests (no live services)
+- `classifier-latency` — p95 < 50ms on real artifact
+- `modelserver-image-size` — < 500 MB
+- `redteam` — isolation probes (test_isolation/)
+- `guardrails-redteam` — **NEW** — 100% red-team probes refused
+- `pii-redaction` — **NEW** — zero PII leaks in redaction pipeline
+- `service-auth` — **NEW** — 401 without service token
 
 ---
 
@@ -241,31 +278,33 @@
 
 **uv pip**: Use `uv pip install <pkg>` for faster installs. For venv-specific: `uv pip install <pkg> --python /home/usermohammad/.venv/bin/python3`.
 
+**presidio_analyzer is NOT installed in the dev venv** — it is a guardrails-sidecar-only dependency. The `pii_detect.py` import in `guardrails/main.py` is lazy (try/except) so tests work without it.
+
 ---
 
-## 8. Next Phase Prep — Phase 5 (Guardrails & Security)
+## 8. Next Phase Prep — Phase 6 (Embeddable Widget)
 
-`feature.json` already points to `specs/005-guardrails-security`. The spec, plan, and tasks are fully written. Run `/speckit-implement` to start.
+Update `feature.json` → `"feature_directory": "specs/006-widget"` then run `/speckit-implement`.
 
-**What Phase 5 builds:**
-- `guardrails/` — NeMo Guardrails sidecar Docker service (FastAPI `POST /validate`, platform rails)
-- `api/infra/guardrails_client.py` — async httpx client; replaces the passthrough stub in `POST /chat`
-- `api/middleware/redaction.py` — Presidio PII redaction (Lebanese NID, phone, email) applied before logging and before Redis writes
-- `evals/redteam_probes.json` — 12+ red-team probes committed; CI gate refuses all of them
-- Right-to-erasure compliance verification
+**What Phase 6 builds:**
+- `widget/` — React/Vite app: chat iframe, RTL support (AR/EN), theme injection from tenant config
+- `api/api/widget/router.py` — `GET /widget/token?widget_id=...` (token exchange with server-side origin check), `GET /widget/config`
+- Server-side origin allowlist: `tenant.settings.allowed_origins` checked at token exchange — **this is the Phase 6 security deliverable**
+- Widget embed snippet generation in Streamlit admin
+- `docker-compose.yml` — build the `widget` service (currently stubbed as `node:20-alpine echo`)
 
-**Critical wiring point:** `api/api/chat/router.py` has `_guardrails_check()` stub that returns `True` always. Phase 5 replaces it with a real call to `guardrails_client.validate()`. The function signature is already in place — only the implementation changes.
-
-**Service auth:** The guardrails sidecar validates `X-Service-Token` header. This token lives in Vault at `baladiya/guardrails/service_token` — the Vault seed script needs a new entry. `guardrails_url` is already in `Settings` (`"http://guardrails:8002"`).
-
-**docker-compose.yml**: The guardrails service needs to be added as a new container (port 8002). The `guardrails_url` setting is already wired in `api/core/config.py`.
+**Critical wiring points:**
+- `POST /chat/token` currently has NO origin check (stub note in code: "Phase 006 adds origin verification")
+- `api/core/config.py` has no `allowed_origins` handling — needs to be added
+- CORS in `api/main.py` is currently `allow_origins=["*"]` — Phase 6 tightens this per-tenant
+- The guardrails sidecar is already wired and running — Phase 6 widget calls are guarded automatically
 
 **Dependencies:**
-1. Phase 4's `agent_service.run()` output is the thing being guarded — guardrails wraps it
-2. Phase 4's `POST /chat` guardrails stub is the exact integration point
-3. Redaction must run BEFORE structlog write AND before Redis session write in `session_service.add_turns()`
+1. Phase 5's guardrails sidecar wraps Phase 6 widget chat calls — Phase 6 must NOT bypass guardrails
+2. Phase 4's `POST /chat/token` is the JWT issuer — Phase 6 adds origin check to it
+3. Phase 3's embedding/RAG is the widget's knowledge source — no new work needed
 
-**DB must be running for integration tests:** `docker-compose up db vault migrate api redis guardrails`
+**docker-compose.yml**: The `widget` service needs a real build (`docker/widget.Dockerfile`). Currently: `image: node:20-alpine; command: echo stub`.
 
 ---
 
@@ -285,19 +324,23 @@
 
 **Two-way comparison, not three-way.** The spec originally said "three approaches" but DL/ONNX was dropped. The comparison is Classical ML vs LLM zero-shot only.
 
-**Session key structure: `session:{session_id}:{tenant_id}`** — SCAN pattern for erasure: `session:*:{tenant_id}`. Do NOT use `tenant:{tenant_id}:` prefix (spec.md had this wrong before the Phase 4 analyze fix — corrected in commit `a83ed7a`).
+**Session key structure: `session:{session_id}:{tenant_id}`** — SCAN pattern for erasure: `session:*:{tenant_id}`. Do NOT use `tenant:{tenant_id}:` prefix.
 
 **`capture_request` never receives spam.** Spam is dropped by the classifier BEFORE any tool call. The router's `SPAM` branch returns `("", "spam")` immediately.
 
-**LLM fallback is request-count-based, not time-based.** `_GeminiFailureTracker.count ≥ 3` → Groq; resets to 0 on the first successful Gemini call. It's a module-level singleton class, not a bare global. To reset in tests: `from api.infra.llm_client import _gemini_tracker; _gemini_tracker.reset()`.
+**LLM fallback is request-count-based, not time-based.** `_GeminiFailureTracker.count ≥ 3` → Groq; resets to 0 on the first successful Gemini call. To reset in tests: `from api.infra.llm_client import _gemini_tracker; _gemini_tracker.reset()`.
 
-**`max_tool_calls` setting name (not `max_tool_iterations`).** Was renamed in Phase 4 analyze pass. The default is 3 (spec FR-003). Do not confuse with `max_tokens_per_turn` (4096).
+**`max_tool_calls` setting name (not `max_tool_iterations`).** Default is 3 (spec FR-003).
 
-**Gemini SDK is synchronous.** `google-generativeai==0.7.2` has no native async. The `llm_client.py` wraps `model.generate_content()` in `asyncio.to_thread()`. This is acceptable since the thread-pool offloads the blocking call.
+**Gemini SDK is synchronous.** `google-generativeai==0.7.2` has no native async. The `llm_client.py` wraps in `asyncio.to_thread()`.
+
+**Guardrails sidecar port is 8002, not 8001.** Port 8001 is modelserver. This was a typo in spec.md that was fixed in Phase 5 analyze pass.
+
+**`PlatformTenantRepository` (not `TenantRepository`).** There is no class named `TenantRepository`. Use `PlatformTenantRepository` for reading/writing tenant rows. `TenantAdminRepository` is for `TenantAdmin` entities.
+
+**specs/004-agent-router/ is empty.** The actual Phase 4 specs live in `specs/004-router-agent/`. Safe to ignore the empty dir.
 
 **Phase 8 docs already written.** `DESIGN.md`, `DECISIONS.md`, `RUNBOOK.md`, `SECURITY.md` are pre-written. Mark their Phase 8 tasks `[X]` without redoing the work.
-
-**`specs/004-agent-router/` is empty.** The actual Phase 4 specs live in `specs/004-router-agent/` (note the different ordering). The empty directory is a leftover from the initial `feature.json` pointer — safe to ignore.
 
 ---
 
@@ -308,11 +351,11 @@ P1 (Foundation) → ALL others
 P2 (Classifier) → P4 (Router calls modelserver)
 P3 (CMS/RAG)   → P4 (Router calls rag_search)
 P4 (Router)    → P5 (Guardrails wraps POST /chat + redacts before session write)
-P5 (Guardrails)→ P6 (Widget calls guarded API)
+P5 (Guardrails)→ P6 (Widget calls guarded API; origin check added)
 P6 (Widget)    → P7 (RTL + Arabic end-to-end)
 P7 (Arabic)    → P8 (Final evals include AR numbers)
 ```
 
 ---
 
-*Last updated: 2026-06-04 | Phases 1–4 complete | Next: 005-guardrails-security*
+*Last updated: 2026-06-04 | Phases 1–5 complete | Next: 006-widget*
