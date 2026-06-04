@@ -29,6 +29,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await init_db(settings.database_url)
         await init_redis(settings.redis_url)
         await init_embedding_client()
+        from api.infra.modelserver_client import init_modelserver_client
+        await init_modelserver_client()
     except Exception as exc:
         raise StartupError(f"Startup failed: {exc}") from exc
 
@@ -46,6 +48,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await close_db()
     await close_redis()
     await close_embedding_client()
+    from api.infra.modelserver_client import close_modelserver_client
+    await close_modelserver_client()
     log.info("shutdown complete")
 
 
@@ -87,8 +91,12 @@ from api.api.platform.router import router as platform_router  # noqa: E402
 from api.api.cms.router import router as cms_router  # noqa: E402
 from api.api.rag.router import router as rag_router  # noqa: E402
 from api.api.auth.router import router as auth_router  # noqa: E402
+from api.api.chat.router import router as chat_router  # noqa: E402
+from api.api.admin.router import router as admin_router  # noqa: E402
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(platform_router, prefix="/platform", tags=["platform"])
 app.include_router(cms_router, prefix="/cms", tags=["cms"])
 app.include_router(rag_router, prefix="/rag", tags=["rag"])
+app.include_router(chat_router, prefix="/chat", tags=["chat"])
+app.include_router(admin_router, prefix="/admin", tags=["admin"])

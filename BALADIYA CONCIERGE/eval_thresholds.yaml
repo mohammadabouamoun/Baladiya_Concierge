@@ -12,7 +12,8 @@ classifier_confidence_thresholds:
   human: 0.65
   spam: 0.90
 
-agent_tool_accuracy: 0.0
+agent_tool_accuracy: 0.80   # SC-001: ≥ 80% on 15 labelled examples; set in Phase 4
+workflow_handled_rate: 0.60 # SC-002: ≥ 60% of turns handled by workflow (no agent LLM call)
 
 rag_hit_at_5: 0.73    # pre-measurement target (spec SC-001 goal: 0.80 − 7pp buffer); update to measured − 2pp after eval run
 rag_mrr: 0.60         # pre-measurement target; update to measured − 2pp after eval run

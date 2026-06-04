@@ -41,6 +41,8 @@ class Settings(BaseSettings):
 
     # ── Rate limiting defaults ─────────────────────────────────
     default_requests_per_minute: int = 60
+    capture_requests_per_minute: int = 5   # per-session limit on capture_request tool
+    widget_token_expire_minutes: int = 1440  # 24h visitor widget token
 
     # ── Classifier confidence thresholds (FR-010) ──────────────
     # Below threshold → falls through to agent (fail safe, not fail cheap).
@@ -54,7 +56,7 @@ class Settings(BaseSettings):
     modelserver_service_token: str = ""
 
     # ── LLM cost-control ──────────────────────────────────────
-    max_tool_iterations: int = 5
+    max_tool_calls: int = 3          # cap per agent turn — FR-003; spec default = 3
     max_tokens_per_turn: int = 4096
 
     # ── CMS / RAG ─────────────────────────────────────────────

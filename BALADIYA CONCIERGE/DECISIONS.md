@@ -254,6 +254,26 @@ These decisions are structural — they are set at design time and changing them
 
 ---
 
+### D10 — Session Memory TTL (30 Minutes)
+
+**Decision**: How long to retain a resident's in-session conversation history in Redis.
+**Required by**: FR-008 — TTL must be justified in this document.
+
+| | Value |
+|---|---|
+| Chosen TTL | 1800 seconds (30 minutes) |
+| Median resident session length (civic chatbots, field estimate) | < 5 minutes |
+| 95th-percentile session length (estimated) | < 15 minutes |
+| Headroom over p95 | 2× |
+| Cost of too-short TTL | Resident loses context mid-session; must repeat information |
+| Cost of too-long TTL | Memory key survives across device-sharing sessions; stale context from a previous resident on a shared device |
+| Alternative considered | 60 minutes — doubles shared-device risk window for negligible benefit |
+| Erasure compatibility | `SessionService.flush_tenant()` scans `session:*:{tenant_id}` and deletes all keys — TTL does not affect erasure completeness |
+
+**Verdict**: 30 minutes is the minimum TTL that covers resident sessions at p95 with a 2× safety margin, while keeping the shared-device stale-context window short. The value is set in `SessionService.SESSION_TTL` (not in `eval_thresholds.yaml` — it is a product decision, not a quality gate). Measured session length data from production logs should be used to validate this estimate in Phase 8.
+
+---
+
 ### D7 — Vault HA Trigger (Before First Paying Tenant)
 
 | | Value |

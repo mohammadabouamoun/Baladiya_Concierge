@@ -20,7 +20,7 @@ Build the classifier-driven router that handles easy turns via workflow (no agen
 
 **Performance Goals**: Agent loop < 5s p95 for single-tool turns; workflow path < 200ms p95
 
-**Constraints**: `max_tool_calls` configurable (default 3); `max_tokens_per_turn` configurable; `capture_request` always schema-validated before write; session key = `session:{session_id}:{tenant_id}` (NEVER just `session:{session_id}`)
+**Constraints**: `max_tool_calls` configurable (default 3, set via `Settings.max_tool_calls`); `max_tokens_per_turn` configurable; `capture_request` always schema-validated before write; session key = `session:{session_id}:{tenant_id}` (NEVER just `session:{session_id}`)
 
 ## Constitution Check
 
@@ -90,7 +90,7 @@ if result.intent == "question": → rag_search → compose answer
 ## Agent Bounded Loop
 
 ```python
-async def run(message, session, tenant_id, max_iterations=3):
+async def run(message, session, tenant_id, max_tool_calls=3):
     turns = session.get_turns()
     for i in range(max_iterations):
         response = await llm.complete(system_prompt, turns + [message], tools=TOOLS)

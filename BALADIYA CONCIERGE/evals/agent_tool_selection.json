@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ts-001",
+    "input": "What are the garbage collection days in my area?",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "rag_search",
+    "rationale": "Information question — should search knowledge base for schedule"
+  },
+  {
+    "id": "ts-002",
+    "input": "There is a large pothole on Hamra Street near the pharmacy. It's been there for weeks.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "capture_request",
+    "rationale": "Clear report of an infrastructure issue — should capture"
+  },
+  {
+    "id": "ts-003",
+    "input": "I need to speak with a real person please.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "escalate",
+    "rationale": "Explicit request to speak with human staff"
+  },
+  {
+    "id": "ts-004",
+    "input": "ما هي ساعات عمل البلدية؟",
+    "lang": "ar",
+    "variety": "msa",
+    "expected_tool": "rag_search",
+    "rationale": "Question about office hours — should search knowledge base"
+  },
+  {
+    "id": "ts-005",
+    "input": "في الشارع عنا في الجنوب في كهرباء منقطعة من امبارح",
+    "lang": "ar",
+    "variety": "lebanese",
+    "expected_tool": "capture_request",
+    "rationale": "Lebanese Arabic report of electricity outage — should capture"
+  },
+  {
+    "id": "ts-006",
+    "input": "How do I apply for a building permit?",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "rag_search",
+    "rationale": "Process/procedure question — should search knowledge base"
+  },
+  {
+    "id": "ts-007",
+    "input": "The water has been cut off in my building since this morning at 7am. Address is 45 Verdun St.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "capture_request",
+    "rationale": "Specific infrastructure outage report with location — should capture"
+  },
+  {
+    "id": "ts-008",
+    "input": "ana 3ndi mashakel m3 el baladiyye w bade wa7ad ye7ke m3i",
+    "lang": "ar",
+    "variety": "arabizi",
+    "expected_tool": "escalate",
+    "rationale": "Arabizi: 'I have problems with the municipality and want someone to talk to me' — escalation request"
+  },
+  {
+    "id": "ts-009",
+    "input": "كيف يمكنني تجديد رخصة المحل التجاري؟",
+    "lang": "ar",
+    "variety": "msa",
+    "expected_tool": "rag_search",
+    "rationale": "MSA question about business licence renewal — search knowledge base"
+  },
+  {
+    "id": "ts-010",
+    "input": "There are stray dogs near the school on Cedar Street. This is a safety issue for children.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "capture_request",
+    "rationale": "Safety report requiring action — should capture"
+  },
+  {
+    "id": "ts-011",
+    "input": "What is the fine for not separating recycling?",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "rag_search",
+    "rationale": "Factual question about a policy/fine — should search knowledge base"
+  },
+  {
+    "id": "ts-012",
+    "input": "عندي مشكلة معقدة وبحتاج تصاريح كتير وما فاهم شو لازم اعمل",
+    "lang": "ar",
+    "variety": "lebanese",
+    "expected_tool": "escalate",
+    "rationale": "Lebanese: 'I have a complex problem needing many permits and don't understand what to do' — complex escalation"
+  },
+  {
+    "id": "ts-013",
+    "input": "The street light on the corner of Bliss and Rue Clemenceau has been out for 3 nights.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "capture_request",
+    "rationale": "Specific street light outage report with location — should capture"
+  },
+  {
+    "id": "ts-014",
+    "input": "ما هي رسوم استخراج شهادة الميلاد؟",
+    "lang": "ar",
+    "variety": "msa",
+    "expected_tool": "rag_search",
+    "rationale": "Question about civil registry fees — search knowledge base"
+  },
+  {
+    "id": "ts-015",
+    "input": "My neighbour has been dumping construction waste illegally behind our building for weeks. I want to file a formal complaint.",
+    "lang": "en",
+    "variety": "en",
+    "expected_tool": "capture_request",
+    "rationale": "Formal illegal dumping complaint — should capture"
+  }
+]

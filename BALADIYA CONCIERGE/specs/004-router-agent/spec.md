@@ -59,7 +59,7 @@ The agent maintains short-term session memory in Redis, scoped per conversation,
 
 1. **Given** a multi-turn conversation, **When** the agent processes each turn, **Then** prior turns are included in context from Redis (scoped to `session_id:tenant_id`, not just `session_id`).
 2. **Given** a session TTL expires (configurable, justified in `DECISIONS.md`), **When** a new turn arrives with the old session key, **Then** the session is treated as new — no stale context from a previous resident's session on the same device.
-3. **Given** the right-to-erasure path runs, **When** a tenant is erased, **Then** all Redis session keys prefixed with `tenant:{tenant_id}:` are flushed.
+3. **Given** the right-to-erasure path runs, **When** a tenant is erased, **Then** all Redis session keys matching `session:*:{tenant_id}` are flushed (SCAN-based, no blocking KEYS command).
 
 ---
 
