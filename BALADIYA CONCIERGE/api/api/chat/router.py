@@ -2,9 +2,9 @@
 
 POST /chat        — main chat endpoint; widget JWT required (visitor or tenant_admin role)
 POST /chat/token  — issues short-lived visitor JWT for a given tenant (public, no auth)
-                    Phase 004: no origin check; Phase 006 adds server-side origin verification
+                    Phase 006 adds server-side origin verification
 
-T-034: logs handled_by (workflow|agent|spam) per tenant for cost attribution.
+T-034: logs handled_by (workflow|agent|spam|guardrails) per tenant for cost attribution.
 """
 from __future__ import annotations
 
@@ -22,15 +22,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.core.config import get_settings
 from api.core.security import TokenClaims, decode_token, get_current_user
 from api.infra.db import get_db
+from api.middleware.guardrails_middleware import run_guardrails
+from api.middleware.redaction import redact
 
 logger = structlog.get_logger(__name__)
 
 router = APIRouter()
-
-# Guardrails passthrough stub — returns allowed=True always.
-# Phase 005 wires in the full NeMo Guardrails sidecar HTTP call.
-async def _guardrails_check(message: str) -> bool:
-    return True
 
 
 # ── Schemas ────────────────────────────────────────────────────────────────
@@ -111,18 +108,35 @@ async def chat(
     if not body.message.strip():
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="message cannot be empty")
 
-    # Guardrails stub (Phase 005 wires in the full sidecar)
-    allowed = await _guardrails_check(body.message)
-    if not allowed:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Message blocked by content policy",
+    # Redact PII before any downstream processing (logging, session, router)
+    safe_message = redact(body.message)
+
+    # Guardrails validation — fails closed (503) if sidecar unreachable
+    from api.repositories.tenant_repo import PlatformTenantRepository
+    tenant_repo = PlatformTenantRepository(db_session)
+    tenant = await tenant_repo.get(token.tenant_id)
+    tenant_guardrail_config = (tenant.settings or {}).get("guardrail_config") if tenant else None
+
+    guardrail_result = await run_guardrails(
+        message=safe_message,
+        tenant_id=str(token.tenant_id),
+        session_id=body.session_id,
+        tenant_guardrail_config=tenant_guardrail_config,
+    )
+    if not guardrail_result.allowed:
+        refusal = guardrail_result.refusal_text or "I'm unable to process that request."
+        logger.info(
+            "chat.guardrails_blocked",
+            tenant_id=str(token.tenant_id),
+            session_id=body.session_id,
+            triggered_rail=guardrail_result.triggered_rail,
         )
+        return ChatResponse(response=refusal, handled_by="guardrails")
 
     from api.services.router_service import handle
     try:
         response_text, handled_by = await handle(
-            text=body.message,
+            text=safe_message,
             tenant_id=token.tenant_id,
             session_id=body.session_id,
             db_session=db_session,

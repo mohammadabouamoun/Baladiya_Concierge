@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     # ── Modelserver ────────────────────────────────────────────
     modelserver_service_token: str = ""
 
+    # ── Guardrails sidecar ─────────────────────────────────────
+    guardrails_service_token: str = ""
+
     # ── LLM cost-control ──────────────────────────────────────
     max_tool_calls: int = 3          # cap per agent turn — FR-003; spec default = 3
     max_tokens_per_turn: int = 4096
@@ -96,6 +99,7 @@ def _load_from_vault(settings: Settings) -> None:
         object.__setattr__(settings, "groq_api_key", _get("baladiya/llm", "groq_api_key"))
         object.__setattr__(settings, "minio_access_key", _get("baladiya/minio", "access_key"))
         object.__setattr__(settings, "minio_secret_key", _get("baladiya/minio", "secret_key"))
+        object.__setattr__(settings, "guardrails_service_token", _get("baladiya/guardrails", "service_token"))
 
     except hvac.exceptions.VaultError as exc:
         raise StartupError(f"Vault unreachable or misconfigured: {exc}") from exc

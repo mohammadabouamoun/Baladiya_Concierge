@@ -98,6 +98,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      guardrails:
+        condition: service_healthy
     environment:
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: "${VAULT_TOKEN:-dev-root-token}"
@@ -161,17 +163,28 @@ services:
     networks:
       - baladiya
 
-  # ── NeMo Guardrails sidecar — stubbed ──────────────────────
+  # ── NeMo Guardrails sidecar ────────────────────────────────
   guardrails:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: guardrails/Dockerfile
     restart: unless-stopped
-    profiles:
-      - guardrails
-    command: ["echo", "guardrails stub — build in feature 005"]
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: "${VAULT_TOKEN:-dev-root-token}"
+      GUARDRAILS_SERVICE_TOKEN: "${GUARDRAILS_SERVICE_TOKEN:-dev-guardrails-token}"
     ports:
       - "${GUARDRAILS_PORT:-8002}:8002"
     networks:
       - baladiya
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # ── Chat widget (React/Vite) — stubbed ────────────────────
   widget:

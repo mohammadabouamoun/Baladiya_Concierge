@@ -77,3 +77,66 @@ jobs:
         run: pytest tests/test_isolation/test_redteam.py tests/test_isolation/test_rls.py tests/test_isolation/test_session_reset.py -v --tb=short
         env:
           ENV: testing
+
+  # ── Guardrails red-team gate (redteam_pass_rate: 1.0) ───────────────────
+  guardrails-redteam:
+    name: Guardrails Red-Team Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run guardrails red-team probes (redteam_pass_rate must be 1.0)
+        run: pytest tests/test_security/test_redteam.py tests/test_security/test_rail_separation.py -v --tb=short
+        env:
+          ENV: testing
+          PYTHONPATH: "."
+
+  # ── PII redaction gate (zero leaks) ─────────────────────────────────────
+  pii-redaction:
+    name: PII Redaction Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run PII redaction pattern tests
+        run: pytest tests/test_security/test_pii_patterns.py tests/test_security/test_redaction.py -v --tb=short -m "not integration"
+        env:
+          ENV: testing
+          PYTHONPATH: "."
+
+  # ── Service auth gate (401 without token) ───────────────────────────────
+  service-auth:
+    name: Service Auth Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install guardrails deps
+        run: pip install -r requirements-dev.txt fastapi uvicorn httpx pydantic structlog
+
+      - name: Run service auth tests
+        run: pytest tests/test_security/test_service_auth.py -v --tb=short
+        env:
+          ENV: testing
+          PYTHONPATH: "."

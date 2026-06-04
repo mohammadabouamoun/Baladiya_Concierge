@@ -68,11 +68,11 @@ Every internal call (`api` → `guardrails`, `api` → `modelserver`) uses a ser
 
 **Why this priority**: An exposed internal endpoint is a real attack surface in a cloud deployment.
 
-**Independent Test**: A raw `curl` to `guardrails:8001/validate` without an `X-Service-Token` header returns `401`.
+**Independent Test**: A raw `curl` to `guardrails:8002/validate` without an `X-Service-Token` header returns `401`.
 
 **Acceptance Scenarios**:
 
-1. **Given** the `api` calls `guardrails` sidecar, **When** the call is made, **Then** an `X-Service-Token` (or mTLS certificate) is included, resolved from Vault at startup.
+1. **Given** the `api` calls `guardrails` sidecar, **When** the call is made, **Then** an `X-Service-Token` header is included, with the token resolved from Vault at startup.
 2. **Given** a caller sends a request to `guardrails` without a valid token, **When** the sidecar processes it, **Then** it returns `401 Unauthorized` — no guardrail processing occurs.
 3. **Given** the Vault root token or service secret rotates, **When** services restart, **Then** they pick up the new credential from Vault — no hardcoded secrets in any image or environment variable (beyond the Vault root token in `.env`).
 
@@ -91,14 +91,14 @@ Every internal call (`api` → `guardrails`, `api` → `modelserver`) uses a ser
 ### Functional Requirements
 
 - **FR-001**: The guardrails sidecar MUST run as a separate Docker service; the `api` calls it over HTTP before processing any resident message.
-- **FR-002**: Platform rails MUST include: prompt injection detection, jailbreak detection, cross-tenant refusal, and PII redaction. These MUST be identical for all tenants and not configurable via tenant settings.
+- **FR-002**: Platform rails MUST include: prompt injection detection, jailbreak detection, cross-tenant refusal, and PII detection. These MUST be identical for all tenants and not configurable via tenant settings. Note: FR-002 covers the sidecar's PII *detection* rail (flags presence); FR-004 covers the API middleware's PII *redaction* (replaces values) — these are two separate, complementary layers.
 - **FR-003**: Tenant rails (configurable): allowed/blocked topics, refusal tone, persona boundaries, enabled agent tools. Stored in `tenant.settings.guardrail_config`.
-- **FR-004**: PII redaction MUST cover: Lebanese national ID numbers, Lebanese phone formats, email addresses, and any string matching a personal name pattern adjacent to a personal data field. Applied before logging, before Redis write, and before any trace export.
+- **FR-004**: PII redaction MUST cover: Lebanese national ID numbers, Lebanese phone formats, email addresses, and street addresses containing a building number adjacent to a street-type word (Street, Avenue, Road, Building). Applied before logging, before Redis write, and before any trace export. Personal name pattern detection is deferred to feature 007 (requires NLP).
 - **FR-005**: A CI redaction test MUST paste a fake national ID into the simulated chat pipeline and verify zero unredacted occurrences in all outputs.
 - **FR-006**: Every call from `api` → `guardrails` and `api` → `modelserver` MUST include a service credential from Vault. Unauthenticated calls return `401`.
 - **FR-007**: The CI red-team gate MUST run injection + cross-tenant probes on every push; all must be refused for the build to pass. Probe set committed in `evals/redteam_probes.json`.
 - **FR-008**: The guardrails sidecar MUST fail closed — if unreachable, the `api` returns `503` rather than processing the message unguarded.
-- **FR-009**: Platform Manager crossing into tenant data must be detected and audit-logged (from `001-foundation-isolation`). Security review confirms no SELECT bypass exists.
+- **FR-009**: Platform Manager crossing into tenant data must be detected and audit-logged (from `001-foundation-isolation`). Security review confirms no SELECT bypass exists. **[CARRIED OVER — implemented in feature 001 via `tests/test_isolation/test_platform_manager_access.py`; no new build work required here.]**
 
 ### Key Entities
 
@@ -123,7 +123,7 @@ Every internal call (`api` → `guardrails`, `api` → `modelserver`) uses a ser
 ## Assumptions
 
 - NeMo Guardrails is the primary sidecar framework. Presidio is used for PII entity detection (integrated into the NeMo pipeline or called separately).
-- The sidecar runs as `guardrails:8001` in the Compose network. The `api` calls it at `http://guardrails:8001/validate`.
+- The sidecar runs as `guardrails:8002` in the Compose network. The `api` calls it at `http://guardrails:8002/validate`. (Port 8001 is reserved for modelserver.)
 - Redaction is applied as a FastAPI middleware on the `api` side — the sidecar returns the modified/validated message, and the middleware logs only the redacted version.
 - The red-team probe set starts with at least: 5 injection probes, 3 system-prompt extraction probes, 2 cross-tenant data extraction probes, 2 jailbreak probes. Grow this set as new attack patterns are found.
 - Service credentials are 256-bit random tokens stored in Vault under `secret/service-tokens`.

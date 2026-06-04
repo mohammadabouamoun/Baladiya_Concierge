@@ -31,6 +31,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await init_embedding_client()
         from api.infra.modelserver_client import init_modelserver_client
         await init_modelserver_client()
+        from api.infra.guardrails_client import init_guardrails_client
+        await init_guardrails_client()
     except Exception as exc:
         raise StartupError(f"Startup failed: {exc}") from exc
 
@@ -50,6 +52,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await close_embedding_client()
     from api.infra.modelserver_client import close_modelserver_client
     await close_modelserver_client()
+    from api.infra.guardrails_client import close_guardrails_client
+    await close_guardrails_client()
     log.info("shutdown complete")
 
 

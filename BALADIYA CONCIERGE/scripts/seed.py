@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Seed script: create Platform Manager + 2 tenants from env vars.
+Also seeds service tokens into Vault (idempotent).
 
 Run by the `migrate` container after Alembic finishes.
 Idempotent — safe to run multiple times.
@@ -115,7 +116,40 @@ async def seed(session: AsyncSession) -> None:
     print("[seed] Done.")
 
 
+def seed_vault_secrets() -> None:
+    """Write service tokens into Vault KV so the API can read them at startup.
+
+    Runs in local dev and CI where Vault is in dev mode.
+    No-op if VAULT_ADDR is not reachable (e.g. unit-test environments).
+    """
+    vault_addr = os.environ.get("VAULT_ADDR", "http://localhost:8200")
+    vault_token = os.environ.get("VAULT_TOKEN", "")
+    guardrails_token = os.environ.get("GUARDRAILS_SERVICE_TOKEN", "dev-guardrails-token")
+
+    if not vault_token:
+        print("[seed] VAULT_TOKEN not set — skipping Vault secret seeding")
+        return
+
+    try:
+        import hvac
+        client = hvac.Client(url=vault_addr, token=vault_token)
+        if not client.is_authenticated():
+            print("[seed] Vault not authenticated — skipping secret seeding")
+            return
+
+        client.secrets.kv.v2.create_or_update_secret(
+            path="baladiya/guardrails",
+            secret={"service_token": guardrails_token},
+            mount_point="secret",
+        )
+        print(f"[seed] Seeded Vault secret: secret/baladiya/guardrails")
+    except Exception as exc:
+        # Non-fatal: Vault may not be available in all environments
+        print(f"[seed] Vault seeding skipped: {exc}")
+
+
 async def main() -> None:
+    seed_vault_secrets()
     database_url = os.environ["DATABASE_URL"]
     engine = create_async_engine(database_url)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

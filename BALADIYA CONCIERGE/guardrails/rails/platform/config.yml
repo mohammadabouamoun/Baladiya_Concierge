@@ -1,0 +1,31 @@
+# Platform rail configuration — NeMo Guardrails format
+# These rails are HARDCODED and NOT tenant-configurable.
+# Every request passes through all four platform rails before tenant overlay.
+
+models:
+  - type: main
+    engine: google
+    model: gemini-2.5-flash
+
+# Input rails run in order; first match short-circuits
+rails:
+  input:
+    flows:
+      - check input injection
+      - check input jailbreak
+      - check input cross tenant
+      - check input pii
+
+  output:
+    flows: []
+
+# Colang flows are implemented in Python (rails/platform/*.py) for
+# determinism and speed. This file documents their intent for the
+# NeMo Guardrails framework and future LLM-based extension.
+
+# Refusal messages (static — no LLM call needed for platform rails)
+messages:
+  injection_refusal: "I'm unable to process that request."
+  jailbreak_refusal: "I'm unable to process that request."
+  cross_tenant_refusal: "I'm unable to process that request."
+  pii_notice: "Your message contained personal information that has been removed."
