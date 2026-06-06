@@ -68,7 +68,7 @@ async def issue_token(
     # via two-pass verification using the widget_id claim.
     from api.infra.vault import get_widget_signing_key
     try:
-        signing_key = get_widget_signing_key(widget_id)
+        signing_key = await get_widget_signing_key(widget_id)
     except Exception:
         # Vault unavailable — fall back to shared jwt_secret (degraded mode)
         logger.warning("widget.token.vault_fallback", widget_id=str(widget_id))

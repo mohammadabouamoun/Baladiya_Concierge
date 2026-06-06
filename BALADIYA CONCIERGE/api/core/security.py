@@ -12,11 +12,11 @@ from api.core.config import get_settings
 _bearer = HTTPBearer(auto_error=True)
 
 
-def _get_signing_key(token: str, settings) -> str:
+async def _get_signing_key(token: str, settings) -> str:
     """Two-pass key selection: peek at widget_id claim, then pick the right key.
 
     Step 1: decode without signature verification to read widget_id.
-    Step 2: if widget_id present, fetch per-widget key from Vault cache.
+    Step 2: if widget_id present, fetch per-widget key from Vault cache (async).
             Otherwise use jwt_secret (backward compatible).
     The unverified widget_id is only used to SELECT the key — no auth decision
     is made on unverified claims.
@@ -32,7 +32,7 @@ def _get_signing_key(token: str, settings) -> str:
 
     try:
         from api.infra.vault import get_widget_signing_key
-        return get_widget_signing_key(uuid.UUID(widget_id_raw))
+        return await get_widget_signing_key(uuid.UUID(widget_id_raw))
     except Exception:
         # Vault unavailable or key missing — fall through; full decode will reject the token
         return settings.jwt_secret
@@ -52,9 +52,9 @@ class TokenClaims:
         self.widget_id = widget_id  # set only for widget-issued visitor tokens
 
 
-def decode_token(token: str) -> TokenClaims:
+async def decode_token(token: str) -> TokenClaims:
     settings = get_settings()
-    signing_key = _get_signing_key(token, settings)
+    signing_key = await _get_signing_key(token, settings)
     try:
         payload = jwt.decode(
             token,
@@ -93,4 +93,4 @@ def decode_token(token: str) -> TokenClaims:
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
 ) -> TokenClaims:
-    return decode_token(credentials.credentials)
+    return await decode_token(credentials.credentials)

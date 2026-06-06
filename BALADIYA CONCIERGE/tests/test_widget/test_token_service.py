@@ -141,7 +141,8 @@ def _issue_raw_token(widget_id: uuid.UUID, tenant_id: uuid.UUID, key: str) -> st
     )
 
 
-def test_rotate_key_invalidates_old_token():
+@pytest.mark.asyncio
+async def test_rotate_key_invalidates_old_token():
     """A token signed with the old key must be rejected after key rotation."""
     from api.core.security import decode_token
     import api.infra.vault as vault_mod
@@ -154,7 +155,7 @@ def test_rotate_key_invalidates_old_token():
     with patch("api.core.security.get_settings", return_value=_fake_settings()):
         # Before rotation: cache returns old key → decode succeeds
         vault_mod._widget_key_cache[str(_WIDGET_ID)] = (old_key, float("inf"))
-        claims = decode_token(old_token)
+        claims = await decode_token(old_token)
         assert str(claims.widget_id) == str(_WIDGET_ID)
 
         # Rotation: cache now holds new key
@@ -163,11 +164,12 @@ def test_rotate_key_invalidates_old_token():
         # Old token should now be rejected (wrong signature for new key)
         from fastapi import HTTPException
         with pytest.raises(HTTPException) as exc_info:
-            decode_token(old_token)
+            await decode_token(old_token)
         assert exc_info.value.status_code == 401
 
 
-def test_rotate_key_does_not_affect_other_widget():
+@pytest.mark.asyncio
+async def test_rotate_key_does_not_affect_other_widget():
     """Rotating widget A's key must not invalidate widget B's tokens."""
     from api.core.security import decode_token
     import api.infra.vault as vault_mod
@@ -183,11 +185,12 @@ def test_rotate_key_does_not_affect_other_widget():
         vault_mod._widget_key_cache[str(_WIDGET_ID)] = ("rotated-key-for-a-32-chars-xxxxx", float("inf"))
 
         # Widget B's token must still decode successfully
-        claims_b = decode_token(token_b)
+        claims_b = await decode_token(token_b)
         assert str(claims_b.widget_id) == str(_WIDGET_B_ID)
 
 
-def test_non_widget_token_unaffected():
+@pytest.mark.asyncio
+async def test_non_widget_token_unaffected():
     """A tenant_admin JWT (no widget_id claim) must validate via jwt_secret after rotation."""
     from api.core.security import decode_token
     import api.infra.vault as vault_mod
@@ -206,6 +209,6 @@ def test_non_widget_token_unaffected():
         vault_mod._widget_key_cache[str(_WIDGET_ID)] = ("some-rotated-key-32-chars-xxxxxx", float("inf"))
 
         # Admin token must still decode with jwt_secret
-        claims = decode_token(admin_token)
+        claims = await decode_token(admin_token)
         assert claims.role == "tenant_admin"
         assert claims.widget_id is None

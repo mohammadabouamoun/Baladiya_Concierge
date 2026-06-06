@@ -64,7 +64,7 @@ def test_no_exception_without_arabic_data():
     from api.services.lang_detect_service import detect
 
     # Should not raise, should return "en"
-    result = asyncio.get_event_loop().run_until_complete(detect("Hello, how can I pay my water bill?"))
+    result = asyncio.run(detect("Hello, how can I pay my water bill?"))
     assert result.lang == "en"
     assert result.variety == "en"
 

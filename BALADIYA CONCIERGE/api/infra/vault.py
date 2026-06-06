@@ -38,11 +38,15 @@ def load_secrets(vault_addr: str, vault_token: str) -> None:
         raise StartupError(f"Vault unreachable: {vault_addr} — {exc}") from exc
 
 
-def get_widget_signing_key(widget_id: uuid.UUID) -> str:
+async def get_widget_signing_key(widget_id: uuid.UUID) -> str:
     """Fetch the per-widget signing key from Vault (LRU-cached, TTL 300s).
 
+    Cache hits are pure-Python (no I/O). Cache misses offload the blocking
+    hvac call to a thread via asyncio.to_thread so the event loop is never held.
     Raises RuntimeError if Vault is not initialised or the key is absent.
     """
+    import asyncio
+
     cache_key = str(widget_id)
     cached = _widget_key_cache.get(cache_key)
     if cached is not None:
@@ -51,15 +55,7 @@ def get_widget_signing_key(widget_id: uuid.UUID) -> str:
             return key
         del _widget_key_cache[cache_key]
 
-    client = get_vault_client()
-    try:
-        secret = client.secrets.kv.v2.read_secret_version(
-            path=f"baladiya/widget/{widget_id}",
-            mount_point="secret",
-        )
-        key = secret["data"]["data"]["signing_key"]
-    except Exception as exc:
-        raise RuntimeError(f"Vault: widget signing key not found for {widget_id}: {exc}") from exc
+    key = await asyncio.to_thread(_fetch_key_from_vault, widget_id)
 
     if len(_widget_key_cache) >= _WIDGET_KEY_CACHE_MAX:
         oldest = min(_widget_key_cache, key=lambda k: _widget_key_cache[k][1])
@@ -67,6 +63,19 @@ def get_widget_signing_key(widget_id: uuid.UUID) -> str:
 
     _widget_key_cache[cache_key] = (key, time.monotonic() + _WIDGET_KEY_CACHE_TTL)
     return key
+
+
+def _fetch_key_from_vault(widget_id: uuid.UUID) -> str:
+    """Blocking hvac read — only called via asyncio.to_thread()."""
+    client = get_vault_client()
+    try:
+        secret = client.secrets.kv.v2.read_secret_version(
+            path=f"baladiya/widget/{widget_id}",
+            mount_point="secret",
+        )
+        return secret["data"]["data"]["signing_key"]
+    except Exception as exc:
+        raise RuntimeError(f"Vault: widget signing key not found for {widget_id}: {exc}") from exc
 
 
 def invalidate_widget_key_cache(widget_id: uuid.UUID) -> None:
