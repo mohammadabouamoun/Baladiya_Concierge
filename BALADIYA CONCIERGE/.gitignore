@@ -56,3 +56,8 @@ notebooks/.ipynb_checkpoints/
 # Logs
 *.log
 logs/
+
+# Node / widget
+widget/node_modules/
+widget/dist/
+widget/.vite/

@@ -1,0 +1,20 @@
+{
+  "overall_macro_f1": 0.998,
+  "per_lang": {
+    "en": 1.0,
+    "ar": 0.9507
+  },
+  "per_variety": {
+    "en": 1.0,
+    "msa": 1.0,
+    "lebanese": 1.0,
+    "arabizi": 0.8322
+  },
+  "artifact_sha256": "728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041",
+  "data_sha256": "5f3c9e954ee01981546584732da8f93e1cd957519e7cea3658c8224fa19bac17",
+  "total_rows": 12731,
+  "train_rows": 10206,
+  "test_rows": 2525,
+  "latency_p50_ms": 1.48,
+  "latency_p95_ms": 3.97
+}

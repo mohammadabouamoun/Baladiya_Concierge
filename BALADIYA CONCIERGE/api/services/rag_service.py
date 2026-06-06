@@ -65,6 +65,7 @@ async def rag_search(
     session: AsyncSession,
     top_k: int | None = None,
     rewrite: bool = True,
+    lang: str = "en",
 ) -> list[RagSearchResult]:
     """Retrieve top-k chunks from tenant's CMS via cosine similarity.
 
@@ -78,14 +79,27 @@ async def rag_search(
     A query without tenant_id filter is a critical isolation bug — this
     function never performs unfiltered search.
     """
-    k = top_k if top_k is not None else get_settings().rag_top_k
+    settings = get_settings()
+    k = top_k if top_k is not None else settings.rag_top_k
 
-    retrieval_query = await _rewrite_query(query) if rewrite else query
+    retrieval_query = await _rewrite_query(query, lang=lang) if rewrite else query
 
     query_embedding = await emb.embed(retrieval_query)
 
     chunk_repo = CmsChunkRepository(session, tenant_id)
-    raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k)
+
+    # FR-004: prefer same-language chunks when lang=="ar"; fetch more then re-rank.
+    # This is a soft boost, not a hard filter — English chunks are the fallback.
+    if lang == "ar":
+        # Fetch 2× top_k, then promote AR-tagged chunks to the front
+        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k * 2)
+        ar_results = [r for r in raw_results if r.get("lang") == "ar"]
+        en_results = [r for r in raw_results if r.get("lang") != "ar"]
+        raw_results = (ar_results + en_results)[:k]
+        if ar_results:
+            logger.debug("rag.arabic_boost", ar_count=len(ar_results), total=len(raw_results))
+    else:
+        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k)
 
     if not raw_results:
         logger.info(

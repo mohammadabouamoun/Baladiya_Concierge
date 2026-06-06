@@ -34,6 +34,8 @@ class AgentContext:
     tenant_id: uuid.UUID
     session_id: str
     db_session: AsyncSession
+    lang: str = "en"       # detected language — "en" | "ar"
+    variety: str = "en"    # detected variety — "en" | "msa" | "lebanese" | "arabizi"
 
 
 async def _get_persona(context: AgentContext) -> str:
@@ -51,14 +53,17 @@ async def _get_persona(context: AgentContext) -> str:
     return "your municipality"
 
 
-def _load_system_prompt(persona: str) -> str:
-    """Load and render the English system prompt with persona injected."""
-    prompt_path = _PROMPT_DIR / "system_en.md"
+def _load_system_prompt(persona: str, lang: str = "en") -> str:
+    """Load and render system prompt for the detected language (FR-002).
+
+    English path never imports Arabic resources (constitution §III).
+    Falls back to inline English string if prompt file is missing.
+    """
     try:
-        template = prompt_path.read_text(encoding="utf-8")
-        return template.replace("{{persona}}", persona)
-    except OSError:
-        logger.warning("agent.system_prompt_not_found", path=str(prompt_path))
+        from api.services.prompt_service import select_system_prompt
+        return select_system_prompt(lang, persona)
+    except Exception as exc:
+        logger.warning("agent.system_prompt_failed", lang=lang, error=str(exc))
         return f"You are a helpful civic services assistant for {persona}."
 
 
@@ -124,7 +129,7 @@ async def run(
 
     # C1: Fetch tenant persona at request time — never hardcoded (Spec Assumptions §3)
     persona = await _get_persona(context)
-    system_prompt = _load_system_prompt(persona)
+    system_prompt = _load_system_prompt(persona, lang=context.lang)
 
     current_user_message: str | None = message
 

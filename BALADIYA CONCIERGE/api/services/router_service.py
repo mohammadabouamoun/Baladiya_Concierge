@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.core.config import get_settings
 from api.infra.modelserver_client import ClassifyResponse, classify
+from api.services.lang_detect_service import LangDetectResult, detect as lang_detect
 
 logger = structlog.get_logger(__name__)
 
@@ -87,13 +88,27 @@ async def handle(
     The caller logs handled_by for cost attribution (T-034).
 
     Workflow path never makes an agent LLM call — tools are invoked directly.
+    Language detection runs first; lang result is passed to prompt service for AR routing.
     """
     from api.services.agent_service import AgentContext
+
+    # FR-001: language detection MUST run before classification; defaults to en on failure
+    lang_result: LangDetectResult = await lang_detect(text)
+    logger.info(
+        "router.lang_detected",
+        tenant_id=str(tenant_id),
+        session_id=session_id,
+        lang=lang_result.lang,
+        variety=lang_result.variety,
+        confidence=round(lang_result.confidence, 3),
+    )
 
     context = AgentContext(
         tenant_id=tenant_id,
         session_id=session_id,
         db_session=db_session,
+        lang=lang_result.lang,
+        variety=lang_result.variety,
     )
 
     decision, clf_result = await route(text, tenant_id, session_id)

@@ -79,26 +79,51 @@ Both approaches must be evaluated before a model is chosen. The comparison table
 
 ### Results
 
+#### Phase 2 baseline (English-only dataset, 547 rows, 2026-06-02)
+
 | Approach | Macro-F1 | EN F1 | AR F1 | Latency p50 | Cost/1k calls |
 |---|---|---|---|---|---|
-| Classical ML (TF-IDF char 3-5 + word 1-2 + LogReg) | 0.8983 | 0.8784 | 0.8117 | 2.2ms | ~$0.001 |
+| Classical ML (TF-IDF char 3-5 + LogReg) | 0.8983 | 0.8784 | 0.8117 | 2.2ms | ~$0.001 |
 | LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | 0.7358 | 0.8512 | 2220ms | ~$0.06 |
-| **Shipped model** | **0.8983** | **0.8784** | **0.8117** | **2.2ms** | **~$0.001** |
 
-Dataset: 547 rows (258 hand-crafted + 289 from NYC 311 Kaggle + enron_spam). Trained 2026-06-02.
 Artifact SHA-256: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
 
-Per-class F1 (shipped model):
+#### Phase 7 bilingual retrain v1 (814 rows: 107 EN hand-crafted + 79 augmented + 628 AR, 2026-06-06)
+
+| Approach | Macro-F1 | EN F1 | AR F1 | Latency p50 | Cost/1k calls |
+|---|---|---|---|---|---|
+| Classical ML bilingual | 0.9502 | 0.8898 | 0.9608 | ~2ms | ~$0.001 |
+
+#### Phase 7 bilingual retrain v2 — balanced 12K English (12731 rows total, 2026-06-06)
+
+| Approach | Macro-F1 | EN F1 | AR F1 | Latency p50 | Latency p95 | Cost/1k |
+|---|---|---|---|---|---|---|
+| **Classical ML bilingual v2 (shipped)** | **0.9980** | **1.0000** | **0.9507** | **1.48ms** | **3.97ms** | **~$0.001** |
+
+Artifact SHA-256: `728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041`
+Data SHA-256: `5f3c9e954ee01981546584732da8f93e1cd957519e7cea3658c8224fa19bac17`
+
+Dataset: 12,731 rows — 735 bilingual hand-crafted seed + 11,996 EN template-generated (3K per intent class, stratified by civic category). AR: 628 rows (hand-crafted + machine-seeded, to be hand-verified before defense).
+
+**SC-003 (additive guarantee)**: EN test set 2,412 rows, F1 = 1.0000. Arabic data added without degrading English. ✓
+
+**Important caveat on EN F1=1.0**: EN test rows come from the same template distribution as training data, so 1.0 reflects template memorisation, not generalisation to novel free text. The model should be evaluated on out-of-domain real text before the defense if possible.
+
+Per-class F1 (v2 shipped model, n=2,525 test rows):
 
 | | report | question | human | spam |
 |---|---|---|---|---|
-| F1 | 0.94 | 0.80 | 1.00 | 0.85 |
+| F1 | 1.00 | 1.00 | 1.00 | 1.00 |
 
-Per-variety F1 (shipped model):
+Per-variety F1:
 
 | | en | msa | lebanese | arabizi |
 |---|---|---|---|---|
-| F1 | 0.8784 | 0.9416 | 0.7143 | 0.5000 |
+| F1 | 1.0000 | 1.0000 | 1.0000 | 0.8322 |
+
+**Arabizi note**: F1=0.83 on 36 test examples (n=36 — high variance). Dropped from 0.8695 in v1 because EN vocabulary now dominates TF-IDF feature space (ratio 19:1 EN vs AR). Char n-grams still handle number substitutions (3=ع, 7=ح) but the relative feature weight has decreased. Addressed in Phase 8 by increasing Arabic data volume.
+
+Model card note: "Drafted 461 Arabic expansion rows + 11,996 EN template rows (machine-generated). Arabic rows to be hand-verified before defense; English templates reviewed for naturalness."
 
 ---
 

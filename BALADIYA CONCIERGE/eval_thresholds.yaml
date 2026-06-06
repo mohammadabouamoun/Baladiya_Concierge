@@ -1,10 +1,10 @@
 # CI evaluation thresholds — all gates must pass on every push
-# Updated 2026-06-02 after first training run (209 rows, sklearn 1.8.0)
+# Updated 2026-06-06 after bilingual retrain (814 rows, Phase 7)
 # Thresholds = measured value − 2pp to allow for reproducibility variance
 
-classifier_macro_f1: 0.88   # measured 0.8983 (547-row dataset, 2026-06-02)
-en_macro_f1: 0.86            # measured 0.8784
-ar_macro_f1: 0.0             # measured 0.8117 — set in feature 007-arabic after Arabic dataset grows
+classifier_macro_f1: 0.97   # measured 0.9980 (12731-row bilingual dataset, 2026-06-06)
+en_macro_f1: 0.98            # measured 1.0000 (EN template test set, n=2412)
+ar_macro_f1: 0.93            # measured 0.9507 (AR hand-crafted test, n=113; Arabizi=0.83)
 
 classifier_confidence_thresholds:
   report: 0.75

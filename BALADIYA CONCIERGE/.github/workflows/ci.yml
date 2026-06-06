@@ -185,3 +185,24 @@ jobs:
       - name: Assert bundle < 100 KB gzipped (SC-001)
         run: node scripts/check-bundle-size.mjs
         working-directory: widget
+
+  # ── Arabic bilingual gate (ar_macro_f1 + additive guarantee) ────────────
+  arabic-bilingual:
+    name: Arabic Bilingual Gate (Phase 7)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run Arabic additive guarantee + lang detect + prompt routing tests
+        run: pytest tests/test_arabic/ -v --tb=short
+        env:
+          ENV: testing
+          PYTHONPATH: "."
