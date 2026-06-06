@@ -156,8 +156,8 @@ Each example specifies the expected tool the agent should select (`rag_search`, 
 
 | Metric | Value |
 |---|---|
-| Tool-selection accuracy | [TBD — Phase 4] |
-| Gate threshold (`agent_tool_accuracy`) | [TBD — Phase 4] |
+| Tool-selection accuracy | 0.80 (design target — Phase 4; live eval run deferred to Phase 9) |
+| Gate threshold (`agent_tool_accuracy`) | 0.80 (set in Phase 4; live stack measurement pending — Phase 9) |
 | Examples evaluated | 15 |
 
 ---

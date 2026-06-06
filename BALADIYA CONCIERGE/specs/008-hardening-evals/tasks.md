@@ -109,13 +109,13 @@
 
 ### Implementation for User Story 3
 
-- [x] T023 [US3] In `api/infra/vault.py`, add async helper `get_widget_signing_key(widget_id: uuid.UUID) -> str` that fetches `baladiya/widget/{widget_id}/signing_key` from Vault; wrap in `functools.lru_cache` (keyed on widget_id string, 128 entries); add `invalidate_widget_key_cache(widget_id)` to bust the cache on rotation
+- [x] T023 [US3] In `api/infra/vault.py`, add synchronous helper `get_widget_signing_key(widget_id: uuid.UUID) -> str` that fetches `baladiya/widget/{widget_id}/signing_key` from Vault; cache in module-level TTL dict `_widget_key_cache: dict[str, tuple[str, float]]` (TTL 300s, max 128 entries with LRU eviction); add `invalidate_widget_key_cache(widget_id)` to bust the cache on rotation
 - [x] T024 [US3] In `api/core/security.py`, update `decode_token()` to implement the two-pass flow from `data-model.md §5`:
   - Step 1: `jwt.decode(token, options={"verify_signature": False})` to read `widget_id` from payload
   - Step 2: if `widget_id` present, call `vault.get_widget_signing_key(widget_id)` to fetch per-widget key; else use `settings.jwt_secret`
   - Step 3: `jwt.decode(token, key, algorithms=[...])` for full verified decode
   - Maintain full backward compatibility — tokens without `widget_id` claim use `jwt_secret` as before
-- [x] T025 [US3] In `api/api/widget/token_service.py`, update `issue_token()` to sign with the per-widget Vault key instead of `settings.jwt_secret`: call `await vault.get_widget_signing_key(widget_id)` and use that key in `jwt.encode(claims, per_widget_key, ...)`
+- [x] T025 [US3] In `api/api/widget/token_service.py`, update `issue_token()` to sign with the per-widget Vault key instead of `settings.jwt_secret`: call `vault.get_widget_signing_key(widget_id)` (synchronous) and use that key in `jwt.encode(claims, per_widget_key, ...)`
 - [x] T026 [US3] In `api/api/admin/router.py`, add `POST /admin/widgets/{widget_id}/rotate-key` endpoint per `contracts/rotate_key.md`:
   - Auth: `Depends(require_tenant_admin)` — reject if caller's `tenant_id` ≠ widget's `tenant_id` (404 if not found, 403 if tenant mismatch)
   - Generate 32-byte random key: `secrets.token_hex(32)`

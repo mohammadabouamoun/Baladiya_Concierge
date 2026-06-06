@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-06
 
-**Status**: Draft
+**Status**: Partially Implemented — US2 (PII redaction), US3 (JWT rotation), US5 (defense docs), US6 (real-text eval) complete. US1 (Arabizi expansion) and US4 (live eval runs) deferred to Phase 9.
 
 **Input**: User description: "Phase 8 — Hardening & Evals. Scope from HANDOFF.md §8: Arabizi quality, Arabic PII redaction, per-widget JWT key rotation, live eval runs, defense documentation, real resident text eval."
 
@@ -52,7 +52,7 @@ A tenant admin rotates the signing key for one of their widgets (e.g., after sus
 
 **Acceptance Scenarios**:
 
-1. **Given** a widget has an active signing key stored in Vault, **When** the tenant admin triggers key rotation via the admin API, **Then** a new key is generated, stored in Vault, and the `widgets` table updated with the new key reference.
+1. **Given** a widget has an active signing key stored in Vault, **When** the tenant admin triggers key rotation via the admin API, **Then** a new key is generated and stored in Vault at `baladiya/widget/{widget_id}/signing_key`; no DB schema change is required — keys are Vault-only.
 2. **Given** a visitor token was issued with the old key, **When** that token is presented after rotation, **Then** the API returns 401 Unauthorized.
 3. **Given** two widgets share the same tenant but different signing keys, **When** one widget's key is rotated, **Then** the other widget's tokens remain valid.
 
@@ -119,7 +119,7 @@ A project owner wants to verify that the EN classifier generalises beyond the te
 **Arabizi Quality**
 - **FR-001**: The dataset (`build_dataset.md`) MUST be expanded to ≥100 verified Arabizi examples per intent cell (report, question, human, spam).
 - **FR-002**: The bilingual classifier MUST be retrained on the expanded dataset; the retrained artifact MUST be committed to `modelserver/artifacts/`.
-- **FR-003**: `eval_thresholds.yaml` MUST include an `arabizi_f1` gate with threshold ≥ 0.90 once the measured value reaches that level.
+- **FR-003**: `eval_thresholds.yaml` MUST include an `arabizi_f1` gate. If measured F1 ≥ 0.90, gate at 0.90. If measured F1 < 0.90 after full data expansion, gate at best-measured-value − 2pp with a documented gap note explaining why 0.90 was not achieved. *(Deferred to Phase 9 — depends on T004–T013 Arabizi expansion)*
 
 **Arabic PII Redaction**
 - **FR-004**: `api/middleware/redaction.py` MUST redact Arabic full names (given + family name patterns) before any downstream write (session, DB, logs).
@@ -127,16 +127,16 @@ A project owner wants to verify that the EN classifier generalises beyond the te
 - **FR-006**: Existing English redaction (phone, NID, email) MUST remain unmodified and continue passing all existing tests.
 
 **Per-Widget JWT Key Rotation**
-- **FR-007**: Each widget row MUST have its own signing key stored in Vault (path: `baladiya/widgets/<widget_id>/signing_key`).
+- **FR-007**: Each widget row MUST have its own signing key stored in Vault (path: `baladiya/widget/{widget_id}/signing_key`). *(Implemented — Phase 8)*
 - **FR-008**: The token service MUST sign visitor tokens with the per-widget key fetched from Vault, not the shared `jwt_secret`.
 - **FR-009**: `decode_token` for widget-origin tokens MUST validate against the widget's per-widget key (looked up by `widget_id` claim).
 - **FR-010**: The admin API MUST expose a `POST /admin/widgets/{widget_id}/rotate-key` endpoint that generates a new key, writes it to Vault, and invalidates the previous key reference.
 - **FR-011**: Existing widget tokens signed with the old key MUST be rejected (401) after rotation.
 
 **Live Eval Runs**
-- **FR-012**: `evals/evaluate_rag.py --mode compare` MUST be run against the live stack and results recorded in `EVALS.md §3`.
-- **FR-013**: `evals/evaluate_agent.py` MUST be run against the live stack and results recorded in `EVALS.md §4`.
-- **FR-014**: `eval_thresholds.yaml` thresholds for `rag_hit_at_5`, `rag_mrr`, `rag_faithfulness`, `agent_tool_accuracy`, and `workflow_handled_rate` MUST be updated from pre-measurement placeholders to measured − 2pp.
+- **FR-012**: `evals/evaluate_rag.py --mode compare` MUST be run against the live stack and results recorded in `EVALS.md §3`. *(Deferred to Phase 9 — requires docker compose stack)*
+- **FR-013**: `evals/evaluate_agent.py` MUST be run against the live stack and results recorded in `EVALS.md §4`. *(Deferred to Phase 9 — requires docker compose stack)*
+- **FR-014**: `eval_thresholds.yaml` thresholds for `rag_hit_at_5`, `rag_mrr`, and `rag_faithfulness` MUST be updated from pre-measurement placeholders to measured − 2pp. `agent_tool_accuracy` (0.80) and `workflow_handled_rate` (0.60) are Phase 4 design targets already set; they should be confirmed against a live run in Phase 9. *(RAG thresholds deferred to Phase 9)*
 
 **Defense Documentation**
 - **FR-015**: `DECISIONS.md` MUST contain a `§D-Arabic-001` entry defending the choice of a single bilingual Classical ML model over per-language models, backed by measured F1 numbers.
@@ -158,17 +158,17 @@ A project owner wants to verify that the EN classifier generalises beyond the te
 
 ### Measurable Outcomes
 
-- **SC-001**: Arabizi F1 on the held-out test set reaches ≥ 0.90; the `arabizi_f1` CI gate passes.
+- **SC-001**: Arabizi F1 on the held-out test set reaches ≥ 0.90; the `arabizi_f1` CI gate passes. *(Deferred to Phase 9 — current F1 = 0.8322 on 41 test rows; T004–T013 data expansion required. Per edge case: if F1 < 0.90 after expansion, gate at best-measured-value − 2pp with documented gap.)*
 - **SC-002**: Zero Arabic names appear unredacted in session memory, database writes, or log output during the PII redaction CI gate (5 Arabic name test cases, 0 leaks).
 - **SC-003**: Widget token issued with a rotated-away key is rejected (401) within one API call; a freshly issued token with the new key is accepted (200).
-- **SC-004**: All five previously-placeholder eval thresholds (`rag_hit_at_5`, `rag_mrr`, `rag_faithfulness`, `agent_tool_accuracy`, `workflow_handled_rate`) are replaced with measured values in `eval_thresholds.yaml` and CI gates pass.
+- **SC-004**: RAG thresholds (`rag_hit_at_5`, `rag_mrr`, `rag_faithfulness`) are replaced with live-stack-measured values in `eval_thresholds.yaml`; agent thresholds (`agent_tool_accuracy: 0.80`, `workflow_handled_rate: 0.60`) are confirmed against a live run. *(Deferred to Phase 9 — requires docker compose stack. Current values are conservative design targets, not measured results.)*
 - **SC-005**: `DECISIONS.md`, `DATA.md`, and `modelserver/model_card.md` each contain the Phase 7 measured numbers (macro-F1, per-variety F1, SHA-256); no "TBD" or placeholder rows remain in those files.
 - **SC-006**: Real-text EN classifier F1 is recorded in the model card (any value acceptable; the gate is documentation completeness, not a specific F1 floor).
 
 ## Assumptions
 
 - The bilingual classifier notebook (`notebooks/train_classifier_bilingual.ipynb`) can be re-executed in the existing Colab/local environment with the expanded dataset without requiring torch or GPU (scikit-learn TF-IDF + LogReg only).
-- Vault is running and the seed script (`scripts/seed.py`) can be extended to seed per-widget signing keys at `baladiya/widgets/<widget_id>/signing_key`.
+- Vault is running and the seed script (`scripts/seed.py`) can be extended to seed per-widget signing keys at `baladiya/widget/{widget_id}/signing_key`.
 - The live stack (API + modelserver + guardrails + DB + Redis) can be started locally via `docker-compose up` for eval runs.
 - Arabic name PII patterns will use regex (Arabic Unicode block proper-noun heuristics); full spacy NER is out of scope unless regex coverage is demonstrably insufficient.
 - Per-widget key rotation does not require a UI change in this phase — the admin API endpoint is sufficient; Streamlit UI update is future work.
