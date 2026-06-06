@@ -66,6 +66,32 @@ _RECOGNIZERS: list[_PatternRecognizer] = [
         r"|(?:Building|Bldg|Bloc|Block)\s+\d+(?:\s+[A-Za-z][A-Za-z\s]{2,30})?)\b",
         "[REDACTED_ADDRESS]",
     ),
+    # Arabic personal names — exactly two consecutive Arabic-script tokens (≥3 chars each),
+    # where neither token is a known civic, geographic, or utility term.
+    # Covers given + family name patterns: محمد علي, رنا خوري, أحمد الحسن.
+    # Short words (≤2 chars: في، من، لل) are excluded by the {3,} minimum.
+    # Known civic/geographic terms are blocked by negative lookahead on each token position.
+    _PatternRecognizer(
+        "ARABIC_NAME",
+        (
+            r"(?!(?:مياه|كهرباء|الكهرباء|طريق|الطريق|بلدية|نفايات|صرف|بيئة|صحة|نقل|"
+            r"اتصالات|غاز|ماء|المياه|الماء|الغاز|"
+            r"جنوب|الجنوب|شمال|الشمال|شرق|الشرق|غرب|الغرب|وسط|"
+            r"لبنان|بيروت|طرابلس|صيدا|صور|زحلة|بعلبك|النبطية|"
+            r"مشكلة|منقطعة|انقطاع|عطل|تالف|مكسور|ازمة|خراب|معطل|"
+            r"بسبب|بسبب|حيث|لذلك|لأن|لكن)(?:\s|$))"
+            r"[؀-ۿ]{3,}"
+            r"\s+"
+            r"(?!(?:مياه|كهرباء|الكهرباء|طريق|الطريق|بلدية|نفايات|صرف|بيئة|صحة|نقل|"
+            r"اتصالات|غاز|ماء|المياه|الماء|الغاز|"
+            r"جنوب|الجنوب|شمال|الشمال|شرق|الشرق|غرب|الغرب|وسط|"
+            r"لبنان|بيروت|طرابلس|صيدا|صور|زحلة|بعلبك|النبطية|"
+            r"مشكلة|منقطعة|انقطاع|عطل|تالف|مكسور|ازمة|خراب|معطل|"
+            r"بسبب|حيث|لذلك|لأن|لكن)(?:\s|$))"
+            r"[؀-ۿ]{3,}"
+        ),
+        "[NAME]",
+    ),
 ]
 
 
@@ -77,9 +103,12 @@ class Redactor:
         result = text
         triggered: list[str] = []
         for recognizer in _RECOGNIZERS:
-            result, count = recognizer.redact(result)
-            if count:
-                triggered.append(recognizer.entity_type)
+            try:
+                result, count = recognizer.redact(result)
+                if count:
+                    triggered.append(recognizer.entity_type)
+            except Exception:
+                logger.debug("redaction.pattern_error", entity_type=recognizer.entity_type)
         if triggered:
             logger.debug("redaction.pii_removed", entity_types=triggered)
         return result

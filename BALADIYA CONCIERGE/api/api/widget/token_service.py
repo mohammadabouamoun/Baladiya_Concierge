@@ -1,9 +1,8 @@
 """Widget token issuance — validates widget_id + origin, signs short-lived JWT.
 
-The widget JWT is signed with Settings.jwt_secret (same key used by decode_token)
-so the standard auth middleware validates it without a second key lookup.
-Settings.widget_signing_key is seeded in Vault but reserved for per-widget key
-rotation in a future phase (see DECISIONS.md §Widget).
+Widget tokens are now signed with a per-widget key stored in Vault at
+baladiya/widget/{widget_id}/signing_key. decode_token in security.py picks
+the right key via two-pass verification. See DECISIONS.md §D-Widget-001.
 Token TTL: 3600 seconds (1 hour) — FR-008.
 """
 from __future__ import annotations
@@ -65,8 +64,17 @@ async def issue_token(
         "exp": exp,
     }
 
-    # Sign with jwt_secret so decode_token (which uses jwt_secret) validates it correctly.
-    token = jwt.encode(claims, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    # Sign with the per-widget key from Vault. decode_token selects the same key
+    # via two-pass verification using the widget_id claim.
+    from api.infra.vault import get_widget_signing_key
+    try:
+        signing_key = get_widget_signing_key(widget_id)
+    except Exception:
+        # Vault unavailable — fall back to shared jwt_secret (degraded mode)
+        logger.warning("widget.token.vault_fallback", widget_id=str(widget_id))
+        signing_key = settings.jwt_secret
+
+    token = jwt.encode(claims, signing_key, algorithm=settings.jwt_algorithm)
     logger.info(
         "widget.token.issued",
         widget_id=str(widget_id),

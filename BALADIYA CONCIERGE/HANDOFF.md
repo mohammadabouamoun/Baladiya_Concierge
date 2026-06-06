@@ -1,7 +1,7 @@
 # HANDOFF.md — Baladiya Concierge
 
 > Snapshot of project state as of **2026-06-06**. Written for the next agent session or future self picking up this repo cold. Read this before touching any spec file or running any skill.
-> **Updated**: Phase 7 (Arabic) now confirmed complete — bilingual classifier retrained on 12,731 rows; `ar_macro_f1` threshold set to 0.93 (measured 0.9507).
+> **Updated**: Phase 8 (Hardening & Evals) complete — Arabic PII redaction, per-widget JWT key rotation, defense docs, real-text EN eval. Arabizi expansion and live eval runs deferred (need data work / docker stack).
 
 ---
 
@@ -9,12 +9,12 @@
 
 | Field | Value |
 |---|---|
-| **Active feature** | `008` (next — not yet specified) |
-| **Status** | **Phases 1–7 complete — ready to start Phase 8** |
-| **Last completed task** | Phase 7 Arabic — bilingual retrain on 12,731 rows; `ar_macro_f1` = 0.9507 |
-| **Last commit** | Phase 7 — Arabic expansion, bilingual classifier retrain, `eval_thresholds.yaml` updated |
-| **Next task to start** | Run `/speckit-specify` to define Phase 8, then `/speckit-implement` |
-| **How to start** | Update `feature.json` to `specs/008-...`; run `/speckit-specify` |
+| **Active feature** | `008` (complete) |
+| **Status** | **Phases 1–8 complete — ready to start Phase 9** |
+| **Last completed task** | Phase 8 — Arabic name PII redaction, per-widget JWT rotation, defense docs, real-text eval |
+| **Last commit** | Phase 8 — hardening & evals |
+| **Next task to start** | Define Phase 9 scope; run `/speckit-specify` |
+| **How to start** | Update `feature.json` to `specs/009-...`; run `/speckit-specify` |
 
 ---
 
@@ -266,6 +266,38 @@
 
 ---
 
+### Phase 8 — Hardening & Evals (`008-hardening-evals`) ✅
+
+**Arabic PII redaction implemented. Per-widget JWT key rotation shipped. Defense docs updated. Real-text EN eval complete.**
+
+| Area | Files Modified |
+|---|---|
+| Redaction | `api/middleware/redaction.py` — ARABIC_NAME recognizer with civic-term negative lookahead blocklist; fail-safe try/except per recognizer |
+| Vault | `api/infra/vault.py` — `get_widget_signing_key()`, `invalidate_widget_key_cache()`, TTL-300s LRU cache (max 128 entries) |
+| Security | `api/core/security.py` — two-pass JWT decode: peek `widget_id` unverified → fetch per-widget Vault key → verified decode |
+| Widget token | `api/api/widget/token_service.py` — `issue_token()` signs with per-widget Vault key; falls back to `jwt_secret` on Vault miss |
+| Admin API | `api/api/admin/router.py` — `POST /admin/widgets/{widget_id}/rotate-key` endpoint |
+| Seed | `scripts/seed.py` — `_seed_per_widget_keys()` migrates existing widgets to per-widget Vault paths (idempotent) |
+| Defense docs | `DECISIONS.md` §D-Arabic-001, `DATA.md` (12,731 rows, per-cell table, Arabizi caveat), `modelserver/model_card.md` (Phase 7 SHA-256, Phase 8 real-text eval) |
+| Real-text eval | `evals/real_text_en_sample.json` (n=25: NYC 311 + manual), `evals/evaluate_real_text.py` |
+| Tests | `tests/test_security/test_redaction.py` (5 Arabic name cases), `tests/test_widget/test_token_service.py` (3 rotation tests), `tests/test_platform/test_rate_limiter.py` (mock fix) |
+
+**Phase 8 measured numbers:**
+
+| Metric | Value | Notes |
+|---|---|---|
+| Real-text EN macro-F1 | **0.8420** | n=25: NYC 311 (acc=0.90) + manual (acc=0.80) |
+| Template macro-F1 | 1.0000 | Confirms template memorisation — use 0.8420 for defense |
+| Arabizi F1 | 0.8322 | Unchanged — data expansion deferred to Phase 9 |
+| Per-widget JWT rotation | ✅ | Two-pass decode; Vault KV v2; 300s TTL LRU cache |
+| Arabic PII redaction | ✅ | Two-word name pattern; 30+ civic-term blocklist; fail-safe |
+
+**Deferred from Phase 8 (carry to Phase 9):**
+- Arabizi data expansion (target F1 ≥ 0.90): add ≥49 rows/cell, rebuild CSV, retrain notebook, update CI gate
+- Live eval runs (RAG + agent evals): require docker compose stack + seeded content; run `evaluate_rag.py --mode compare` and `evaluate_agent.py`
+
+---
+
 ## 3. Completed Documentation
 
 | File | Status | Notes |
@@ -273,12 +305,12 @@
 | `BALADIYA_CONCIERGE.md` | Complete | Original product spec |
 | `CLAUDE.md` | Complete | Tech stack, hard constraints |
 | `DESIGN.md` | Complete | Architecture, component map, 7 key decisions |
-| `DECISIONS.md` | Updated | §D-Widget-001 added (shared JWT signing key rationale + Phase 8 rotation path) |
-| `EVALS.md` | Updated | §8 Widget Evaluation added (SC-001 measured, SC-002 3G template, SC-003 results, SC-004 RTL checklist) |
+| `DECISIONS.md` | Updated | §D-Widget-001 (shared JWT key rationale), §D-Arabic-001 (bilingual model defense) |
+| `EVALS.md` | Updated | §8 Widget Evaluation (SC-001 measured, SC-002 3G template, SC-003 results, SC-004 RTL checklist) |
 | `RUNBOOK.md` | Complete | Tenant lifecycle, incident runbook |
 | `SECURITY.md` | Complete | Threat model, isolation enforcement |
-| `DATA.md` | Complete | Dataset schema, labelling guidelines |
-| `modelserver/model_card.md` | Complete | Two-way comparison, real F1 numbers, SHA-256 |
+| `DATA.md` | Updated | 12,731 rows, variety × intent table, Arabizi F1 caveat, EN memorisation warning |
+| `modelserver/model_card.md` | Updated | Phase 7 SHA-256, real-text EN eval (n=25, macro-F1=0.8420), known limitations |
 | `.specify/memory/constitution.md` | Complete | 7 non-negotiable governance rules |
 | `specs/006-widget/spec.md` | Complete | Status updated to Implemented; FR-005 clarified |
 | `specs/006-widget/plan.md` | Complete | HTTP method, loader location, dependency corrected |
@@ -428,24 +460,23 @@ All Arabic rows (MSA / Lebanese / Arabizi) live in `build_dataset.md` in clearly
 
 ---
 
-## 8. Next Phase Prep — Phase 8
+## 8. Next Phase Prep — Phase 9
 
-Update `feature.json` to `specs/008-...` and run `/speckit-specify` to define Phase 8.
+Update `feature.json` to `specs/009-...` and run `/speckit-specify` to define Phase 9.
 
-**Recommended Phase 8 scope (deferred items from Phases 1–7):**
-- **Arabizi quality**: grow Arabizi cells beyond 52/variety or train a separate per-language model; target Arabizi F1 > 0.90
-- **Hand-verify Arabic rows**: sign off on machine-seeded MSA/Lebanese/Arabizi examples; log corrections in `modelserver/model_card.md`
-- **Arabic name PII redaction**: add spacy NER or regex patterns to `api/middleware/redaction.py` (deferred from Phase 5)
-- **Per-widget JWT key rotation**: implement per-widget signing keys (deferred from Phase 6; see `DECISIONS.md §D-Widget-001`)
-- **Live eval runs**: run `evals/evaluate_rag.py` and `evals/evaluate_agent.py` against live stack; set measured thresholds in `eval_thresholds.yaml`
+**Recommended Phase 9 scope (deferred items from Phases 7–8):**
+- **Arabizi quality** (deferred from Phase 8): grow Arabizi cells from 51–52 → 100 per intent; retrain; target Arabizi F1 ≥ 0.90; update `eval_thresholds.yaml` gate from not-gated to `arabizi_f1: 0.88`
+- **Hand-verify Arabic rows**: sign off on machine-seeded MSA/Lebanese/Arabizi examples; log corrections in `modelserver/model_card.md §Data Corrections`
+- **Live eval runs** (deferred from Phase 8, requires docker stack): run `evals/evaluate_rag.py --mode compare` and `evals/evaluate_agent.py` against live stack; update `eval_thresholds.yaml` with measured hit@k, MRR, faithfulness, answer-relevancy, tool-selection accuracy
 - **SC-002 widget 3G latency**: measure first-message round-trip on 3G with Chrome DevTools (template in `EVALS.md §8`)
 - **SC-004 RTL checklist**: run 10-item RTL checklist from `EVALS.md §8` before defense demo
-- **Real resident text eval**: evaluate EN classifier on non-template inputs; update `modelserver/model_card.md`
+- **Real EN data expansion**: collect 200+ real 311-style English messages per intent cell; retrain; close the template-memorisation gap (real-text macro-F1 = 0.8420 vs template 1.0000)
 
-**Phase 7 artifacts still needed for defense:**
-- `DECISIONS.md` entry defending bilingual retrain approach (Classical ML vs separate-language-model trade-off)
-- `DATA.md` updated with new row counts, per-cell table, and Arabizi F1 caveat
-- Model card (`modelserver/model_card.md`) updated with Phase 7 results and SHA-256
+**Phase 8 items confirmed complete — no rework needed:**
+- ✅ Arabic name PII redaction (`api/middleware/redaction.py`)
+- ✅ Per-widget JWT key rotation (Vault KV v2 + two-pass decode)
+- ✅ Defense docs: `DECISIONS.md §D-Arabic-001`, `DATA.md`, `modelserver/model_card.md`
+- ✅ Real-text EN eval: n=25, macro-F1 = 0.8420, model card updated
 
 ---
 
@@ -457,7 +488,7 @@ Update `feature.json` to `specs/008-...` and run `/speckit-specify` to define Ph
 
 **`Data.md` ≠ `DATA.md`.** `Data.md` is the user's original spec with model/API key decisions. `DATA.md` is the generated dataset documentation. Both exist at root.
 
-**`feature.json` controls which phase is active.** The prerequisites script reads it. Already updated to `specs/007-arabic`.
+**`feature.json` controls which phase is active.** The prerequisites script reads it. Already updated to `specs/008-hardening-evals`.
 
 **Gemini free tier: 20 calls/day for `gemini-2.5-flash`.** Not enough to run the LLM eval on 98 test examples. The LLM zero-shot baseline uses **Groq llama-3.3-70b** (generous free tier).
 
@@ -479,7 +510,7 @@ Update `feature.json` to `specs/008-...` and run `/speckit-specify` to define Ph
 
 **`PlatformTenantRepository` (not `TenantRepository`).** Use it for cross-tenant reads. `TenantAdminRepository` is for `TenantAdmin` entities. **`PlatformWidgetRepository`** (not `WidgetRepository`) is for the public token exchange lookup before tenant context is known.
 
-**Widget tokens are signed with `jwt_secret`, not `widget_signing_key`.** `decode_token` uses `jwt_secret`; using a separate key would break validation. Per-widget key rotation is documented in `DECISIONS.md §D-Widget-001` and deferred to Phase 8.
+**Per-widget JWT key rotation is live (Phase 8).** Each widget gets its own key at `baladiya/widget/{widget_id}/signing_key` in Vault KV v2. `decode_token` does a two-pass decode: peek `widget_id` without signature verification → fetch per-widget Vault key (TTL 300s LRU cache) → verified decode. Non-widget tokens (no `widget_id` claim) fall back to `jwt_secret`. Rotate via `POST /admin/widgets/{widget_id}/rotate-key` (Tenant Admin auth required).
 
 **`TokenClaims.widget_id`** is now populated for widget-issued visitor tokens. Use it in routes that need to look up widget metadata (e.g., `allowed_origins` for dynamic CSP).
 
@@ -505,4 +536,4 @@ P7 (Arabic)    → P8 (Final evals include AR numbers)
 
 ---
 
-*Last updated: 2026-06-06 | Phases 1–7 complete | Next: 008 (define scope with `/speckit-specify`)*
+*Last updated: 2026-06-06 | Phases 1–8 complete | Next: 009 (Arabizi expansion + live evals + RTL/latency checks)*

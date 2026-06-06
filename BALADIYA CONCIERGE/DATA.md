@@ -8,8 +8,9 @@
 
 **File**: `civic_intent_dataset.csv`
 **Purpose**: trains and evaluates the civic intent classifier (`modelserver`). This dataset is **never** embedded into pgvector — it is classifier training data only.
-**Current size**: ~209 rows (as of initial build)
-**Rebuild command**: `python3 build_dataset.md` (this is a Python script with a `.md` extension)
+**Current size**: **12,731 rows** (Phase 7 bilingual retrain, 2026-06-06) — 10,206 train / 2,525 test (~19.8% test)
+**Data SHA-256**: `5f3c9e954ee01981546584732da8f93e1cd957519e7cea3658c8224fa19bac17`
+**Rebuild command**: `python3 build_dataset.md && python3 dataset_english_large.md` (both are Python scripts with `.md` extensions)
 
 ---
 
@@ -72,33 +73,42 @@ row['split'] = 'test' if int(hashlib.sha1(row['text'].encode()).hexdigest(), 16)
 
 ---
 
-## 5. Distribution & Coverage
+## 5. Distribution & Coverage (Phase 7 — confirmed from CSV, 2026-06-06)
 
-### Intent Distribution (target)
+### Variety × Total Distribution
 
-| Intent | Min rows (total) | Min rows (test) | Status |
-|---|---|---|---|
-| `report` | 50–100 | 10–20 | [TBD — count after rebuild] |
-| `question` | 50–100 | 10–20 | [TBD] |
-| `human` | 50–100 | 10–20 | **Thin — priority for growth** |
-| `spam` | 50–100 | 10–20 | [TBD] |
+| Variety | Total | report | question | human | spam |
+|---|---|---|---|---|---|
+| `en` | 12,103 | 3,069 | 3,017 | 3,007 | 3,010 |
+| `msa` | 211 | 55 | 54 | 51 | 51 |
+| `lebanese` | 212 | 55 | 55 | 51 | 51 |
+| `arabizi` | 205 | 51 | 51 | 51 | 52 |
+| **total** | **12,731** | **3,230** | **3,177** | **3,160** | **3,164** |
 
-### Variety Distribution (target per intent)
+### Per-Cell Arabic Counts (all ≥51 — Phase 7 threshold met)
 
-| Variety | Target rows | Status |
-|---|---|---|
-| `en` | 50+ per intent | [TBD] |
-| `msa` | 20+ per intent | [TBD] |
-| `lebanese` | 20+ per intent | [TBD] |
-| `arabizi` | 20+ per intent | **Thin — priority for growth** |
+| | report | question | human | spam |
+|---|---|---|---|---|
+| msa | 55 | 54 | 51 | 51 |
+| lebanese | 55 | 55 | 51 | 51 |
+| arabizi | 51 | 51 | 51 | 52 |
 
-### Thinnest Cells (require growth before Arabic F1 is reliable)
+### Category Distribution
 
-1. **`human` × all Arabic varieties** — human escalation in Arabic dialects is underrepresented
-2. **`electricity` category × Arabic** — electricity reports in Arabic are scarce
-3. **`arabizi` × any intent** — Arabizi spelling variation is the hardest to cover
+`none` 6,324 · `roads` 1,502 · `environment` 898 · `electricity` 770 · `water` 766 · `waste` 730 · `permits` 710 · `general` 640 · `taxes` 391
 
-Do not quote Arabic macro-F1 as reliable until each `(intent × variety)` cell has at least 20 verified examples. Current counts are below this threshold for the cells above.
+### Arabizi Data Quality Warning
+
+⚠️ **Arabizi rows are machine-seeded.** F1 = 0.8322 on 41 Arabizi test rows (Phase 7). This number is **not statistically reliable** and should not be cited as a defense metric without hand-verification of the test rows.
+
+- Arabizi spelling variation (Romanized Lebanese Arabic with number substitutions: "3" for ع, "2" for ء) is generated from templates, not collected from real residents.
+- The EN:AR ratio is ~19:1 (12,103 EN vs 628 AR) — TF-IDF char n-gram space is English-dominated, which dilutes Arabizi classification confidence.
+- **Required before defense**: hand-verify at least 20 Arabizi test rows (one per cell); log corrections in `modelserver/model_card.md`.
+- **Phase 8 growth target**: grow Arabizi cells toward 100 per intent (currently 51–52). Retrain and measure Arabizi F1 again.
+
+### EN Data Quality Warning
+
+⚠️ **EN F1 = 1.0000 reflects template memorisation.** All 12,103 English rows are generated from `dataset_english_large.md` templates — the classifier has memorised the template patterns. Real-world EN resident text may show lower F1. See `modelserver/model_card.md §Real-Text EN Evaluation` for the real-text result.
 
 ---
 

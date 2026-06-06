@@ -1,6 +1,7 @@
 # CI evaluation thresholds — all gates must pass on every push
-# Updated 2026-06-06 after bilingual retrain (814 rows, Phase 7)
-# Thresholds = measured value − 2pp to allow for reproducibility variance
+# Updated 2026-06-06 — Phase 8 hardening & evals
+# Classifier thresholds = measured value − 2pp for reproducibility variance
+# RAG/agent thresholds = conservative pre-measurement targets; update to (measured − 2pp) after live eval run (Phase 9)
 
 classifier_macro_f1: 0.97   # measured 0.9980 (12731-row bilingual dataset, 2026-06-06)
 en_macro_f1: 0.98            # measured 1.0000 (EN template test set, n=2412)
@@ -15,9 +16,9 @@ classifier_confidence_thresholds:
 agent_tool_accuracy: 0.80   # SC-001: ≥ 80% on 15 labelled examples; set in Phase 4
 workflow_handled_rate: 0.60 # SC-002: ≥ 60% of turns handled by workflow (no agent LLM call)
 
-rag_hit_at_5: 0.73    # pre-measurement target (spec SC-001 goal: 0.80 − 7pp buffer); update to measured − 2pp after eval run
-rag_mrr: 0.60         # pre-measurement target; update to measured − 2pp after eval run
-rag_faithfulness: 0.60 # keyword-proxy proxy for faithfulness (SC-002 placeholder: 0.75); update to LLM-judge measured − 2pp in Phase 5
-rag_answer_relevancy: 0.0 # reported-not-gated per EVALS.md §5; set to measured value in Phase 5
+rag_hit_at_5: 0.73    # conservative target (goal 0.80 − 7pp buffer); awaiting live eval run (Phase 9)
+rag_mrr: 0.60         # conservative target; awaiting live eval run (Phase 9)
+rag_faithfulness: 0.60 # keyword-overlap proxy; awaiting LLM-judge live eval (Phase 9)
+rag_answer_relevancy: 0.0 # not-gated (reported only); update to measured value after Phase 9 eval run
 
 redteam_pass_rate: 1.0

@@ -317,6 +317,46 @@ These decisions are structural — they are set at design time and changing them
 
 ---
 
+## Arabic & Bilingual Decisions
+
+### D-Arabic-001 — Single Bilingual Model vs Per-Language Models
+
+**Decision**: Ship one bilingual Classical ML classifier (TF-IDF char 3-5 + word 1-2 + LogisticRegression) trained on all four varieties (en, msa, lebanese, arabizi), rather than separate per-language models.
+**Filled in**: Phase 8 | **Evidence**: Phase 7 bilingual retrain (2026-06-06, 12,731 rows)
+
+| | Value |
+|---|---|
+| Measured overall macro-F1 | **0.9980** (held-out test, n=2,525) |
+| Measured EN F1 | **1.0000** (template test set, n=2,412) |
+| Measured AR macro-F1 | **0.9507** (hand-crafted AR test, n=113) |
+| Measured Arabizi F1 | **0.8322** (machine-seeded AR test, n=41) |
+| Artifact SHA-256 | `728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041` |
+| Training set size | 12,731 rows (10,206 train / 2,525 test) |
+| Inference latency | p50=1.48ms, p95=3.97ms |
+
+**Alternative considered — per-language models (EN model + AR model)**:
+
+| | Per-language models | Single bilingual model |
+|---|---|---|
+| Expected AR F1 | Higher (no EN dilution in TF-IDF space) | 0.9507 (measured) |
+| Artifacts | 2 joblib files + routing logic | 1 joblib file |
+| Routing complexity | Language detection → model selection → two HTTP paths | Language detection → intent classification |
+| Container footprint | ~2× | Same as Phase 2 |
+| EN:AR ratio handling | Natural (separate char n-gram spaces) | 19:1 dilution — Arabizi F1 most affected |
+| Constitution II compliance | Adds complexity without architecture change | Simpler |
+
+**Why single bilingual model was chosen**:
+1. **AR macro-F1 = 0.9507 exceeds the 0.93 CI gate** — the bilingual model already meets the defense threshold.
+2. **Arabizi F1 = 0.8322 is the gap** — growing Arabizi cells from ~50 to ~100 per intent is the correct fix, not splitting models. A per-language AR model with 200 Arabizi examples would also suffer from thin data.
+3. **Constitution VII (no scope creep)** — adding a second artifact, a model router, and a second modelserver endpoint is scope expansion. The single model achieves acceptable F1 at 1.48ms p50.
+4. **Arabic is additive (Constitution III)** — a single model means Arabic quality improvements are a data problem, not an architecture problem. This keeps the EN path clean.
+
+**Arabizi F1 caveat**: 0.8322 measured on 41 machine-seeded test rows — not statistically reliable. Hand-verify before citing in defense. Growing Arabizi cells toward 100 per intent and re-measuring is the recommended next step.
+
+**Verdict**: Single bilingual model. Measured AR macro-F1 = 0.9507 clears the CI gate. Arabizi gap is a data quality issue, not a model architecture issue. Per-language model path is documented but deferred to post-defense if Arabizi F1 < 0.90 after Phase 8 data expansion.
+
+---
+
 ## Widget Decisions
 
 ### D-Widget-001 — Shared JWT Signing Key vs Per-Widget Key

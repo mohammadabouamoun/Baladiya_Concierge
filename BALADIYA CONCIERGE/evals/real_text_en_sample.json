@@ -1,0 +1,127 @@
+[
+  {
+    "text": "Other (complaint details)",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Overnight Commercial Storage",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Posted Parking Sign Violation",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Overnight Commercial Storage",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Posted Parking Sign Violation",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Commercial Overnight Parking",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Posted Parking Sign Violation",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Posted Parking Sign Violation",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Posted Parking Sign Violation",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "Double Parked Blocking Vehicle",
+    "intent": "report",
+    "source": "nyc311"
+  },
+  {
+    "text": "What is the process for getting a new streetlight installed on my block?",
+    "intent": "question",
+    "source": "manual"
+  },
+  {
+    "text": "How long does it usually take to fix a pothole after reporting it?",
+    "intent": "question",
+    "source": "manual"
+  },
+  {
+    "text": "Where can I find information about waste collection schedules?",
+    "intent": "question",
+    "source": "manual"
+  },
+  {
+    "text": "What permits do I need to build an extension on my house?",
+    "intent": "question",
+    "source": "manual"
+  },
+  {
+    "text": "Is there a fee for reporting a broken sidewalk to the city?",
+    "intent": "question",
+    "source": "manual"
+  },
+  {
+    "text": "I really need to speak with a real person about this, the chatbot is not helping me.",
+    "intent": "human",
+    "source": "manual"
+  },
+  {
+    "text": "Please connect me to someone from the municipality directly, this is urgent.",
+    "intent": "human",
+    "source": "manual"
+  },
+  {
+    "text": "Can I get a callback? I have tried three times and nobody answered.",
+    "intent": "human",
+    "source": "manual"
+  },
+  {
+    "text": "I want to escalate this to a supervisor, the issue has not been resolved in two months.",
+    "intent": "human",
+    "source": "manual"
+  },
+  {
+    "text": "Is there a phone number I can call? I prefer speaking to someone.",
+    "intent": "human",
+    "source": "manual"
+  },
+  {
+    "text": "asdfghjkl",
+    "intent": "spam",
+    "source": "manual"
+  },
+  {
+    "text": "test test test 123",
+    "intent": "spam",
+    "source": "manual"
+  },
+  {
+    "text": "click here to win a free iPhone now!!!",
+    "intent": "spam",
+    "source": "manual"
+  },
+  {
+    "text": "hello??",
+    "intent": "spam",
+    "source": "manual"
+  },
+  {
+    "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "intent": "spam",
+    "source": "manual"
+  }
+]

@@ -151,9 +151,58 @@ def seed_vault_secrets() -> None:
             mount_point="secret",
         )
         print(f"[seed] Seeded Vault secret: secret/baladiya/widget")
+
+        # Migrate existing widgets to per-widget keys (Phase 8 — FR-007).
+        # For each active widget, seed baladiya/widget/{widget_id}/signing_key
+        # using the global widget_signing_key as the initial value (idempotent).
+        _seed_per_widget_keys(client, widget_signing_key)
+
     except Exception as exc:
         # Non-fatal: Vault may not be available in all environments
         print(f"[seed] Vault seeding skipped: {exc}")
+
+
+def _seed_per_widget_keys(client, default_key: str) -> None:
+    """For each active widget in DB, seed Vault per-widget key if absent."""
+    import asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+    from sqlalchemy import select, text
+    from api.domain.widget import Widget
+
+    database_url = os.environ.get("DATABASE_URL", "")
+    if not database_url:
+        print("[seed] DATABASE_URL not set — skipping per-widget key migration")
+        return
+
+    async def _do_seed() -> None:
+        engine = create_async_engine(database_url)
+        factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+        async with factory() as session:
+            # Bypass RLS for seeding (no tenant context needed here)
+            await session.execute(text("SET LOCAL app.current_tenant = ''"))
+            result = await session.execute(select(Widget).where(Widget.is_active == True))  # noqa: E712
+            widgets = list(result.scalars().all())
+        await engine.dispose()
+
+        for widget in widgets:
+            vault_path = f"baladiya/widget/{widget.id}"
+            try:
+                client.secrets.kv.v2.read_secret_version(
+                    path=vault_path, mount_point="secret"
+                )
+                # Already seeded — skip
+            except Exception:
+                client.secrets.kv.v2.create_or_update_secret(
+                    path=vault_path,
+                    secret={"signing_key": default_key},
+                    mount_point="secret",
+                )
+                print(f"[seed] Seeded per-widget key: secret/{vault_path}")
+
+    try:
+        asyncio.run(_do_seed())
+    except Exception as exc:
+        print(f"[seed] Per-widget key migration skipped: {exc}")
 
 
 async def main() -> None:

@@ -5,6 +5,8 @@ All routes require tenant_admin role and are scoped to the token's tenant_id.
 """
 from __future__ import annotations
 
+import secrets
+import uuid
 from typing import Annotated, Any
 
 import structlog
@@ -19,6 +21,7 @@ from api.infra.db import get_db
 from api.repositories.capture_repo import CaptureRequestRepository
 from api.repositories.escalation_repo import EscalationTicketRepository
 from api.repositories.tenant_repo import PlatformTenantRepository
+from api.repositories.widget_repo import WidgetRepository
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
@@ -130,3 +133,50 @@ async def patch_settings(
         persona=settings.get("persona"),
         requests_per_minute=settings.get("requests_per_minute"),
     )
+
+
+# ── Widget key rotation ────────────────────────────────────────────────────
+
+@router.post("/widgets/{widget_id}/rotate-key")
+async def rotate_widget_key(
+    widget_id: uuid.UUID,
+    token: Annotated[TokenClaims, Depends(require_tenant_admin)],
+    session: Annotated[AsyncSession, Depends(_get_tenant_db)],
+) -> dict:
+    """Rotate the per-widget JWT signing key (FR-010).
+
+    Generates a new 32-byte random key, writes it to Vault, and immediately
+    invalidates the in-process cache so new tokens use the new key.
+    Existing tokens signed with the old key will be rejected on their next
+    API call (401).
+    """
+    repo = WidgetRepository(session, token.tenant_id)
+    widget = await repo.get(widget_id)
+    if widget is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Widget not found")
+
+    new_key = secrets.token_hex(32)
+
+    try:
+        from api.infra.vault import get_vault_client, invalidate_widget_key_cache
+        client = get_vault_client()
+        client.secrets.kv.v2.create_or_update_secret(
+            path=f"baladiya/widget/{widget_id}",
+            secret={"signing_key": new_key},
+            mount_point="secret",
+        )
+        invalidate_widget_key_cache(widget_id)
+    except Exception as exc:
+        logger.error("widget.key.rotation_failed", widget_id=str(widget_id), error=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vault unavailable — key rotation aborted",
+        ) from exc
+
+    logger.info(
+        "widget.key.rotated",
+        widget_id=str(widget_id),
+        tenant_id=str(token.tenant_id),
+        actor_id=str(token.user_id),
+    )
+    return {"rotated": True, "widget_id": str(widget_id)}

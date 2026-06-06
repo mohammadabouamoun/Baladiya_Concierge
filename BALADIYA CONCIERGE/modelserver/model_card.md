@@ -9,55 +9,97 @@ Secondary output: category (`roads | water | electricity | waste | permits | tax
 
 ## Data
 
-**Source**: `civic_intent_dataset.csv` (repo root)
+### Phase 2 Baseline (2026-06-02)
+
+**Source**: `civic_intent_dataset.csv`
 **Size**: 547 rows (258 hand-crafted + 289 from NYC 311 Kaggle + enron_spam HF)
-**Split**: deterministic `sha1(text) % 5 == 0 → test` (~20%) — 449 train / 98 test
-**Languages**: English (en), MSA Arabic (msa), Lebanese dialect (lebanese), Arabizi
+**Split**: 449 train / 98 test (~18%)
 **Data SHA-256**: `afbb5e166f49102ac3618c35b690294efb6ef014982ee489c7d9a7af7ff2bfc1`
 
-## Three-Way Comparison
+### Phase 7 — Bilingual Retrain (2026-06-06)
 
-Trained 2026-06-02. Run `notebooks/train_classifier.ipynb` to reproduce.
+**Size**: **12,731 rows** (10,206 train / 2,525 test, ~19.8%)
+**Languages**: English (en), MSA Arabic (msa), Lebanese dialect (lebanese), Arabizi
+**Data SHA-256**: `5f3c9e954ee01981546584732da8f93e1cd957519e7cea3658c8224fa19bac17`
+
+| Variety | Total | Test rows |
+|---|---|---|
+| en | 12,103 | 2,412 |
+| msa | 211 | ~42 |
+| lebanese | 212 | ~43 |
+| arabizi | 205 | ~41 |
+
+## Two-Way Comparison
+
+### Phase 2 Baseline (547 rows, EN-only meaningful)
 
 | Approach | Macro-F1 | EN F1 | AR F1 | p50 ms | p95 ms | Cost/1k |
 |---|---|---|---|---|---|---|
 | **Classical ML (TF-IDF char 3-5 + word 1-2 + LogReg)** | **0.8983** | **0.8784** | **0.8117** | **2.2ms** | **4.2ms** | **~$0.001** |
 | LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | 0.7358 | 0.8512 | 2220ms | 2292ms | ~$0.06 |
 
+### Phase 7 Bilingual Retrain (12,731 rows)
+
+| Approach | Macro-F1 | EN F1 | AR macro-F1 | Arabizi F1 | p50 ms | p95 ms |
+|---|---|---|---|---|---|---|
+| **Classical ML (bilingual, shipped)** | **0.9980** | **1.0000** | **0.9507** | **0.8322** | **1.48ms** | **3.97ms** |
+| LLM zero-shot (Groq llama-3.3-70b) | 0.8291 | 0.7358 | 0.8512 | — | 2220ms | — |
+
 ## Shipping Choice
 
 **Shipped model**: Classical ML — TF-IDF (char n-grams 3-5 + word n-grams 1-2) + LogisticRegression (balanced class weights)
 
-**Justification**: Best macro-F1 (0.8983 vs 0.8291 for LLM zero-shot). 1000× faster (2.2ms vs 2220ms p50). Near-zero inference cost (~$0.001/1k vs $0.06/1k for Groq). No API dependency — runs fully offline. See `DECISIONS.md §1`.
+**Justification**: Best macro-F1 (0.9980 vs 0.8291 for LLM zero-shot). 1500× faster (1.48ms vs 2220ms p50). Near-zero inference cost. No API dependency — runs fully offline. See `DECISIONS.md §D-Arabic-001` for bilingual model architecture decision.
 
 ## Artifact
 
 **File**: `artifacts/classifier.joblib`
 **Size**: 0.53 MB
-**SHA-256**: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
+**SHA-256 (Phase 7)**: `728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041`
+**SHA-256 (Phase 2 baseline)**: `1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9`
 
-Set `ARTIFACT_SHA256=1ace7e21afd41ea78872a6ed262e75f3bac4b1fe10ef7e520c27117cbe26f9a9` in environment (via Vault in production). The modelserver refuses to start if the hash does not match.
+Set `ARTIFACT_SHA256=728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041` in environment (via Vault in production). The modelserver refuses to start if the hash does not match.
 
-## Per-Class F1 (held-out test, n=98)
+## Per-Class F1 — Phase 7 Bilingual Retrain (held-out test, n=2,525)
 
 | | report | question | human | spam |
 |---|---|---|---|---|
-| Precision | 0.92 | 0.80 | 1.00 | 0.93 |
-| Recall | 0.97 | 0.80 | 1.00 | 0.78 |
-| **F1** | **0.94** | **0.80** | **1.00** | **0.85** |
-| Support | 62 | 15 | 3 | 18 |
+| **F1** | **0.998** | **0.998** | **0.998** | **0.998** |
+| Support | 645 | 635 | 631 | 614 |
 
-## Per-Variety F1 (held-out test)
+## Per-Variety F1 — Phase 7 Bilingual Retrain
 
 | | en | msa | lebanese | arabizi |
 |---|---|---|---|---|
-| F1 | 0.8784 | 0.9416 | 0.7143 | 0.5000 |
-| Test rows | ~80 | 13 | 5 | 5 |
+| F1 | 1.0000 | 1.0000 | 1.0000 | 0.8322 |
+| Test rows | 2,412 | ~42 | ~43 | ~41 |
+| Data source | Template-generated | Hand-crafted | Hand-crafted | Machine-seeded |
 
 ## Known Limitations
 
-- **Arabizi F1 is low (0.50)** — only 5 Arabizi test rows; not statistically reliable. Grow the arabizi cell to 50+ before quoting this number.
-- **Lebanese F1 is moderate (0.71)** — also thin at 5 test rows.
-- **Category is a placeholder** (`general`) until feature 003 adds CMS categories to the training pipeline.
+- **EN F1 = 1.0000 reflects template memorisation.** All English rows are generated from `dataset_english_large.md` templates. Real-world resident text may produce lower F1. See §Real-Text EN Evaluation below.
+- **Arabizi F1 = 0.8322 on 41 machine-seeded test rows.** Not statistically reliable. Hand-verify test rows before citing this number. Grow Arabizi cells toward 100 per intent and retrain.
+- **EN:AR ratio is ~19:1** — TF-IDF char n-gram space is English-dominated. This dilutes Arabizi classification confidence.
+- **Category output is `general` by default** for Arabic rows — Arabic category labelling was not expanded in Phase 7.
 - **Language detection** falls back to `en` on very short or mixed-script texts (< 10 chars).
-- **Spam recall is 78%** — the spam cell could benefit from more diverse examples beyond email spam (SMS spam, chatbot abuse, etc.).
+
+## Real-Text EN Evaluation (Phase 8 — 2026-06-06)
+
+**Sample**: n=25 (10 NYC 311 complaint descriptions + 15 manually paraphrased civic messages)
+**Source file**: `evals/real_text_en_sample.json`
+
+| | report | question | human | spam | **macro-F1** |
+|---|---|---|---|---|---|
+| Precision | 0.75 | 1.00 | 0.80 | 1.00 | — |
+| Recall | 0.90 | 0.60 | 0.80 | 1.00 | — |
+| **F1** | **0.82** | **0.75** | **0.80** | **1.00** | **0.8420** |
+| Support | 10 | 5 | 5 | 5 | 25 |
+
+**Per-source accuracy**: NYC 311 = 0.90 (9/10), manual = 0.80 (12/15)
+
+⚠️ **Template memorisation confirmed.** Real-text macro-F1 = 0.8420, well below template test-set F1 = 1.0000. The classifier has memorised the template sentence patterns generated by `dataset_english_large.md`. F1 on real resident text is the more reliable generalisation estimate. The gap (0.1580) suggests:
+
+- `question` F1 drops most (0.75 vs 1.00) — template questions are formulaic; real questions use more varied syntax
+- `report` and `human` generalise better (0.82, 0.80) — civic reports and escalation patterns are less template-specific
+
+**Recommendation**: Collect and label 200+ real 311-style English messages per intent cell and retrain. Do not cite F1 = 1.0000 as the generalisation accuracy in any defense or production context — use 0.8420 as the conservative estimate.
