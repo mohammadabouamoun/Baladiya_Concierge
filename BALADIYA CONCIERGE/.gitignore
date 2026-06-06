@@ -61,3 +61,8 @@ logs/
 widget/node_modules/
 widget/dist/
 widget/.vite/
+
+# Datasets — large files, rebuilt locally
+civic_intent_dataset.csv
+dataset_english_large.md
+dataset_english.md
