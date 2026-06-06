@@ -67,10 +67,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tightened per-tenant in feature 004 (widget)
+    allow_origins=["*"],   # depth-in-defense; true auth boundary is widget JWT + origin check
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Trace-Id"],
+    expose_headers=["X-Trace-Id"],
 )
 
 
@@ -82,6 +83,13 @@ async def _request_context_middleware(request: Request, call_next) -> Response:
     set_tenant_id("")
     response = await call_next(request)
     response.headers["X-Trace-Id"] = trace_id
+    # Baseline security headers on all widget paths.
+    # /widget/config sets a dynamic frame-ancestors CSP per-request (FR-009).
+    # All other widget paths get a restrictive fallback.
+    if request.url.path.startswith("/widget/"):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        if "Content-Security-Policy" not in response.headers:
+            response.headers["Content-Security-Policy"] = "frame-ancestors 'self'"
     return response
 
 
@@ -97,6 +105,7 @@ from api.api.rag.router import router as rag_router  # noqa: E402
 from api.api.auth.router import router as auth_router  # noqa: E402
 from api.api.chat.router import router as chat_router  # noqa: E402
 from api.api.admin.router import router as admin_router  # noqa: E402
+from api.api.widget.router import router as widget_router  # noqa: E402
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(platform_router, prefix="/platform", tags=["platform"])
@@ -104,3 +113,4 @@ app.include_router(cms_router, prefix="/cms", tags=["cms"])
 app.include_router(rag_router, prefix="/rag", tags=["rag"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
+app.include_router(widget_router, prefix="/widget", tags=["widget"])

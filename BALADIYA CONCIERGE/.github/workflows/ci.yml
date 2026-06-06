@@ -140,3 +140,48 @@ jobs:
         env:
           ENV: testing
           PYTHONPATH: "."
+
+  # ── Widget auth denial gate (SC-003) ────────────────────────────────────
+  widget-auth:
+    name: Widget Auth Gate (SC-003)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test deps
+        run: pip install -r requirements-dev.txt
+
+      - name: Run widget auth denial tests
+        run: pytest tests/test_widget/ -v --tb=short
+        env:
+          ENV: testing
+          PYTHONPATH: "."
+
+  # ── Widget bundle size gate (SC-001 < 100 KB gzipped) ───────────────────
+  widget-bundle-size:
+    name: Widget Bundle Size Gate (SC-001)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install widget dependencies
+        run: npm install
+        working-directory: widget
+
+      - name: Build widget
+        run: npm run build
+        working-directory: widget
+
+      - name: Assert bundle < 100 KB gzipped (SC-001)
+        run: node scripts/check-bundle-size.mjs
+        working-directory: widget

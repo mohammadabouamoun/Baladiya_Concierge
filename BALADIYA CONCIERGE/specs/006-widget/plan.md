@@ -10,7 +10,7 @@ Build a React (Vite) chat widget served as a static bundle, a `widget.js` loader
 
 **Language/Version**: React 18 + TypeScript (widget); Python 3.11 FastAPI (API token endpoint); nginx (widget static server + host demo site)
 
-**Primary Dependencies**: React, Vite, tailwindcss (RTL via `dir` attribute); python-jose (JWT signing in API); httpx (widget config fetch)
+**Primary Dependencies**: React, Vite, tailwindcss (RTL via `dir` attribute); PyJWT (JWT signing in API); httpx (widget config fetch)
 
 **Storage**: `widgets` table in Postgres (tenant_id RLS); widget JWT signed with HMAC secret from Vault
 
@@ -38,26 +38,29 @@ widget/
 ├── nginx.conf
 └── src/
     ├── main.tsx                ← React entry; fetches config; renders ChatWidget
+    ├── App.tsx                 ← loading/error/ready state machine; injects --accent CSS var
     ├── components/
     │   ├── ChatWidget.tsx      ← container: message list + input + lang toggle
     │   ├── MessageList.tsx
     │   └── LangToggle.tsx      ← sets document.dir = "rtl"|"ltr"
-    ├── hooks/
-    │   └── useChat.ts          ← fetch POST /chat with Bearer token; manage turns
-    └── widget.js               ← loader script (plain JS, no framework): inject iframe
+    └── hooks/
+        └── useChat.ts          ← fetch POST /chat with Bearer token; manage turns
 
 api/
 ├── domain/
-│   └── widget.py              ← Widget model + Pydantic schemas
+│   └── widget.py              ← Widget model + Pydantic schemas (WidgetConfig includes enabled_tools, persona)
 ├── repositories/
-│   └── widget_repo.py         ← WidgetRepository (BaseRepository)
+│   └── widget_repo.py         ← WidgetRepository (BaseRepository) + PlatformWidgetRepository
+├── services/
+│   └── widget_service.py      ← create_widget(), update_widget() — keeps ORM out of router
 └── api/
     └── widget/
-        ├── router.py          ← GET /widget/token, GET /widget/config, GET /widget.js
-        └── token_service.py   ← validate widget_id + origin; sign JWT with Vault HMAC secret
+        ├── router.py          ← GET /widget/token, GET /widget/config, GET /widget.js, widget CRUD
+        └── token_service.py   ← validate widget_id + origin; sign JWT with jwt_secret (see DECISIONS.md)
 
 host/
-└── nginx.conf                  ← serves mock municipality demo site with <script> embed tag
+├── index.html                 ← mock municipality demo site with <script> embed tag
+└── nginx.conf                 ← static server config
 ```
 
 ## Token Flow
@@ -69,7 +72,7 @@ host/
 2. widget.js loader runs:
    - Reads data-widget-id from script tag
    - Reads window.location.origin
-   - POST /widget/token { widget_id, origin }
+   - GET /widget/token?widget_id=...&origin=... (query params, no body)
 
 3. API /widget/token:
    - Lookup widget by id → get tenant_id + allowed_origins

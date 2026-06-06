@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Municipality A — Official Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
+    header { background: #1d4ed8; color: white; padding: 1rem 2rem; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+    header p { font-size: 0.85rem; opacity: 0.8; margin-top: 0.25rem; }
+    nav { background: #1e40af; padding: 0.5rem 2rem; display: flex; gap: 1.5rem; }
+    nav a { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
+    nav a:hover { opacity: 1; }
+    main { max-width: 900px; margin: 2rem auto; padding: 0 2rem; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #1d4ed8; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.9rem; color: #475569; line-height: 1.6; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Municipality A — Official Portal</h1>
+    <p>Serving residents with transparent, efficient public services</p>
+  </header>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Services</a>
+    <a href="#">News</a>
+    <a href="#">Contact</a>
+  </nav>
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h2>Report an Issue</h2>
+        <p>Report road damage, water leaks, electricity faults, or waste collection issues directly to our team.</p>
+      </div>
+      <div class="card">
+        <h2>Permits & Licenses</h2>
+        <p>Apply for building permits, business licenses, and municipal certificates online.</p>
+      </div>
+      <div class="card">
+        <h2>Municipal Services</h2>
+        <p>Pay taxes, request documents, and track your submitted requests in real time.</p>
+      </div>
+      <div class="card">
+        <h2>Environment</h2>
+        <p>Learn about recycling programs, green initiatives, and environmental compliance.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.5rem">
+      <h2>Need Help?</h2>
+      <p>Use the chat widget in the bottom-right corner to ask any question or report an issue.
+         Our AI assistant is available 24/7 and supports both English and Arabic.</p>
+    </div>
+  </main>
+  <footer>
+    &copy; 2026 Municipality A. All rights reserved.
+  </footer>
+
+  <!--
+    Widget embed snippet — replace TENANT_A_WIDGET_ID with the actual widget ID
+    from the Streamlit admin after running `docker compose up migrate`.
+  -->
+  <script
+    src="http://api:8000/widget.js"
+    data-widget-id="TENANT_A_WIDGET_ID"
+    data-api-base="http://localhost:8000"
+  ></script>
+</body>
+</html>

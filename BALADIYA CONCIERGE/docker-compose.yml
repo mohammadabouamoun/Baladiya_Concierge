@@ -186,15 +186,21 @@ services:
       timeout: 5s
       retries: 10
 
-  # ── Chat widget (React/Vite) — stubbed ────────────────────
+  # ── Chat widget (React/Vite static bundle) ────────────────
   widget:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: docker/widget.Dockerfile
     restart: unless-stopped
-    profiles:
-      - frontend
-    command: ["echo", "widget stub — build in feature 004"]
+    ports:
+      - "${WIDGET_PORT:-3000}:80"
     networks:
       - baladiya
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # ── Chatbot/Admin Streamlit UI (feature 003) ─────────────
   chatbot:
@@ -211,11 +217,18 @@ services:
     networks:
       - baladiya
 
-  # ── Host/reverse proxy (nginx) — stubbed ──────────────────
+  # ── Host demo site (mock municipality) ───────────────────
   host:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: docker/host.Dockerfile
     restart: unless-stopped
-    profiles:
-      - proxy
+    ports:
+      - "${HOST_PORT:-8080}:80"
     networks:
       - baladiya
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

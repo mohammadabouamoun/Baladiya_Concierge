@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-02
 
-**Status**: Draft
+**Status**: Implemented
 
 **Covers**: Design F — React widget, signed token auth, RTL support, per-tenant origin allowlist
 
@@ -77,7 +77,7 @@ A resident switches the widget to Arabic. The layout flips to RTL, the greeting 
 - **FR-002**: A `widget.js` loader at `GET /widget.js` — host pastes one `<script data-widget-id="...">` and the loader injects the iframe.
 - **FR-003**: The loader exchanges `widget_id` + request origin for a signed short-lived JWT (`GET /widget/token`). The API validates: widget_id exists, origin is in `tenant.allowed_origins`. Reject with `403` if origin is not allowed.
 - **FR-004**: Every chat request from the widget carries the signed JWT in `Authorization: Bearer`. The API validates it; `tenant_id` comes from the token claim only.
-- **FR-005**: Per-tenant `allowed_origins` is validated server-side at token exchange AND as a CORS header. CORS alone is never the auth boundary.
+- **FR-005**: CORS headers and `CSP: frame-ancestors` are defense-in-depth around the token auth boundary — they are never the auth boundary themselves. The origin rejection that matters is the 403 at token exchange (FR-003).
 - **FR-006**: The widget MUST support RTL layout — when the resident selects Arabic, the widget re-renders RTL using a CSS `dir="rtl"` toggle; no separate Arabic bundle.
 - **FR-007**: Greeting and theme (color, logo URL) are fetched from `GET /widget/config` using the signed token. These come from `tenant.settings.widget_config`.
 - **FR-008**: Widget token TTL MUST be short (target: 1 hour) and non-renewable by the resident — expiry returns `401`; the loader must re-exchange if the page is reloaded.

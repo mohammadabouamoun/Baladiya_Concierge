@@ -18,10 +18,12 @@ class TokenClaims:
         user_id: uuid.UUID,
         role: Literal["platform_manager", "tenant_admin", "visitor"],
         tenant_id: uuid.UUID | None,
+        widget_id: uuid.UUID | None = None,
     ) -> None:
         self.user_id = user_id
         self.role = role
         self.tenant_id = tenant_id  # None for platform_manager
+        self.widget_id = widget_id  # set only for widget-issued visitor tokens
 
 
 def decode_token(token: str) -> TokenClaims:
@@ -50,10 +52,14 @@ def decode_token(token: str) -> TokenClaims:
             detail="tenant_id missing from token",
         )
 
+    widget_id_raw = payload.get("widget_id")
+    widget_id = uuid.UUID(widget_id_raw) if widget_id_raw else None
+
     return TokenClaims(
         user_id=uuid.UUID(payload["sub"]),
         role=role,
         tenant_id=tenant_id,
+        widget_id=widget_id,
     )
 
 

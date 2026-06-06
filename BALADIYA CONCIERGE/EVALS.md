@@ -284,6 +284,69 @@ Checks:
 
 ---
 
+## 8. Widget Evaluation (Phase 6)
+
+### SC-001 — Bundle Size (CI gate)
+
+Automated in CI via `widget-bundle-size` job (`node scripts/check-bundle-size.mjs`).
+
+| Metric | Threshold | Measured | Status |
+|--------|-----------|----------|--------|
+| JS bundle gzipped | < 100 KB | 48.5 KB | ✅ Pass |
+
+### SC-002 — First Message Round-Trip < 3s on 3G (manual)
+
+Run this check before the defense demo using Chrome DevTools Network throttle → "Slow 3G":
+
+```
+1. Open http://localhost:8080 (host demo site)
+2. DevTools → Network → throttle: Slow 3G
+3. Hard-reload the page
+4. Start timer when page loads
+5. Type "hello" and press Send
+6. Stop timer when response bubble appears
+```
+
+| Run | Connection | Round-trip (ms) | Status |
+|-----|-----------|-----------------|--------|
+| — | Slow 3G | [measure before demo] | ⚠️ TBD |
+
+**Target**: < 3 000ms. Record result here before Phase 8.
+
+### SC-003 — Auth Denial Cases (CI gate)
+
+Automated in `widget-auth` CI job. All 9 tests passing as of Phase 6.
+
+| Case | Expected | Status |
+|------|----------|--------|
+| Disallowed origin → 403 | 403 | ✅ |
+| No Authorization header → 401 | 401 | ✅ |
+| Expired JWT → 401 | 401 | ✅ |
+
+### SC-004 — RTL Toggle Manual Checklist
+
+Run before the defense demo. Mark each item `[X]` when verified.
+
+```
+[ ] Widget loads in English (LTR) by default
+[ ] Clicking "ع" toggle switches layout to RTL
+[ ] Input field placeholder text appears in Arabic ("اكتب رسالتك…")
+[ ] Input text direction is RTL when typing Arabic
+[ ] Bot greeting appears in Arabic (if tenant has greeting_ar configured)
+[ ] Bot greeting falls back to English if greeting_ar is empty (SC-005)
+[ ] Message bubbles align correctly: user right→left, bot left→right (flipped in RTL)
+[ ] Clicking "EN" toggle switches back to LTR without page reload
+[ ] Send button arrow flips direction in RTL mode
+[ ] Language toggle label shows "EN" in Arabic mode, "ع" in English mode
+```
+
+### SC-005 — Arabic Fallback
+
+Covered by the RTL checklist item above and by `LangToggle.tsx` logic:
+`greeting = lang === "ar" && config.greeting_ar ? config.greeting_ar : config.greeting_en`
+
+---
+
 ## 9. Updating Thresholds
 
 When a phase completes and real numbers are available:

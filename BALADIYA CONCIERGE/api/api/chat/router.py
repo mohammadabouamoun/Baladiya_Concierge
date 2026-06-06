@@ -111,11 +111,19 @@ async def chat(
     # Redact PII before any downstream processing (logging, session, router)
     safe_message = redact(body.message)
 
-    # Guardrails validation — fails closed (503) if sidecar unreachable
+    # Fetch tenant — needed for status check and guardrail config
     from api.repositories.tenant_repo import PlatformTenantRepository
     tenant_repo = PlatformTenantRepository(db_session)
     tenant = await tenant_repo.get(token.tenant_id)
-    tenant_guardrail_config = (tenant.settings or {}).get("guardrail_config") if tenant else None
+
+    # Edge case (spec): token may be valid but tenant suspended after issuance
+    if tenant is None or tenant.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tenant suspended",
+        )
+
+    tenant_guardrail_config = (tenant.settings or {}).get("guardrail_config")
 
     guardrail_result = await run_guardrails(
         message=safe_message,

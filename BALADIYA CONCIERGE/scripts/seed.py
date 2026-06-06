@@ -125,6 +125,7 @@ def seed_vault_secrets() -> None:
     vault_addr = os.environ.get("VAULT_ADDR", "http://localhost:8200")
     vault_token = os.environ.get("VAULT_TOKEN", "")
     guardrails_token = os.environ.get("GUARDRAILS_SERVICE_TOKEN", "dev-guardrails-token")
+    widget_signing_key = os.environ.get("WIDGET_SIGNING_KEY", "dev-widget-signing-key-change-in-prod")
 
     if not vault_token:
         print("[seed] VAULT_TOKEN not set — skipping Vault secret seeding")
@@ -143,6 +144,13 @@ def seed_vault_secrets() -> None:
             mount_point="secret",
         )
         print(f"[seed] Seeded Vault secret: secret/baladiya/guardrails")
+
+        client.secrets.kv.v2.create_or_update_secret(
+            path="baladiya/widget",
+            secret={"signing_key": widget_signing_key},
+            mount_point="secret",
+        )
+        print(f"[seed] Seeded Vault secret: secret/baladiya/widget")
     except Exception as exc:
         # Non-fatal: Vault may not be available in all environments
         print(f"[seed] Vault seeding skipped: {exc}")

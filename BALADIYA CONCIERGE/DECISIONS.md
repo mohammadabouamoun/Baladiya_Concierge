@@ -314,3 +314,23 @@ These decisions are structural — they are set at design time and changing them
 | Why no fallback | Mixing two models' vector spaces in one table produces garbage retrieval: cross-model cosine distances are meaningless |
 
 **Verdict**: The embedding model is a one-time permanent decision, unlike the LLM which can be swapped. `gemini-embedding-001` tops MTEB-multilingual benchmarks, is free-tier GA, and handles Arabic natively. 1536 dims is pinned at the pgvector column level — changing it later means re-embedding the entire corpus. Groq is never used for embeddings under any circumstances.
+
+---
+
+## Widget Decisions
+
+### D-Widget-001 — Shared JWT Signing Key vs Per-Widget Key
+
+**Decision**: Widget tokens are signed with `Settings.jwt_secret` (the same key used by all other API JWTs), not a per-widget HMAC secret.
+**Filled in**: Phase 6
+
+| | Value |
+|---|---|
+| spec.md assumption | "Widget token signed with a per-widget HMAC secret stored in Vault" |
+| Implementation | `jwt_secret` (single shared key, from `baladiya/api/jwt_secret` in Vault) |
+| Reason for deviation | `decode_token` in `api/core/security.py` uses `jwt_secret` to validate all incoming JWTs. Adding a second key lookup per request (detecting token type, picking the right key) adds complexity with no security gain at MVP scale where a single tenant's widget compromise doesn't expose other tenants' data — RLS is the isolation boundary, not the JWT signing key |
+| `widget_signing_key` in Vault | Seeded at `baladiya/widget/signing_key` and present in `Settings` but not used for JWT signing in Phase 6 |
+| Security impact | None at current scale. A leaked `jwt_secret` already compromises all API tokens; a separate widget key only limits blast radius if `jwt_secret` is rotated per-tenant (not currently the case) |
+| Future path | Phase 8: implement per-widget key rotation. Each widget gets its own key at `baladiya/widget/{widget_id}/signing_key`. `decode_token` checks the `widget_id` claim to select the right key. Requires a migration script to rotate existing tokens |
+
+**Verdict**: Use `jwt_secret` for Phase 6. Per-widget key rotation is deferred to Phase 8 with the infrastructure already in place (`widget_signing_key` is seeded but unused).

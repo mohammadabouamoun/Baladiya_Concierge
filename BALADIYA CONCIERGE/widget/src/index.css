@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+  --accent:       #1d4ed8;   /* overridden at runtime by theme_color */
+  --accent-dim:   color-mix(in srgb, var(--accent) 15%, transparent);
+  --header-bg:    #172040;
+  --header-text:  #ffffff;
+  --surface:      #fafaf8;
+  --surface-alt:  #f2f2ef;
+  --border:       #e5e4df;
+  --text-primary: #16191f;
+  --text-secondary: #6b717f;
+  --text-muted:   #9ca3af;
+  --radius-bubble: 18px;
+  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+/* ── Header lattice pattern ────────────────────────────────── */
+.header-pattern {
+  background-color: var(--header-bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='28' height='28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 0 L28 7 L28 21 L14 28 L0 21 L0 7 Z' stroke='rgba(255,255,255,0.045)' fill='none' stroke-width='0.6'/%3E%3Cpath d='M14 6 L22 10 L22 18 L14 22 L6 18 L6 10 Z' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 28px 28px;
+}
+
+/* ── Animations ────────────────────────────────────────────── */
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wave {
+  0%, 60%, 100% { transform: translateY(0);  }
+  30%            { transform: translateY(-5px); }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1);    opacity: 0.6; }
+  70%  { transform: scale(1.5);  opacity: 0; }
+  100% { transform: scale(1.5);  opacity: 0; }
+}
+
+/* ── Message bubble entrance ───────────────────────────────── */
+.msg { animation: msg-in 0.28s var(--ease-out) both; }
+
+/* ── Typing dots ───────────────────────────────────────────── */
+.dot { animation: wave 1.2s ease-in-out infinite; }
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.30s; }
+
+/* ── Widget entrance ───────────────────────────────────────── */
+.widget-root { animation: fade-up 0.35s var(--ease-out) both; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+.messages-area::-webkit-scrollbar { width: 4px; }
+.messages-area::-webkit-scrollbar-track { background: transparent; }
+.messages-area::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ── Send button ripple ────────────────────────────────────── */
+.send-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.12s var(--ease-out),
+              box-shadow 0.12s var(--ease-out);
+}
+.send-btn:active { transform: scale(0.92); }
+.send-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.send-btn:active::after { opacity: 1; }
+
+/* ── Bot bubble accent rail ────────────────────────────────── */
+.bot-bubble {
+  border-inline-start: 2.5px solid var(--accent);
+}
+
+/* ── Input focus ───────────────────────────────────────────── */
+.chat-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* ── Lang toggle ───────────────────────────────────────────── */
+.lang-pill {
+  transition: background 0.18s, color 0.18s;
+}
+
+/* ── Error / expired screens ───────────────────────────────── */
+.status-screen {
+  animation: fade-up 0.3s var(--ease-out) both;
+}
+
+/* ── Accessibility ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; }
+}
