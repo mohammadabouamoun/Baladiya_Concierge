@@ -102,20 +102,16 @@
 
 ### Tests for User Story 3 (security-critical — write before implementation)
 
-- [x] T019 [US3] In `tests/test_widget/test_token_service.py`, add test `test_rotate_key_invalidates_old_token`: issue token for a test widget; call rotate-key endpoint; attempt to use old token on an authenticated endpoint; assert 401
-- [x] T020 [US3] In `tests/test_widget/test_token_service.py`, add test `test_rotate_key_does_not_affect_other_widget`: create two test widgets; rotate widget A key; confirm widget B's pre-rotation token still returns 200
-- [x] T021 [US3] In `tests/test_widget/test_token_service.py`, add test `test_non_widget_token_unaffected`: issue a `tenant_admin` JWT (no `widget_id` claim); confirm it still validates correctly after a widget key rotation (uses `jwt_secret` path)
+- [x] T019 [US3] In `tests/test_widget/test_token_service.py`, add `@pytest.mark.asyncio async def test_rotate_key_invalidates_old_token`: seed cache with old key; `await decode_token(old_token)` succeeds; swap cache to new key; `await decode_token(old_token)` raises 401
+- [x] T020 [US3] In `tests/test_widget/test_token_service.py`, add `@pytest.mark.asyncio async def test_rotate_key_does_not_affect_other_widget`: seed both widget caches; rotate widget A cache entry; `await decode_token(token_b)` still succeeds
+- [x] T021 [US3] In `tests/test_widget/test_token_service.py`, add `@pytest.mark.asyncio async def test_non_widget_token_unaffected`: `await decode_token(admin_token)` (no `widget_id` claim) validates via `jwt_secret` after a widget key rotation
 - [x] T022 [US3] Confirm the three new tests FAIL before implementation
 
 ### Implementation for User Story 3
 
-- [x] T023 [US3] In `api/infra/vault.py`, add synchronous helper `get_widget_signing_key(widget_id: uuid.UUID) -> str` that fetches `baladiya/widget/{widget_id}/signing_key` from Vault; cache in module-level TTL dict `_widget_key_cache: dict[str, tuple[str, float]]` (TTL 300s, max 128 entries with LRU eviction); add `invalidate_widget_key_cache(widget_id)` to bust the cache on rotation
-- [x] T024 [US3] In `api/core/security.py`, update `decode_token()` to implement the two-pass flow from `data-model.md §5`:
-  - Step 1: `jwt.decode(token, options={"verify_signature": False})` to read `widget_id` from payload
-  - Step 2: if `widget_id` present, call `vault.get_widget_signing_key(widget_id)` to fetch per-widget key; else use `settings.jwt_secret`
-  - Step 3: `jwt.decode(token, key, algorithms=[...])` for full verified decode
-  - Maintain full backward compatibility — tokens without `widget_id` claim use `jwt_secret` as before
-- [x] T025 [US3] In `api/api/widget/token_service.py`, update `issue_token()` to sign with the per-widget Vault key instead of `settings.jwt_secret`: call `vault.get_widget_signing_key(widget_id)` (synchronous) and use that key in `jwt.encode(claims, per_widget_key, ...)`
+- [x] T023 [US3] In `api/infra/vault.py`, add `async def get_widget_signing_key(widget_id: uuid.UUID) -> str`: cache hits return immediately from module-level TTL dict `_widget_key_cache: dict[str, tuple[str, float]]` (TTL 300s, max 128, LRU eviction); cache misses dispatch blocking hvac call via `await asyncio.to_thread(_fetch_key_from_vault, widget_id)` so the event loop is never held. Add `invalidate_widget_key_cache(widget_id)` to bust cache on rotation.
+- [x] T024 [US3] In `api/core/security.py`, make the full JWT validation chain async — `async def _get_signing_key(...)` awaits `get_widget_signing_key`; `async def decode_token(...)` awaits `_get_signing_key`; `get_current_user` awaits `decode_token`. Two-pass flow: Step 1 — unverified peek for `widget_id`; Step 2 — `await` per-widget Vault key or fall back to `jwt_secret`; Step 3 — full verified decode. Backward-compatible: tokens without `widget_id` claim use `jwt_secret`.
+- [x] T025 [US3] In `api/api/widget/token_service.py`, update `issue_token()` to `await get_widget_signing_key(widget_id)` (now async) and use the returned key in `jwt.encode(claims, signing_key, ...)`
 - [x] T026 [US3] In `api/api/admin/router.py`, add `POST /admin/widgets/{widget_id}/rotate-key` endpoint per `contracts/rotate_key.md`:
   - Auth: `Depends(require_tenant_admin)` — reject if caller's `tenant_id` ≠ widget's `tenant_id` (404 if not found, 403 if tenant mismatch)
   - Generate 32-byte random key: `secrets.token_hex(32)`
@@ -124,7 +120,7 @@
   - Emit `structlog` audit line: `widget.key.rotated` with `widget_id`, `tenant_id`, `actor_id`, `trace_id`
   - Return `{"rotated": True, "widget_id": str(widget_id)}`
 - [x] T027 [US3] In `scripts/seed.py`, extend the startup seeding: for each active row in `widgets` table, if `baladiya/widget/{widget_id}/signing_key` is absent in Vault, write `settings.widget_signing_key` as the migration default (idempotent — skip if already present)
-- [x] T028 [US3] Run the three new test cases: `python -m pytest tests/test_widget/ -v` — confirm all pass including the 3 new rotation tests and all 9 pre-existing widget tests
+- [x] T028 [US3] Run the three new test cases: `python -m pytest tests/test_widget/ tests/test_arabic/ -v` — confirm all pass; also fix `asyncio.get_event_loop()` → `asyncio.run()` in `tests/test_arabic/test_lang_detect.py` and `test_additive_guarantee.py` (broken by pytest-asyncio function-scoped loop teardown after async widget tests)
 
 **Checkpoint**: Per-widget key rotation working; old tokens invalidated; non-widget tokens unaffected; US3 complete.
 
