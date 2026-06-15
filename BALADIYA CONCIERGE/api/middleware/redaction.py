@@ -66,29 +66,51 @@ _RECOGNIZERS: list[_PatternRecognizer] = [
         r"|(?:Building|Bldg|Bloc|Block)\s+\d+(?:\s+[A-Za-z][A-Za-z\s]{2,30})?)\b",
         "[REDACTED_ADDRESS]",
     ),
-    # Arabic personal names — exactly two consecutive Arabic-script tokens (≥3 chars each),
-    # where neither token is a known civic, geographic, or utility term.
-    # Covers given + family name patterns: محمد علي, رنا خوري, أحمد الحسن.
-    # Short words (≤2 chars: في، من، لل) are excluded by the {3,} minimum.
-    # Known civic/geographic terms are blocked by negative lookahead on each token position.
+    # Arabic personal names — two-pattern approach:
+    # Pattern A: formal name-introducing prefix (السيد, اسمي, etc.) + one or two Arabic words.
+    # Pattern B: known Arabic given name (first word) + any Arabic word.
+    #
+    # A bare two-word Arabic regex (e.g. [؀-ۿ]{3,}\s+[؀-ۿ]{3,}) falsely redacts civic
+    # phrases like مواعيد دفع and breaks RAG queries. Pattern B uses an explicit given-name
+    # list so مياه/كهرباء/مواعيد (not names) are never matched, while محمد/رنا/أحمد are.
     _PatternRecognizer(
         "ARABIC_NAME",
         (
-            r"(?!(?:مياه|كهرباء|الكهرباء|طريق|الطريق|بلدية|نفايات|صرف|بيئة|صحة|نقل|"
-            r"اتصالات|غاز|ماء|المياه|الماء|الغاز|"
-            r"جنوب|الجنوب|شمال|الشمال|شرق|الشرق|غرب|الغرب|وسط|"
-            r"لبنان|بيروت|طرابلس|صيدا|صور|زحلة|بعلبك|النبطية|"
-            r"مشكلة|منقطعة|انقطاع|عطل|تالف|مكسور|ازمة|خراب|معطل|"
-            r"بسبب|بسبب|حيث|لذلك|لأن|لكن)(?:\s|$))"
-            r"[؀-ۿ]{3,}"
-            r"\s+"
-            r"(?!(?:مياه|كهرباء|الكهرباء|طريق|الطريق|بلدية|نفايات|صرف|بيئة|صحة|نقل|"
-            r"اتصالات|غاز|ماء|المياه|الماء|الغاز|"
-            r"جنوب|الجنوب|شمال|الشمال|شرق|الشرق|غرب|الغرب|وسط|"
-            r"لبنان|بيروت|طرابلس|صيدا|صور|زحلة|بعلبك|النبطية|"
-            r"مشكلة|منقطعة|انقطاع|عطل|تالف|مكسور|ازمة|خراب|معطل|"
-            r"بسبب|حيث|لذلك|لأن|لكن)(?:\s|$))"
-            r"[؀-ۿ]{3,}"
+            r"(?:اسمي|اسمه|اسمها|اسمكم|اسمنا|يدعى|تدعى|يسمى|تسمى|"
+            r"المواطن|المواطنة|السيد|السيدة|الآنسة|"
+            r"الدكتور|الدكتورة|الأستاذ|الأستاذة|المهندس|المهندسة)"
+            r"\s+[؀-ۿ]{3,}(?:\s+[؀-ۿ]{3,})?"
+        ),
+        "[NAME]",
+    ),
+    _PatternRecognizer(
+        "ARABIC_GIVEN_NAME",
+        (
+            # Muslim male — common Lebanese/Syrian/Palestinian names
+            r"(?:محمد|أحمد|علي|حسن|حسين|خالد|يوسف|عمر|سامر|طارق|باسل|كريم|زياد|وليد|رامي|"
+            r"جمال|ماجد|نادر|فادي|ربيع|غسان|عماد|بلال|نزار|رشيد|صالح|ياسر|منير|سعيد|"
+            r"عبدالله|عبدالرحمن|عبدالكريم|عبدالعزيز|عبدالرحيم|"
+            r"إبراهيم|إسماعيل|إسحاق|سليمان|موسى|عيسى|يحيى|داوود|هارون|"
+            r"حمزة|عباس|جعفر|صادق|باقر|كاظم|مهدي|حيدر|مصطفى|محمود|"
+            # Muslim female
+            r"فاطمة|عائشة|زينب|مريم|رنا|سارة|نورا|هند|رانيا|دانا|ريم|لينا|نادين|"
+            r"سلمى|سلوى|منى|هبة|وفاء|إيمان|أمل|غادة|رولا|ديانا|علا|أسماء|"
+            r"خديجة|حفصة|رقية|أم كلثوم|ميسون|سوسن|نسرين|روان|شيرين|دلال|"
+            # Christian Lebanese — male
+            r"جورج|بيار|أنطوان|ميشال|إيلي|طوني|شربل|مارون|إلياس|نقولا|جوزيف|"
+            r"ريمون|سمير|مارك|ماريو|روبير|روني|كلود|بول|لويس|ألبير|هنري|"
+            r"مارسيل|جاك|أندريه|بطرس|يوحنا|بندلي|"
+            # Christian Lebanese — female
+            r"كارين|ميرنا|كريستينا|ريتا|سيلفيا|ديانا|ليلى|جويل|نيكول|ميشلين|"
+            r"ماريا|مادلين|مايا|ميا|جوانا|ميراي|نانسي|إيفا|ليز|سيسيل|كلير|"
+            # Druze / mixed
+            r"وليد|جنبلاط|نصري|فؤاد|مروان|أكرم|نايف|رياض|"
+            # Arabizi transliterations — common in chat
+            r"mohamad|mohammad|ahmad|ali|hassan|hussein|khalid|youssef|omar|samer|"
+            r"tariq|bassil|karim|ziad|walid|rami|fadi|ghassan|nazar|bilal|"
+            r"fatima|aisha|zeinab|mariam|rana|sara|nour|rania|dana|leen|lina|nadine|"
+            r"maya|mia|joelle|rita|karen|mirna|karen)"
+            r"\s+[؀-ۿ]{3,}"
         ),
         "[NAME]",
     ),

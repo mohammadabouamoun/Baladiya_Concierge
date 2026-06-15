@@ -88,18 +88,7 @@ async def rag_search(
 
     chunk_repo = CmsChunkRepository(session, tenant_id)
 
-    # FR-004: prefer same-language chunks when lang=="ar"; fetch more then re-rank.
-    # This is a soft boost, not a hard filter — English chunks are the fallback.
-    if lang == "ar":
-        # Fetch 2× top_k, then promote AR-tagged chunks to the front
-        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k * 2)
-        ar_results = [r for r in raw_results if r.get("lang") == "ar"]
-        en_results = [r for r in raw_results if r.get("lang") != "ar"]
-        raw_results = (ar_results + en_results)[:k]
-        if ar_results:
-            logger.debug("rag.arabic_boost", ar_count=len(ar_results), total=len(raw_results))
-    else:
-        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k)
+    raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k, lang=lang or None)
 
     if not raw_results:
         logger.info(

@@ -6,7 +6,8 @@ user-friendly message and no raw stack trace.
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, patch
+from datetime import datetime, timedelta, timezone
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient, RequestError
@@ -21,15 +22,35 @@ async def test_chat_returns_503_when_modelserver_down(monkeypatch):
 
     # Use testing env to skip Vault
     monkeypatch.setenv("ENV", "testing")
+    monkeypatch.setenv("JWT_SECRET", "test-jwt-secret-for-modelserver-down")
     get_settings.cache_clear()
 
     async def mock_classify(_text):
         raise RequestError("Connection refused")
 
+    # Minimal tenant stub — active status so the 403-suspended check passes
+    mock_tenant = MagicMock()
+    mock_tenant.status = "active"
+    mock_tenant.settings = {}
+
+    # GuardrailResult stub — allowed so the chat path reaches classify()
+    mock_guardrail = MagicMock()
+    mock_guardrail.allowed = True
+
     with (
         patch("api.infra.modelserver_client.classify", side_effect=mock_classify),
         patch("api.infra.db.get_session_factory") as mock_factory,
         patch("api.infra.redis.get_redis") as mock_redis,
+        patch(
+            "api.repositories.tenant_repo.PlatformTenantRepository.get",
+            new_callable=AsyncMock,
+            return_value=mock_tenant,
+        ),
+        patch(
+            "api.api.chat.router.run_guardrails",
+            new_callable=AsyncMock,
+            return_value=mock_guardrail,
+        ),
     ):
         mock_session = AsyncMock()
         mock_factory.return_value = MagicMock(return_value=AsyncMock(
@@ -40,7 +61,6 @@ async def test_chat_returns_503_when_modelserver_down(monkeypatch):
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             import jwt as pyjwt
-            from datetime import datetime, timedelta, timezone
             settings = get_settings()
             token = pyjwt.encode(
                 {

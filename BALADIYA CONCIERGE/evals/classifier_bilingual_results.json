@@ -1,20 +1,21 @@
 {
-  "overall_macro_f1": 0.998,
+  "overall_macro_f1": 0.9966,
   "per_lang": {
-    "en": 1.0,
-    "ar": 0.9507
+    "en": 0.9984,
+    "ar": 0.974
   },
   "per_variety": {
-    "en": 1.0,
+    "en": 0.9984,
     "msa": 1.0,
     "lebanese": 1.0,
-    "arabizi": 0.8322
+    "arabizi": 0.9578
   },
-  "artifact_sha256": "728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041",
-  "data_sha256": "5f3c9e954ee01981546584732da8f93e1cd957519e7cea3658c8224fa19bac17",
-  "total_rows": 12731,
-  "train_rows": 10206,
-  "test_rows": 2525,
-  "latency_p50_ms": 1.48,
-  "latency_p95_ms": 3.97
+  "artifact_sha256": "a6f1be54378654519194af299ee942a8a9aa0b40f2cc117a54417304b916f279",
+  "ar_artifact_sha256": "96149720424f8aca4db79127b6e35d3d239dfcd6a461c6c48db194eff4946807",
+  "data_sha256": "0bd83b540f91c4aa1d7270051fa2ff1f66a0c18bf4d22a41d566849f4ddac400",
+  "total_rows": 13138,
+  "train_rows": 10491,
+  "test_rows": 2647,
+  "ar_train_rows": 784,
+  "ar_test_rows": 198
 }

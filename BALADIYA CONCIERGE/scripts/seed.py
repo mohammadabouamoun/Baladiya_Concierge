@@ -116,55 +116,98 @@ async def seed(session: AsyncSession) -> None:
     print("[seed] Done.")
 
 
-def seed_vault_secrets() -> None:
+def seed_vault_secrets():
     """Write service tokens into Vault KV so the API can read them at startup.
 
     Runs in local dev and CI where Vault is in dev mode.
     No-op if VAULT_ADDR is not reachable (e.g. unit-test environments).
+    Returns the authenticated hvac client (for per-widget key seeding), or None.
     """
     vault_addr = os.environ.get("VAULT_ADDR", "http://localhost:8200")
     vault_token = os.environ.get("VAULT_TOKEN", "")
     guardrails_token = os.environ.get("GUARDRAILS_SERVICE_TOKEN", "dev-guardrails-token")
     widget_signing_key = os.environ.get("WIDGET_SIGNING_KEY", "dev-widget-signing-key-change-in-prod")
+    database_url = os.environ.get("DATABASE_URL", "postgresql+asyncpg://baladiya:baladiya_dev@db:5432/baladiya")
+    jwt_secret = os.environ.get("JWT_SECRET", "dev-jwt-secret-change-in-prod-2026")
+    gemini_api_key = os.environ.get("GEMINI_API_KEY", "")
+    groq_api_key = os.environ.get("GROQ_API_KEY", "")
+    minio_access_key = os.environ.get("MINIO_ACCESS_KEY", "minioadmin")
+    minio_secret_key = os.environ.get("MINIO_SECRET_KEY", "minioadmin")
 
     if not vault_token:
         print("[seed] VAULT_TOKEN not set — skipping Vault secret seeding")
-        return
+        return None
 
     try:
         import hvac
         client = hvac.Client(url=vault_addr, token=vault_token)
         if not client.is_authenticated():
             print("[seed] Vault not authenticated — skipping secret seeding")
-            return
+            return None
+
+        client.secrets.kv.v2.create_or_update_secret(
+            path="baladiya/db",
+            secret={"url": database_url},
+            mount_point="secret",
+        )
+        print("[seed] Seeded Vault secret: secret/baladiya/db")
+
+        client.secrets.kv.v2.create_or_update_secret(
+            path="baladiya/api",
+            secret={"jwt_secret": jwt_secret},
+            mount_point="secret",
+        )
+        print("[seed] Seeded Vault secret: secret/baladiya/api")
+
+        # Only write LLM keys if they are non-empty — don't overwrite a real key
+        # with an empty string when the migrate container lacks the env vars.
+        if gemini_api_key or groq_api_key:
+            client.secrets.kv.v2.create_or_update_secret(
+                path="baladiya/llm",
+                secret={"gemini_api_key": gemini_api_key, "groq_api_key": groq_api_key},
+                mount_point="secret",
+            )
+            print("[seed] Seeded Vault secret: secret/baladiya/llm")
+        else:
+            print("[seed] Skipped secret/baladiya/llm — GEMINI_API_KEY/GROQ_API_KEY not set")
+
+        client.secrets.kv.v2.create_or_update_secret(
+            path="baladiya/minio",
+            secret={"access_key": minio_access_key, "secret_key": minio_secret_key},
+            mount_point="secret",
+        )
+        print("[seed] Seeded Vault secret: secret/baladiya/minio")
 
         client.secrets.kv.v2.create_or_update_secret(
             path="baladiya/guardrails",
             secret={"service_token": guardrails_token},
             mount_point="secret",
         )
-        print(f"[seed] Seeded Vault secret: secret/baladiya/guardrails")
+        print("[seed] Seeded Vault secret: secret/baladiya/guardrails")
 
         client.secrets.kv.v2.create_or_update_secret(
             path="baladiya/widget",
             secret={"signing_key": widget_signing_key},
             mount_point="secret",
         )
-        print(f"[seed] Seeded Vault secret: secret/baladiya/widget")
+        print("[seed] Seeded Vault secret: secret/baladiya/widget")
 
-        # Migrate existing widgets to per-widget keys (Phase 8 — FR-007).
-        # For each active widget, seed baladiya/widget/{widget_id}/signing_key
-        # using the global widget_signing_key as the initial value (idempotent).
-        _seed_per_widget_keys(client, widget_signing_key)
+        # Per-widget key seeding (Phase 8 — FR-007) happens in main(), which is
+        # already inside an event loop. Return the authenticated client so the
+        # async step can reuse it.
+        return client
 
     except Exception as exc:
         # Non-fatal: Vault may not be available in all environments
         print(f"[seed] Vault seeding skipped: {exc}")
+        return None
 
 
-def _seed_per_widget_keys(client, default_key: str) -> None:
-    """For each active widget in DB, seed Vault per-widget key if absent."""
-    import asyncio
+async def _seed_per_widget_keys(client, default_key: str) -> None:
+    """For each active widget in DB, seed Vault per-widget key if absent.
+
+    Async — awaited from main()'s running event loop (no nested asyncio.run()).
+    """
     from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
     from sqlalchemy import select, text
     from api.domain.widget import Widget
@@ -174,7 +217,7 @@ def _seed_per_widget_keys(client, default_key: str) -> None:
         print("[seed] DATABASE_URL not set — skipping per-widget key migration")
         return
 
-    async def _do_seed() -> None:
+    try:
         engine = create_async_engine(database_url)
         factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
         async with factory() as session:
@@ -198,15 +241,19 @@ def _seed_per_widget_keys(client, default_key: str) -> None:
                     mount_point="secret",
                 )
                 print(f"[seed] Seeded per-widget key: secret/{vault_path}")
-
-    try:
-        asyncio.run(_do_seed())
     except Exception as exc:
         print(f"[seed] Per-widget key migration skipped: {exc}")
 
 
 async def main() -> None:
-    seed_vault_secrets()
+    client = seed_vault_secrets()
+    if client is not None:
+        # Per-widget keys (Phase 8 — FR-007): seed baladiya/widget/{id}/signing_key
+        # for each active widget, idempotently, using the global key as initial value.
+        widget_signing_key = os.environ.get(
+            "WIDGET_SIGNING_KEY", "dev-widget-signing-key-change-in-prod"
+        )
+        await _seed_per_widget_keys(client, widget_signing_key)
     database_url = os.environ["DATABASE_URL"]
     engine = create_async_engine(database_url)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

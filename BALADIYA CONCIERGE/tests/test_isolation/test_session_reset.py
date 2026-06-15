@@ -7,6 +7,10 @@ Tenant B — not Tenant A.
 from __future__ import annotations
 
 import pytest
+
+pytestmark = pytest.mark.integration
+
+import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,10 +21,12 @@ async def test_session_reset_after_exception(db_session: AsyncSession, tenant_a,
     tenant_b_obj, _ = tenant_b
 
     # Simulate request for Tenant A that raises mid-flight
+    # Drop superuser privilege so RLS is enforced
+    # UUID is hex+hyphen only — f-string is safe for SET statements (asyncpg rejects params)
     try:
+        await db_session.execute(text("SET LOCAL ROLE baladiya_app"))
         await db_session.execute(
-            text("SET LOCAL app.current_tenant = :tid"),
-            {"tid": str(tenant_a_obj.id)},
+            text(f"SET LOCAL app.current_tenant = '{tenant_a_obj.id}'")
         )
         raise RuntimeError("simulated mid-request error")
     except RuntimeError:
@@ -29,8 +35,7 @@ async def test_session_reset_after_exception(db_session: AsyncSession, tenant_a,
 
     # Next request: Tenant B — the variable must be set fresh, not carry Tenant A
     await db_session.execute(
-        text("SET LOCAL app.current_tenant = :tid"),
-        {"tid": str(tenant_b_obj.id)},
+        text(f"SET LOCAL app.current_tenant = '{tenant_b_obj.id}'")
     )
 
     result = await db_session.execute(text("SELECT tenant_id FROM tenant_admins"))
@@ -49,18 +54,17 @@ async def test_session_reset_after_successful_request(db_session: AsyncSession, 
     tenant_a_obj, _ = tenant_a
     tenant_b_obj, _ = tenant_b
 
-    # Simulate Tenant A request completing normally
+    # Simulate Tenant A request completing normally — use non-superuser to enforce RLS
+    await db_session.execute(text("SET LOCAL ROLE baladiya_app"))
     await db_session.execute(
-        text("SET LOCAL app.current_tenant = :tid"),
-        {"tid": str(tenant_a_obj.id)},
+        text(f"SET LOCAL app.current_tenant = '{tenant_a_obj.id}'")
     )
     # Simulate finally block
     await db_session.execute(text("RESET app.current_tenant"))
 
     # Tenant B request starts — the variable is set to B, not inherited from A
     await db_session.execute(
-        text("SET LOCAL app.current_tenant = :tid"),
-        {"tid": str(tenant_b_obj.id)},
+        text(f"SET LOCAL app.current_tenant = '{tenant_b_obj.id}'")
     )
 
     result = await db_session.execute(text("SELECT tenant_id FROM tenant_admins"))

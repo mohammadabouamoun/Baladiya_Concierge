@@ -52,7 +52,7 @@ services:
     networks:
       - baladiya
     healthcheck:
-      test: ["CMD", "vault", "status"]
+      test: ["CMD", "sh", "-c", "VAULT_ADDR=http://127.0.0.1:8200 vault status"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -71,13 +71,15 @@ services:
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: "${VAULT_TOKEN:-dev-root-token}"
       DATABASE_URL: "postgresql+asyncpg://baladiya:baladiya_dev@db:5432/baladiya"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
+      GROQ_API_KEY: "${GROQ_API_KEY}"
       PLATFORM_MANAGER_EMAIL: "${PLATFORM_MANAGER_EMAIL:-platform@baladiya.local}"
       PLATFORM_MANAGER_PASSWORD: "${PLATFORM_MANAGER_PASSWORD:-changeme}"
-      TENANT_A_NAME: "${TENANT_A_NAME:-Municipality A}"
-      TENANT_A_ADMIN_EMAIL: "${TENANT_A_ADMIN_EMAIL:-admin-a@baladiya.local}"
+      TENANT_A_NAME: "${TENANT_A_NAME:-Beirut Municipality}"
+      TENANT_A_ADMIN_EMAIL: "${TENANT_A_ADMIN_EMAIL:-admin@beirut.gov.lb}"
       TENANT_A_ADMIN_PASSWORD: "${TENANT_A_ADMIN_PASSWORD:-changeme}"
-      TENANT_B_NAME: "${TENANT_B_NAME:-Municipality B}"
-      TENANT_B_ADMIN_EMAIL: "${TENANT_B_ADMIN_EMAIL:-admin-b@baladiya.local}"
+      TENANT_B_NAME: "${TENANT_B_NAME:-Jbeil Municipality}"
+      TENANT_B_ADMIN_EMAIL: "${TENANT_B_ADMIN_EMAIL:-admin@jbeil.gov.lb}"
       TENANT_B_ADMIN_PASSWORD: "${TENANT_B_ADMIN_PASSWORD:-changeme}"
     networks:
       - baladiya
@@ -100,17 +102,24 @@ services:
         condition: service_completed_successfully
       guardrails:
         condition: service_healthy
+      modelserver:
+        condition: service_healthy
     environment:
       VAULT_ADDR: http://vault:8200
       VAULT_TOKEN: "${VAULT_TOKEN:-dev-root-token}"
       DATABASE_URL: "postgresql+asyncpg://baladiya:baladiya_dev@db:5432/baladiya"
       REDIS_URL: "redis://redis:6379/0"
       MINIO_ENDPOINT: "minio:9000"
+      MODELSERVER_SERVICE_TOKEN: "${MODELSERVER_SERVICE_TOKEN:-dev-modelserver-token}"
       ENV: development
     ports:
       - "${API_PORT:-8000}:8000"
     networks:
       - baladiya
+    volumes:
+      # Live-mount system prompts so edits only need `docker compose restart api`
+      # (no image rebuild). Image still bakes them in as the production default.
+      - ./prompts:/app/prompts:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 10s
@@ -151,17 +160,25 @@ services:
     networks:
       - baladiya
 
-  # ── Model server (onnxruntime/sklearn) — stubbed ───────────
+  # ── Model server (onnxruntime/sklearn) ────────────────────
   modelserver:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: modelserver/Dockerfile
     restart: unless-stopped
-    profiles:
-      - ml
-    command: ["echo", "modelserver stub — build in feature 002"]
+    environment:
+      SERVICE_TOKEN: "${MODELSERVER_SERVICE_TOKEN:-dev-modelserver-token}"
+      ARTIFACT_PATH: "modelserver/artifacts/classifier.joblib"
+      ARTIFACT_AR_PATH: "modelserver/artifacts/classifier_ar.joblib"
     ports:
       - "${MODELSERVER_PORT:-8001}:8001"
     networks:
       - baladiya
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # ── NeMo Guardrails sidecar ────────────────────────────────
   guardrails:
@@ -212,6 +229,21 @@ services:
       API_BASE_URL: "http://api:8000"
     ports:
       - "${CHATBOT_PORT:-8501}:8501"
+    depends_on:
+      - api
+    networks:
+      - baladiya
+
+  # ── Platform Manager Streamlit UI ────────────────────────
+  platform_manager:
+    build:
+      context: .
+      dockerfile: docker/platform_manager.Dockerfile
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: "http://api:8000"
+    ports:
+      - "${PLATFORM_MANAGER_PORT:-8502}:8502"
     depends_on:
       - api
     networks:

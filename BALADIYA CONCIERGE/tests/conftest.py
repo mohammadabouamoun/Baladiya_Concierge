@@ -10,6 +10,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from api.core.config import Settings, get_settings
 from api.core.security import TokenClaims
@@ -30,7 +31,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope="session")
 async def engine():
-    eng = create_async_engine(TEST_DATABASE_URL, echo=False)
+    eng = create_async_engine(TEST_DATABASE_URL, echo=False, poolclass=NullPool)
     async with eng.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         # Apply RLS policies needed for tests
@@ -39,11 +40,19 @@ async def engine():
         await conn.execute(
             text(
                 """
-                CREATE POLICY IF NOT EXISTS tenant_isolation ON tenant_admins
-                    USING (tenant_id = current_setting('app.current_tenant', true)::uuid)
+                DO $$
+                BEGIN
+                    CREATE POLICY tenant_isolation ON tenant_admins
+                        USING (tenant_id = nullif(current_setting('app.current_tenant', true), '')::uuid);
+                EXCEPTION WHEN duplicate_object THEN NULL;
+                END $$;
                 """
             )
         )
+        # Grant baladiya_app access to all tables for RLS tests
+        # (baladiya_app is a non-superuser so RLS is enforced on its queries)
+        await conn.execute(text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO baladiya_app"))
+        await conn.execute(text("GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO baladiya_app"))
     yield eng
     async with eng.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -62,7 +71,7 @@ async def db_session(engine) -> AsyncGenerator[AsyncSession, None]:
 async def platform_manager(db_session: AsyncSession) -> PlatformManager:
     pm = PlatformManager(
         id=uuid.uuid4(),
-        email=f"pm-{uuid.uuid4()}@test.local",
+        email=f"pm-{uuid.uuid4()}@example.com",
         hashed_password=bcrypt.hashpw(b"testpass", bcrypt.gensalt()).decode(),
     )
     db_session.add(pm)
@@ -78,7 +87,7 @@ async def tenant_a(db_session: AsyncSession) -> tuple[Tenant, TenantAdmin]:
     admin = TenantAdmin(
         id=uuid.uuid4(),
         tenant_id=tenant.id,
-        email=f"admin-a-{uuid.uuid4()}@test.local",
+        email=f"admin-a-{uuid.uuid4()}@example.com",
         hashed_password=bcrypt.hashpw(b"testpass", bcrypt.gensalt()).decode(),
     )
     db_session.add(admin)
@@ -94,7 +103,7 @@ async def tenant_b(db_session: AsyncSession) -> tuple[Tenant, TenantAdmin]:
     admin = TenantAdmin(
         id=uuid.uuid4(),
         tenant_id=tenant.id,
-        email=f"admin-b-{uuid.uuid4()}@test.local",
+        email=f"admin-b-{uuid.uuid4()}@example.com",
         hashed_password=bcrypt.hashpw(b"testpass", bcrypt.gensalt()).decode(),
     )
     db_session.add(admin)
@@ -108,7 +117,10 @@ def make_token(user_id: uuid.UUID, role: str, tenant_id: uuid.UUID | None) -> To
 
 @pytest_asyncio.fixture
 async def http_client() -> AsyncGenerator[AsyncClient, None]:
+    from api.infra.db import init_db, close_db
+    await init_db(TEST_DATABASE_URL)
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
         yield client
+    await close_db()

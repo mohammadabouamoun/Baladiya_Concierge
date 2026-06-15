@@ -60,9 +60,13 @@ async def get_db(token: TokenClaims) -> AsyncGenerator[AsyncSession, None]:
     factory = get_session_factory()
     async with factory() as session:
         if token.tenant_id is not None:
+            # SET (session-level) not SET LOCAL — persists across commits within the
+            # same request. UUID comes from verified JWT; only hex+hyphen chars possible.
+            # RESET in the finally block below clears it before the connection returns
+            # to the pool, preventing cross-tenant leaks on pooled connections.
+            tid = str(token.tenant_id)
             await session.execute(
-                text("SET LOCAL app.current_tenant = :tid"),
-                {"tid": str(token.tenant_id)},
+                text(f"SET app.current_tenant = '{tid}'"),
             )
         try:
             yield session

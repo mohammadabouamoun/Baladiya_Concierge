@@ -39,7 +39,10 @@ except ImportError:
 def _check_pii(msg: str):
     if not _pii_available:
         return None  # PII detection unavailable — treat as no PII
-    return _check_pii_impl(msg)  # type: ignore[misc]
+    try:
+        return _check_pii_impl(msg)  # type: ignore[misc]
+    except SystemExit:
+        return None  # spacy model missing — skip PII check gracefully
 
 logger = structlog.get_logger(__name__)
 

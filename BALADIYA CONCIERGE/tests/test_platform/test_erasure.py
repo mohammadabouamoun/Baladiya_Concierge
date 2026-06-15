@@ -7,6 +7,10 @@ After DELETE /platform/tenants/{id} (via service layer):
 """
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 import uuid
 
 import pytest
@@ -20,7 +24,7 @@ from api.services import platform_service
 
 @pytest.mark.asyncio
 async def test_erase_removes_all_tenant_data(db_session: AsyncSession, platform_manager):
-    email = f"erase-{uuid.uuid4()}@test.local"
+    email = f"erase-{uuid.uuid4()}@example.com"
     payload = TenantCreate(name="City Erase", admin_email=email, admin_password="pass")
     tenant = await platform_service.provision_tenant(db_session, payload, platform_manager.id)
     tenant_id = tenant.id
@@ -45,7 +49,7 @@ async def test_erase_removes_all_tenant_data(db_session: AsyncSession, platform_
 
 @pytest.mark.asyncio
 async def test_erase_writes_audit_log(db_session: AsyncSession, platform_manager):
-    email = f"erase-audit-{uuid.uuid4()}@test.local"
+    email = f"erase-audit-{uuid.uuid4()}@example.com"
     payload = TenantCreate(name="City Audit", admin_email=email, admin_password="pass")
     tenant = await platform_service.provision_tenant(db_session, payload, platform_manager.id)
     tenant_id = tenant.id

@@ -84,7 +84,7 @@ async def update_entry(
     return CmsEntryRead.model_validate(entry)
 
 
-@router.delete("/entries/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/entries/{entry_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_entry(
     entry_id: uuid.UUID,
     token: Annotated[TokenClaims, Depends(require_tenant_admin)],

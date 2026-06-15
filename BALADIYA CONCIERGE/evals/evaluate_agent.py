@@ -97,7 +97,9 @@ async def run_eval(model: str = "gemini", verbose: bool = False) -> dict[str, An
     print(f"\nRunning agent tool-selection eval ({len(examples)} examples, model={model})")
     print("-" * 60)
 
-    for ex in examples:
+    for i, ex in enumerate(examples):
+        if i > 0:
+            await asyncio.sleep(13)  # stay under 5 req/min free-tier limit
         predicted, latency = await _call_llm_for_tool(ex, model)
         correct = predicted == ex["expected_tool"]
 
