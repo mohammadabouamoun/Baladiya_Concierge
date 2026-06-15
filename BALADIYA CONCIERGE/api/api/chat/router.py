@@ -48,7 +48,8 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
-    handled_by: str  # "workflow" | "agent" | "spam"
+    handled_by: str  # "workflow" | "agent" | "spam" | "verification_required"
+    verification_required: bool = False
 
 
 # ── Dependencies ───────────────────────────────────────────────────────────
@@ -141,7 +142,7 @@ async def chat(
         )
         return ChatResponse(response=refusal, handled_by="guardrails")
 
-    from api.services.router_service import handle
+    from api.services.router_service import handle, VERIFICATION_REQUIRED
     try:
         response_text, handled_by = await handle(
             text=safe_message,
@@ -171,4 +172,8 @@ async def chat(
         response_len=len(response_text),
     )
 
-    return ChatResponse(response=response_text, handled_by=handled_by)
+    return ChatResponse(
+        response=response_text,
+        handled_by=handled_by,
+        verification_required=(handled_by == VERIFICATION_REQUIRED),
+    )

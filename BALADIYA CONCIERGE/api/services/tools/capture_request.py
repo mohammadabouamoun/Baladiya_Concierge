@@ -75,9 +75,25 @@ async def run(args: dict[str, Any], context: AgentContext) -> dict[str, Any]:
     except HTTPException as exc:
         return {"error": exc.detail, "status_code": exc.status_code}
 
+    # Phone verification — required for reports regardless of routing path (agent or workflow)
+    if payload.intent == "report":
+        from api.services.otp_service import get_session_phone_hash
+        from api.repositories.blocked_reporter_repo import BlockedReporterRepository
+        phone_hash = await get_session_phone_hash(get_redis(), context.session_id, context.tenant_id)
+        if not phone_hash:
+            return {"error": "phone_verification_required", "verification_required": True}
+        blocked_repo = BlockedReporterRepository(context.db_session)
+        if await blocked_repo.is_blocked(context.tenant_id, phone_hash):
+            return {"error": "reporter_blocked"}
+        context.visitor_phone_hash = phone_hash
+
     try:
         repo = CaptureRequestRepository(context.db_session, context.tenant_id)
-        record = await repo.create(payload, context.session_id)
+        record = await repo.create(
+            payload,
+            context.session_id,
+            visitor_phone_hash=context.visitor_phone_hash,
+        )
         await context.db_session.commit()
     except Exception as exc:
         logger.error(

@@ -13,7 +13,12 @@ class CaptureRequestRepository(BaseRepository[CaptureRequest]):
     def __init__(self, session: AsyncSession, tenant_id: uuid.UUID) -> None:
         super().__init__(session, tenant_id, CaptureRequest)
 
-    async def create(self, payload: CaptureRequestCreate, session_id: str) -> CaptureRequest:
+    async def create(
+        self,
+        payload: CaptureRequestCreate,
+        session_id: str,
+        visitor_phone_hash: str | None = None,
+    ) -> CaptureRequest:
         """Create a capture request. tenant_id always comes from self._tenant_id."""
         record = CaptureRequest(
             tenant_id=self._tenant_id,
@@ -23,6 +28,7 @@ class CaptureRequestRepository(BaseRepository[CaptureRequest]):
             name=payload.name,
             contact=payload.contact,
             location=payload.location,
+            visitor_phone_hash=visitor_phone_hash,
         )
         return await self.add(record)
 
