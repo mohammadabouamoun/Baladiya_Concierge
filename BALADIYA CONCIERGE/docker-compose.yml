@@ -1,5 +1,3 @@
-version: "3.9"
-
 # ============================================================
 # Baladiya Concierge — full Compose stack
 # Active this phase: db, vault, migrate, api, redis
