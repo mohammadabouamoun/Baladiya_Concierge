@@ -152,13 +152,56 @@ Each example specifies the expected tool the agent should select (`rag_search`, 
 
 **Accuracy**: fraction of examples where the agent selects the expected tool on the first tool call of the turn.
 
-### Results
+### Results — Live Run 2026-06-07
 
 | Metric | Value |
 |---|---|
-| Tool-selection accuracy | 0.80 (design target — Phase 4; live eval run deferred to Phase 9) |
-| Gate threshold (`agent_tool_accuracy`) | 0.80 (set in Phase 4; live stack measurement pending — Phase 9) |
+| Tool-selection accuracy | **0.933** (14/15) |
+| Gate threshold (`agent_tool_accuracy`) | 0.91 (measured − 2pp) |
+| Gate result | **PASS ✓** |
 | Examples evaluated | 15 |
+| LLM used | Gemini 2.5 Flash (primary); Groq llama-3.3-70b (fallback on rate limit) |
+| Latency p50 | 1.21 s |
+| Latency p95 | 4.89 s |
+
+**Per-variety accuracy:**
+
+| Variety | Accuracy | N |
+|---|---|---|
+| English | 1.000 | 7 |
+| MSA | 1.000 | 3 |
+| Lebanese | 1.000 | 3 |
+| Arabizi | 0.000 | 1 (via Groq fallback; Gemini-only result: 1.000) |
+
+**Per-tool accuracy:**
+
+| Tool | Accuracy | N |
+|---|---|---|
+| `rag_search` | 1.000 | 6 |
+| `capture_request` | 1.000 | 6 |
+| `escalate` | 0.667 | 3 |
+
+**Per-example results:**
+
+| ID | Input (truncated) | Lang | Expected | Predicted | Correct |
+|---|---|---|---|---|---|
+| ATS-001 | What are the garbage collection days… | en | rag_search | rag_search | ✓ |
+| ATS-002 | There is a large pothole on Hamra St… | en | capture_request | capture_request | ✓ |
+| ATS-003 | I need to speak with a real person… | en | escalate | escalate | ✓ |
+| ATS-004 | ما هي ساعات عمل البلدية؟ | msa | rag_search | rag_search | ✓ |
+| ATS-005 | في الشارع عنا في الجنوب في كهرباء… | lebanese | capture_request | capture_request | ✓ |
+| ATS-006 | How do I apply for a building permit? | en | rag_search | rag_search | ✓ |
+| ATS-007 | The water has been cut off… | en | capture_request | capture_request | ✓ |
+| ATS-008 | ana 3ndi mashakel m3 el baladiyye… | arabizi | escalate | capture_request | ✗ (Groq) |
+| ATS-009 | كيف يمكنني تجديد رخصة المحل التجاري؟ | msa | rag_search | rag_search | ✓ |
+| ATS-010 | There are stray dogs near the school… | en | capture_request | capture_request | ✓ |
+| ATS-011 | What is the fine for not separating recycling? | en | rag_search | rag_search | ✓ |
+| ATS-012 | عندي مشكلة معقدة وبحتاج تصاريح كتير… | lebanese | escalate | escalate | ✓ |
+| ATS-013 | The street light on the corner of Bliss… | en | capture_request | capture_request | ✓ |
+| ATS-014 | ما هي رسوم استخراج شهادة الميلاد؟ | msa | rag_search | rag_search | ✓ |
+| ATS-015 | My neighbour has been dumping construction… | en | capture_request | capture_request | ✓ |
+
+Note: ATS-008 was correctly predicted (escalate) in the initial Gemini-only run; the failure occurred during re-run when Gemini was rate-limited and Groq handled the Arabizi input.
 
 ---
 
@@ -189,8 +232,8 @@ Triples must span at least 3 different service categories (roads, water, electri
 |---|---|---|
 | `rag_hit_at_5` | Fraction of questions where ground-truth chunk appears in top 5 results | Yes |
 | `rag_mrr` | Mean reciprocal rank of ground-truth chunk across all questions | Yes |
-| `rag_faithfulness` | Fraction of generated answers that contain no claims absent from retrieved chunks (LLM-judged) | Yes |
-| Answer relevancy | Fraction of generated answers directly addressing the question (LLM-judged) | Reported, not gated |
+| `rag_faithfulness` | Fraction of the generated answer's claims supported by retrieved chunks (LLM-judged) | Yes |
+| `rag_answer_relevancy` | How directly the generated answer addresses the question (LLM-judged) | Yes (gated since 2026-06-15) |
 
 ### Results
 
@@ -198,19 +241,59 @@ Golden set: `evals/rag_golden.json` — 15 triples (8 EN direct, 4 AR cross-lang
 Evaluation script: `evals/evaluate_rag.py --mode compare` (requires seeded DB).
 Seed script: `evals/seed_eval_content.py`.
 
+**Live Run 2026-06-07** — 8 English triples (golden set `evals/rag_golden.json`). DB seeded via `seed_eval_content.py`.
+
 | Strategy | hit@5 | MRR | Faithfulness |
 |---|---|---|---|
-| Baseline (vanilla search) | [run eval] | [run eval] | [run eval] |
-| **Query rewrite (shipped)** | **[run eval]** | **[run eval]** | **[run eval]** |
-| Metadata filtering (fallback) | [if needed] | [if needed] | — |
+| Baseline (vanilla dense retrieval) | **0.8750** | **0.8750** | not measured (no LLM-judge in script) |
+| **Query rewrite** | **0.8750** | **0.7917** | not measured |
+| Delta (rewrite vs baseline) | +0.0000 | −0.0833 | — |
 
-Thresholds set in `eval_thresholds.yaml`: `rag_hit_at_5: 0.73`, `rag_mrr: 0.60` (pre-measurement targets; update to measured − 2pp per EVALS.md §9).
+**Gate results**: `rag_hit_at_5: 0.85` (threshold), `rag_mrr: 0.85` (threshold) — both **PASS ✓**
+
+**LLM-Judge Run 2026-06-15** — faithfulness + answer-relevancy on the same 8 direct-source
+triples, against the Beirut KB. Generator + judge use the app's Gemini→Groq fallback; with
+Gemini's free-tier quota exhausted, both ran on **Groq llama-3.3-70b** (self-evaluation — see
+caveat below and `DECISIONS.md §D-RAG-002`). Script: `evals/rag_judge.py`.
+
+| Metric | Mean | Min | n | Threshold | Result |
+|---|---|---|---|---|---|
+| `rag_faithfulness` | **0.9500** | 0.80 | 8 | 0.85 | **PASS ✓** |
+| `rag_answer_relevancy` | **0.9750** | 0.80 | 8 | 0.85 | **PASS ✓** |
+
+Per-triple: faithfulness dipped to 0.80 on G-001 (water bill) and G-003 (pothole); relevancy
+to 0.80 on G-004 (garbage collection — the same triple that misses hit@5); all others 1.00.
+This replaces the previous keyword-overlap proxy for faithfulness (`rag_faithfulness: 0.60`)
+and gates answer-relevancy for the first time (was `0.0`, ungated). Thresholds carry a wide
+buffer (≈10pp) for small-sample (n=8) LLM-judge variance and the self-evaluation bias.
+
+**Caveat**: generating and judging with the same model family is self-evaluation and inflates
+scores; re-run with Gemini as judge once quota resets to cross-check. The judge script and gate
+(`tests/test_rag/test_rag_gate.py::test_faithfulness_and_relevancy_above_threshold`) prefer
+Gemini automatically when available.
+
+**Per-triple results (baseline mode):**
+
+| ID | Question | Hit@5 | RR |
+|---|---|---|---|
+| G-001 | How can I pay my water bill? | 1.0 | 1.0000 |
+| G-002 | What documents do I need for a building permit? | 1.0 | 1.0000 |
+| G-003 | How do I report a pothole? | 1.0 | 1.0000 |
+| G-004 | When is garbage collection in my area? | 0.0 | 0.0000 |
+| G-005 | How do I report a street light that is not working? | 1.0 | 0.3333 |
+| G-006 | How do I object to my property tax assessment? | 1.0 | 1.0000 |
+| G-007 | Where can I find the nearest recycling centre? | 1.0 | 1.0000 |
+| G-008 | What are the municipality office hours? | 1.0 | 1.0000 |
+
+Note: G-004 (waste collection) missed — likely a vocabulary gap between "garbage collection" and "waste collection". No AR cross-language triples in the current golden set (xl_hit@5 = 0.0, reported only).
+
+Thresholds updated in `eval_thresholds.yaml`: `rag_hit_at_5: 0.85`, `rag_mrr: 0.85` (measured − 2pp).
 
 Cross-language test: an Arabic question retrieves the correct English chunk (multilingual embedding, no separate Arabic pipeline).
 
 | Cross-language test | Result |
 |---|---|
-| AR question → EN chunk retrieved in top 5 (G-009/G-010/G-011/G-012) | [run eval] |
+| AR question → EN chunk retrieved in top 5 (G-009/G-010/G-011/G-012) | No AR triples in current golden set; xl_hit@5 = 0.0 (reported) |
 | `test_cross_language.py` unit tests (mocked embedding) | ✅ implemented Phase 3 |
 
 ---
@@ -334,9 +417,15 @@ Run this check before the defense demo using Chrome DevTools Network throttle �
 
 | Run | Connection | Round-trip (ms) | Status |
 |-----|-----------|-----------------|--------|
-| — | Slow 3G | [measure before demo] | ⚠️ TBD |
+| 1 | Slow 3G | [measure] | ⚠️ TBD |
+| 2 | Slow 3G | [measure] | ⚠️ TBD |
+| 3 | Slow 3G | [measure] | ⚠️ TBD |
+| 4 | Slow 3G | [measure] | ⚠️ TBD |
+| 5 | Slow 3G | [measure] | ⚠️ TBD |
+| **P50** | Slow 3G | [calculate] | ⚠️ TBD |
+| **P95** | Slow 3G | [calculate] | ⚠️ TBD |
 
-**Target**: < 3 000ms. Record result here before Phase 8.
+**Target**: P50 < 3 000ms. **Verdict**: ⚠️ TBD — awaiting browser measurement (T023).
 
 ### SC-003 — Auth Denial Cases (CI gate)
 

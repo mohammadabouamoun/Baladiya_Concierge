@@ -1,11 +1,12 @@
 # CI evaluation thresholds — all gates must pass on every push
-# Updated 2026-06-06 — Phase 8 hardening & evals
+# Updated 2026-06-12 — Phase 9 Session 7: +55 Arabizi question rows; Arabizi question confidence fixed
 # Classifier thresholds = measured value − 2pp for reproducibility variance
-# RAG/agent thresholds = conservative pre-measurement targets; update to (measured − 2pp) after live eval run (Phase 9)
+# RAG/agent thresholds = measured values (Phase 9 live eval, 2026-06-07); set to measured − 2pp
 
-classifier_macro_f1: 0.97   # measured 0.9980 (12731-row bilingual dataset, 2026-06-06)
-en_macro_f1: 0.98            # measured 1.0000 (EN template test set, n=2412)
-ar_macro_f1: 0.93            # measured 0.9507 (AR hand-crafted test, n=113; Arabizi=0.83)
+classifier_macro_f1: 0.97   # measured 0.9966 (13138-row dataset, 2026-06-12; real+template EN)
+en_macro_f1: 0.97            # measured 0.9984 (EN mixed real+template test, n=2449, 2026-06-12)
+ar_macro_f1: 0.95            # measured 0.9740 (AR test, n=198; MSA 69 + Lebanese 33 + Arabizi 96, 2026-06-12); −2pp
+arabizi_f1: 0.94             # measured 0.9578 (AR sub-model §8.3, n=96, 2026-06-12); −2pp buffer
 
 classifier_confidence_thresholds:
   report: 0.75
@@ -13,12 +14,12 @@ classifier_confidence_thresholds:
   human: 0.65
   spam: 0.90
 
-agent_tool_accuracy: 0.80   # SC-001: ≥ 80% on 15 labelled examples; set in Phase 4
+agent_tool_accuracy: 0.91   # measured 0.933 (14/15, 2026-06-07); −2pp buffer; Arabizi misses on Groq fallback
 workflow_handled_rate: 0.60 # SC-002: ≥ 60% of turns handled by workflow (no agent LLM call)
 
-rag_hit_at_5: 0.73    # conservative target (goal 0.80 − 7pp buffer); awaiting live eval run (Phase 9)
-rag_mrr: 0.60         # conservative target; awaiting live eval run (Phase 9)
-rag_faithfulness: 0.60 # keyword-overlap proxy; awaiting LLM-judge live eval (Phase 9)
-rag_answer_relevancy: 0.0 # not-gated (reported only); update to measured value after Phase 9 eval run
+rag_hit_at_5: 0.85    # measured 0.8750 baseline (8 triples, 2026-06-07); −2pp buffer
+rag_mrr: 0.85         # measured 0.8750 baseline (2026-06-07); −2pp buffer
+rag_faithfulness: 0.85 # LLM-judge (evals/rag_judge.py); measured mean 0.9500 (n=8, Beirut KB, 2026-06-15, Groq judge); wide buffer for small-n self-eval variance
+rag_answer_relevancy: 0.85 # LLM-judge (evals/rag_judge.py); measured mean 0.9750 (n=8, 2026-06-15, Groq judge); now gated (was 0.0 ungated)
 
 redteam_pass_rate: 1.0

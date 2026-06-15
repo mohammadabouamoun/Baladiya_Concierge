@@ -316,6 +316,13 @@ def _build_groq_tools(schemas: list[dict]) -> list[dict]:
     ]
 
 
+def _truncate_history(history: list[AgentMessage], max_turns: int = 6) -> list[AgentMessage]:
+    """Keep only the last max_turns user/model pairs to stay within token limits."""
+    if len(history) <= max_turns * 2:
+        return history
+    return history[-(max_turns * 2):]
+
+
 async def _complete_groq(
     system_prompt: str,
     history: list[AgentMessage],
@@ -327,16 +334,35 @@ async def _complete_groq(
     settings = get_settings()
     client = AsyncGroq(api_key=settings.groq_api_key)
 
-    messages = _to_groq_messages(system_prompt, history, user_message)
+    messages = _to_groq_messages(system_prompt, _truncate_history(history), user_message)
     tools = _build_groq_tools(tool_schemas)
 
-    response = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=messages,
-        tools=tools,
-        tool_choice="auto",
-        max_tokens=settings.max_tokens_per_turn,
-    )
+    try:
+        response = await client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto",
+            parallel_tool_calls=False,  # prevents llama from generating Hermes-style <function=...> syntax
+            temperature=0,
+            max_tokens=min(settings.max_tokens_per_turn, 1024),
+        )
+    except Exception as exc:
+        # Groq SDK raises groq.APIStatusError (not httpx.HTTPStatusError), so check generically.
+        status = getattr(exc, "status_code", None)
+        if status in (400, 413):
+            # 400: llama generated malformed tool syntax (Hermes format).
+            # 413: history too large — retry with aggressively trimmed history and no tools.
+            logger.warning("llm_client.groq_retrying_plain", status=status, error=str(exc)[:200])
+            trimmed = _to_groq_messages(system_prompt, _truncate_history(history, max_turns=2), user_message)
+            response = await client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=trimmed,
+                temperature=0,
+                max_tokens=min(settings.max_tokens_per_turn, 1024),
+            )
+        else:
+            raise
 
     choice = response.choices[0]
     if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
@@ -396,5 +422,79 @@ async def complete(
             )
 
     logger.info("llm_client.groq_fallback", failure_count=_gemini_tracker.count)
-    result = await _complete_groq(system_prompt, history, user_message, schemas)
-    return result
+    try:
+        result = await _complete_groq(system_prompt, history, user_message, schemas)
+        _gemini_tracker.reset()
+        return result
+    except Exception as groq_exc:
+        # Groq failed (e.g. malformed tool call → 400). Reset the tracker so the
+        # next request retries Gemini rather than staying on a broken Groq path.
+        logger.warning("llm_client.groq_failed", error=str(groq_exc))
+        _gemini_tracker.reset()
+        return await _try_gemini(system_prompt, history, user_message, schemas)
+
+
+# ── Plain-text completion (no tools) ───────────────────────────────────────
+# Used by RAG generation and the eval LLM-judge — a single prompt → text, with
+# the same Gemini→Groq fallback as complete(). Kept separate from complete() so
+# the tool-calling machinery (which errors on empty tool lists) is not involved.
+
+def _call_gemini_text_sync(system_prompt: str, user_message: str, max_tokens: int) -> str:
+    import google.generativeai as genai
+
+    settings = get_settings()
+    genai.configure(api_key=settings.gemini_api_key)
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash", system_instruction=system_prompt
+    )
+    response = model.generate_content(
+        user_message,
+        generation_config={"max_output_tokens": max_tokens, "temperature": 0.0},
+    )
+    return response.text or ""
+
+
+async def _complete_groq_text(system_prompt: str, user_message: str, max_tokens: int) -> str:
+    from groq import AsyncGroq
+
+    settings = get_settings()
+    client = AsyncGroq(api_key=settings.groq_api_key)
+    response = await client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.0,
+        max_tokens=max_tokens,
+    )
+    return response.choices[0].message.content or ""
+
+
+async def complete_text(system_prompt: str, user_message: str, max_tokens: int = 800) -> str:
+    """One prompt → text. Gemini primary, Groq fallback (mirrors complete())."""
+    if not _gemini_tracker.use_fallback:
+        try:
+            result = await asyncio.to_thread(
+                _call_gemini_text_sync, system_prompt, user_message, max_tokens
+            )
+            _gemini_tracker.reset()
+            return result
+        except Exception as exc:
+            _gemini_tracker.record()
+            logger.warning(
+                "llm_client.gemini_text_failed",
+                failure_count=_gemini_tracker.count,
+                error=str(exc),
+            )
+
+    try:
+        result = await _complete_groq_text(system_prompt, user_message, max_tokens)
+        _gemini_tracker.reset()
+        return result
+    except Exception as groq_exc:
+        logger.warning("llm_client.groq_text_failed", error=str(groq_exc))
+        _gemini_tracker.reset()
+        return await asyncio.to_thread(
+            _call_gemini_text_sync, system_prompt, user_message, max_tokens
+        )

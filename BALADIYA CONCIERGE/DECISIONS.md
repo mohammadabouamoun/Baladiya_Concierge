@@ -376,3 +376,99 @@ These decisions are structural — they are set at design time and changing them
 **Verdict**: Use `jwt_secret` for Phase 6. Per-widget key rotation is deferred to Phase 8 with the infrastructure already in place (`widget_signing_key` is seeded but unused).
 
 **Phase 8 update (implemented 2026-06-06)**: Per-widget key rotation is now live. Each widget has its own key at `baladiya/widget/{widget_id}/signing_key` in Vault KV v2. `decode_token` performs a two-pass decode: (1) peek `widget_id` claim without signature verification, (2) fetch the per-widget key from Vault (TTL-300s LRU cache, max 128 entries), (3) full verified decode. Non-widget tokens (no `widget_id` claim) continue to use `jwt_secret`. Rotation endpoint: `POST /admin/widgets/{widget_id}/rotate-key` (Tenant Admin auth). `scripts/seed.py` migrates existing Phase 6 widgets idempotently. See `specs/008-hardening-evals/plan.md §Per-Widget Key: Vault Path Convention` for the full algorithm.
+
+---
+
+## RAG / Retrieval Decisions
+
+### D-RAG-001 — Off-Topic Decline via Variety-Aware Absolute Similarity Floor
+
+**Decision**: The confident-`question` **workflow** path declines (`question_miss`) when the
+top retrieval similarity falls below a per-variety absolute floor, instead of returning the
+"least irrelevant" chunks. Floors: `en/msa/lebanese = 0.58`, `arabizi = 0.50`
+(`Settings.rag_relevance_floor`). The **agent** path is unaffected — it can still reason over
+weak matches and decline conversationally.
+**Filled in**: Phase 9 (2026-06-15)
+
+**Problem**: The relevance gate in `api/services/tools/rag_search.py` is *relative* to the top
+score, so an off-topic query (e.g. "How do I renew my passport?") still returns its single best
+— and wrong — chunk. The workflow `question` branch then concatenates that raw chunk as the
+answer, dumping loosely-related KB instead of declining.
+
+**Calibration** (`scripts/probe_relevance.py`, Beirut tenant, deterministic `rewrite=False`,
+11 on-topic / 10 off-topic queries):
+
+| Variety | on-topic min | off-topic max | Floor | Separates? |
+|---|---|---|---|---|
+| en | 0.705 | 0.536 | 0.58 | ✅ 17pp gap |
+| msa | 0.732 | 0.561 | 0.58 | ✅ (declines passport 0.561) |
+| lebanese | 0.695 | 0.523 | 0.58 | ✅ |
+| arabizi | 0.527 | 0.535 | 0.50 | ❌ overlaps — kept lenient |
+
+At these floors, **20 of 21** probes classify correctly; the single miss is one Arabizi
+off-topic query (0.535) that sits above on-topic Arabizi (0.527).
+
+**Why Arabizi is the exception**: Latin-script Arabizi queries embed poorly against the
+Arabic-script KB *unless* the Gemini query-rewrite normalises them to MSA first. With rewrite
+unavailable (free-tier quota exhausted), Arabizi on-topic similarity collapses (~0.53) into the
+off-topic band, so no floor can separate the two without false-declining real questions. Arabizi
+is therefore kept lenient (0.50) to preserve recall; its off-topic gating is best-effort until
+query-rewrite is healthy, at which point Arabizi normalises to MSA and the 0.58-class behaviour
+applies upstream. Recalibrate then.
+
+**Caveat**: query-rewrite is non-deterministic under intermittent quota (per-minute limit of 5),
+so it can occasionally mangle an on-topic query and tank its score. The floor is calibrated on
+the deterministic rewrite-off worst case to minimise false-declines of on-topic questions
+(judged worse than leaking a borderline off-topic answer the relative gate already trims). Every
+decline is logged (`router.question_offtopic_declined` with `top_similarity` + `floor`).
+
+**Out of scope (separate findings)**: (1) the Beirut demo KB contains leftover eval rows
+("Test Entry" / "Test Vector Entry") that off-topic queries match — a data-hygiene issue;
+(2) the agent path will fulfil non-civic requests (e.g. "write me a poem") — a tenant-rails /
+agent-scope gap, not a retrieval issue.
+
+**Verdict**: Variety-aware absolute floor on the workflow path. Measured 20/21 on the calibration
+probe. Borderline gov-adjacent off-topic in Arabizi is a documented residual limitation tied to
+query-rewrite availability.
+
+### D-RAG-002 — RAG Faithfulness & Answer-Relevancy via LLM-Judge
+
+**Decision**: The RAG quality gate judges **faithfulness** (are the generated answer's claims
+supported by the retrieved context?) and **answer-relevancy** (does the answer address the
+question?) with a real LLM-judge (RAGAS-style), replacing the prior keyword-overlap proxy for
+faithfulness and gating answer-relevancy for the first time. Judge + generator use the app's
+Gemini→Groq fallback (`api/infra/llm_client.complete_text`).
+**Filled in**: Phase 9 (2026-06-15)
+
+**Problem**: faithfulness/relevancy are properties of a *generated answer*, but the eval had no
+generation step — `rag_faithfulness: 0.60` was a keyword-overlap proxy on retrieved chunks and
+`rag_answer_relevancy: 0.0` was ungated. Neither could be honestly cited.
+
+**Implementation**: `evals/rag_judge.py` — for each golden triple: retrieve top-5 chunks →
+generate a grounded answer → judge faithfulness against the chunks and relevancy against the
+question (each returns JSON `{"score": 0..1}`). Reusable functions (`generate_answer`,
+`judge_faithfulness`, `judge_relevancy`) are imported by the CI gate
+(`tests/test_rag/test_rag_gate.py`, `RAG_EVAL=1`, `EVAL_TENANT_ID` set).
+
+**Measured** (n=8 direct-source triples, Beirut KB, 2026-06-15; Groq judge):
+
+| Metric | Mean | Min | Threshold set |
+|---|---|---|---|
+| faithfulness | 0.9500 | 0.80 | 0.85 |
+| answer_relevancy | 0.9750 | 0.80 | 0.85 |
+
+Thresholds use a ~10pp buffer (not the usual −2pp) because n=8 + LLM-judge + self-evaluation
+carry more run-to-run variance than the stable retrieval metrics.
+
+**Caveat (self-evaluation)**: Gemini's free-tier quota (20/day) was exhausted, so generation
+*and* judging ran on the same model (Groq llama-3.3-70b). Same-model judging inflates scores.
+The client prefers Gemini automatically; re-run as judge once quota resets to cross-check. A
+distinct, stronger judge model is the correct future step if these gates become load-bearing.
+
+**Also fixed**: the live gate previously retrieved against a random `uuid.uuid4()` tenant (so it
+retrieved nothing and never meaningfully ran). It now reads `EVAL_TENANT_ID`, and the three live
+gate tests skip cleanly when it is unset.
+
+**Verdict**: Real LLM-judge for faithfulness + answer-relevancy; both gated at 0.85 on measured
+0.95 / 0.975. Self-evaluation bias is the known limitation, documented and mitigated by the
+Gemini-preferred client.

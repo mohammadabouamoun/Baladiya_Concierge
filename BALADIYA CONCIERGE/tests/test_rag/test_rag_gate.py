@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import uuid
 from pathlib import Path
 from typing import Any
@@ -23,10 +24,14 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(ROOT))  # make evals.rag_judge importable
 GOLDEN_PATH = ROOT / "evals" / "rag_golden.json"
 THRESHOLDS_PATH = ROOT / "eval_thresholds.yaml"
 
 RAG_EVAL_ENABLED = os.environ.get("RAG_EVAL", "0") == "1"
+# Live gates retrieve from a seeded tenant — the same one seed_eval_content.py
+# populated. Read it from env (a random uuid retrieves nothing). Skip if unset.
+EVAL_TENANT_ID = os.environ.get("EVAL_TENANT_ID", "")
 
 
 def _load_thresholds() -> dict:
@@ -52,27 +57,28 @@ def _reciprocal_rank(retrieved_texts: list[str], keywords: list[str]) -> float:
     return 0.0
 
 
+_NEED_TENANT = pytest.mark.skipif(
+    not EVAL_TENANT_ID, reason="Set EVAL_TENANT_ID to a seeded tenant to run live RAG gates"
+)
+
+
 @pytest.mark.skipif(not RAG_EVAL_ENABLED, reason="Set RAG_EVAL=1 to run RAG quality gate")
 class TestRagGate:
-    """Live quality gate — requires seeded DB and Gemini API key."""
+    """Live quality gate — requires a seeded tenant (EVAL_TENANT_ID) and an LLM key."""
 
+    @_NEED_TENANT
     @pytest.mark.asyncio
     async def test_hit_at_5_above_threshold(self, db_session: AsyncSession):
         from api.services.rag_service import rag_search
-        thresholds = _load_thresholds()
-        threshold = thresholds.get("rag_hit_at_5", 0.0)
-
+        threshold = _load_thresholds().get("rag_hit_at_5", 0.0)
         triples = _load_golden()
-        tenant_id = uuid.uuid4()  # injected by test fixture via seed_eval_content
+        tenant_id = uuid.UUID(EVAL_TENANT_ID)
 
         hits = []
         for triple in triples:
             results = await rag_search(
-                query=triple["question"],
-                tenant_id=tenant_id,
-                session=db_session,
-                top_k=5,
-                rewrite=True,
+                query=triple["question"], tenant_id=tenant_id, session=db_session,
+                top_k=5, rewrite=True, lang=triple.get("lang", "en"),
             )
             texts = [r.chunk_text for r in results]
             hits.append(_hit_at_k(texts, triple["expected_keywords"], k=5))
@@ -83,23 +89,19 @@ class TestRagGate:
             f"(failing triples: {[t['id'] for t, h in zip(triples, hits) if h == 0]})"
         )
 
+    @_NEED_TENANT
     @pytest.mark.asyncio
     async def test_mrr_above_threshold(self, db_session: AsyncSession):
         from api.services.rag_service import rag_search
-        thresholds = _load_thresholds()
-        threshold = thresholds.get("rag_mrr", 0.0)
-
+        threshold = _load_thresholds().get("rag_mrr", 0.0)
         triples = _load_golden()
-        tenant_id = uuid.uuid4()
+        tenant_id = uuid.UUID(EVAL_TENANT_ID)
 
         rr_scores = []
         for triple in triples:
             results = await rag_search(
-                query=triple["question"],
-                tenant_id=tenant_id,
-                session=db_session,
-                top_k=5,
-                rewrite=True,
+                query=triple["question"], tenant_id=tenant_id, session=db_session,
+                top_k=5, rewrite=True, lang=triple.get("lang", "en"),
             )
             texts = [r.chunk_text for r in results]
             rr_scores.append(_reciprocal_rank(texts, triple["expected_keywords"]))
@@ -107,39 +109,49 @@ class TestRagGate:
         mrr = sum(rr_scores) / len(rr_scores)
         assert mrr >= threshold, f"RAG MRR {mrr:.4f} below threshold {threshold}"
 
+    @_NEED_TENANT
     @pytest.mark.asyncio
-    async def test_faithfulness_above_threshold(self, db_session: AsyncSession):
-        """Keyword-proxy for faithfulness: retrieved chunks must contain expected content.
+    async def test_faithfulness_and_relevancy_above_threshold(self, db_session: AsyncSession):
+        """Real LLM-judge gate (RAGAS-style), replacing the old keyword proxy.
 
-        Faithfulness = fraction of triples where retrieved text contains all expected
-        keywords.  A full LLM-judge faithfulness score is added in Phase 5.
-        This proxy ensures the gate is non-trivially set (rag_faithfulness: 0.60).
+        For each triple: retrieve → generate a grounded answer → judge faithfulness
+        (answer claims supported by context) and answer-relevancy (answer addresses
+        the question). Judge uses the app's Gemini→Groq fallback. See DECISIONS.md
+        §D-RAG-002 for the measured baseline (faithfulness 0.95, relevancy 0.975, n=8)
+        and the self-evaluation caveat.
         """
         from api.services.rag_service import rag_search
+        from evals.rag_judge import generate_answer, judge_faithfulness, judge_relevancy
+
         thresholds = _load_thresholds()
-        threshold = thresholds.get("rag_faithfulness", 0.0)
+        faith_thr = thresholds.get("rag_faithfulness", 0.0)
+        rel_thr = thresholds.get("rag_answer_relevancy", 0.0)
 
         triples = _load_golden()
-        tenant_id = uuid.uuid4()
+        tenant_id = uuid.UUID(EVAL_TENANT_ID)
 
-        faithful = []
+        faiths, rels = [], []
         for triple in triples:
             results = await rag_search(
-                query=triple["question"],
-                tenant_id=tenant_id,
-                session=db_session,
-                top_k=5,
-                rewrite=True,
+                query=triple["question"], tenant_id=tenant_id, session=db_session,
+                top_k=5, rewrite=True, lang=triple.get("lang", "en"),
             )
-            texts = [r.chunk_text for r in results]
-            all_text = " ".join(texts).lower()
-            # Proxy: at least one expected keyword appears in retrieved context
-            has_content = any(kw.lower() in all_text for kw in triple["expected_keywords"])
-            faithful.append(1.0 if has_content else 0.0)
+            contexts = [r.chunk_text for r in results]
+            answer = await generate_answer(triple["question"], contexts)
+            f = await judge_faithfulness(answer, contexts)
+            r = await judge_relevancy(triple["question"], answer)
+            if f >= 0:
+                faiths.append(f)
+            if r >= 0:
+                rels.append(r)
 
-        faithfulness = sum(faithful) / len(faithful) if faithful else 0.0
-        assert faithfulness >= threshold, (
-            f"RAG faithfulness (keyword proxy) {faithfulness:.4f} below threshold {threshold}"
+        faithfulness = sum(faiths) / len(faiths) if faiths else 0.0
+        relevancy = sum(rels) / len(rels) if rels else 0.0
+        assert faithfulness >= faith_thr, (
+            f"RAG faithfulness (LLM-judge) {faithfulness:.4f} below threshold {faith_thr}"
+        )
+        assert relevancy >= rel_thr, (
+            f"RAG answer-relevancy (LLM-judge) {relevancy:.4f} below threshold {rel_thr}"
         )
 
 
