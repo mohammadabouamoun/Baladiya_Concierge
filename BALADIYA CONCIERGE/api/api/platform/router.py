@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.api.platform.deps import require_platform_manager
@@ -65,25 +65,16 @@ async def suspend_tenant(
     return TenantRead.model_validate(tenant)
 
 
-class EraseConfirmation(TenantCreate):
-    pass
 
 
-from pydantic import BaseModel  # noqa: E402
-
-
-class EraseRequest(BaseModel):
-    confirm_tenant_id: uuid.UUID
-
-
-@router.delete("/tenants/{tenant_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/tenants/{tenant_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def erase_tenant(
     tenant_id: uuid.UUID,
-    body: EraseRequest,
+    confirm_tenant_id: Annotated[uuid.UUID, Query()],
     token: Annotated[TokenClaims, Depends(require_platform_manager)],
     session: Annotated[AsyncSession, Depends(_get_platform_db)],
 ) -> None:
-    if body.confirm_tenant_id != tenant_id:
+    if confirm_tenant_id != tenant_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="confirm_tenant_id must match the URL tenant_id",
@@ -92,3 +83,29 @@ async def erase_tenant(
         await platform_service.erase_tenant(session, tenant_id, token.user_id)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.get("/audit-logs", response_model=list)
+async def list_audit_logs(
+    token: Annotated[TokenClaims, Depends(require_platform_manager)],
+    session: Annotated[AsyncSession, Depends(_get_platform_db)],
+    limit: int = Query(default=100, le=500),
+) -> list:
+    from sqlalchemy import select, desc
+    from api.domain.audit import AuditLog
+    result = await session.execute(
+        select(AuditLog).order_by(desc(AuditLog.created_at)).limit(limit)
+    )
+    logs = result.scalars().all()
+    return [
+        {
+            "id": str(log.id),
+            "actor_id": str(log.actor_id),
+            "actor_role": log.actor_role,
+            "action": log.action,
+            "tenant_id": str(log.tenant_id) if log.tenant_id else None,
+            "metadata": log.metadata_,
+            "created_at": log.created_at.isoformat(),
+        }
+        for log in logs
+    ]

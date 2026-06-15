@@ -3,12 +3,16 @@
 Lists escalation_tickets for the authenticated Tenant Admin.
 """
 import os
+import sys
 from datetime import datetime
 
 import httpx
 import streamlit as st
 
-API_BASE = os.getenv("API_URL", "http://localhost:8000")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
+from chatbot._style import inject as _inject_css
+
+API_BASE = os.getenv("API_BASE_URL", "http://api:8000")
 
 
 def _get_token() -> str | None:
@@ -33,8 +37,9 @@ def _fetch_escalations(token: str) -> list[dict]:
 
 
 def main():
-    st.set_page_config(page_title="Escalation Tickets", page_icon="🚨", layout="wide")
-    st.title("🚨 Escalation Tickets")
+    st.set_page_config(page_title="Escalation Tickets", layout="wide")
+    _inject_css()
+    st.title("Escalation Tickets")
 
     token = _get_token()
     if not token:

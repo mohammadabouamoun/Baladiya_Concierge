@@ -180,3 +180,59 @@ async def rotate_widget_key(
         actor_id=str(token.user_id),
     )
     return {"rotated": True, "widget_id": str(widget_id)}
+
+
+# ── False report flagging ──────────────────────────────────────────────────
+
+class FlagFalseResponse(BaseModel):
+    flagged: bool
+    blocked: bool
+    false_report_count: int
+
+
+@router.post("/requests/{request_id}/flag-false", response_model=FlagFalseResponse)
+async def flag_false_report(
+    request_id: uuid.UUID,
+    token: Annotated[TokenClaims, Depends(require_tenant_admin)],
+    session: Annotated[AsyncSession, Depends(_get_tenant_db)],
+) -> FlagFalseResponse:
+    """Mark a capture request as a confirmed false report.
+
+    Increments the false_report_count for the submitter's phone hash.
+    After the first confirmed false report, the phone is blocked from
+    filing further reports in this tenant.
+    """
+    from api.repositories.blocked_reporter_repo import BlockedReporterRepository
+
+    repo = CaptureRequestRepository(session, token.tenant_id)
+    record = await repo.get(request_id)
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Request not found")
+
+    record.is_false_report = True
+
+    blocked_row = None
+    if record.visitor_phone_hash:
+        blocked_repo = BlockedReporterRepository(session)
+        blocked_row = await blocked_repo.record_false_report(token.tenant_id, record.visitor_phone_hash)
+    else:
+        logger.warning(
+            "admin.flag_false.no_phone_hash",
+            request_id=str(request_id),
+            tenant_id=str(token.tenant_id),
+        )
+
+    await session.commit()
+
+    logger.info(
+        "admin.flag_false.ok",
+        request_id=str(request_id),
+        tenant_id=str(token.tenant_id),
+        actor_id=str(token.user_id) if token.user_id else None,
+        has_phone=record.visitor_phone_hash is not None,
+    )
+    return FlagFalseResponse(
+        flagged=True,
+        blocked=blocked_row is not None and blocked_row.blocked,
+        false_report_count=blocked_row.false_report_count if blocked_row else 0,
+    )

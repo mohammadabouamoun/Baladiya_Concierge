@@ -11,9 +11,16 @@ import os
 import httpx
 import streamlit as st
 
-API_BASE = os.environ.get("API_BASE_URL", "http://api:8000")
+import sys, os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "../.."))
+from chatbot._style import inject as _inject_css, login_hero
+
+API_BASE = os.environ.get("API_BASE_URL", "http://localhost:8000")
+# Local design-preview only. Never set in docker-compose, so the bypass cannot exist in deployment.
+PREVIEW_ENABLED = os.environ.get("CHATBOT_PREVIEW") == "1"
 
 st.set_page_config(page_title="CMS — Baladiya Concierge", layout="wide")
+_inject_css()
 
 
 def _auth_headers() -> dict:
@@ -29,12 +36,18 @@ def _status_badge(status: str) -> str:
 # ── Login ──────────────────────────────────────────────────────────────────
 
 if "token" not in st.session_state:
-    st.title("Baladiya Concierge — CMS")
-    st.subheader("Sign in")
-    with st.form("login"):
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Sign in")
+    _, mid, _ = st.columns([1, 1.4, 1])
+    with mid:
+        login_hero("Tenant Admin", "Sign in to manage your municipality's assistant")
+        with st.form("login"):
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Sign in", use_container_width=True, type="primary")
+        if PREVIEW_ENABLED:
+            if st.button("Preview the design (no API)", use_container_width=True):
+                st.session_state["token"] = "preview"
+                st.rerun()
+            st.caption("Preview mode loads sample data so you can explore the UI without the backend.")
     if submitted:
         try:
             resp = httpx.post(
@@ -61,8 +74,22 @@ if st.sidebar.button("Sign out"):
 
 # ── Load entries ───────────────────────────────────────────────────────────
 
+_PREVIEW_ENTRIES = [
+    {"id": "p1", "title": "Pothole reporting on main roads", "body": "Residents can report potholes and road damage with a photo and location.",
+     "category": "roads", "lang": "en", "embedding_status": "done"},
+    {"id": "p2", "title": "مواعيد جمع النفايات", "body": "جدول جمع النفايات لكل حي في المدينة، محدّث أسبوعياً.",
+     "category": "waste", "lang": "ar", "embedding_status": "done"},
+    {"id": "p3", "title": "Building permit requirements", "body": "Documents and fees required to apply for a residential building permit.",
+     "category": "permits", "lang": "en", "embedding_status": "pending"},
+    {"id": "p4", "title": "انقطاع المياه المجدول", "body": "إشعارات بانقطاع المياه المخطط له لأعمال الصيانة.",
+     "category": "water", "lang": "ar", "embedding_status": "failed"},
+]
+
+
 @st.cache_data(ttl=10, show_spinner=False)
 def _load_entries(token: str) -> list[dict]:
+    if token == "preview":
+        return _PREVIEW_ENTRIES
     try:
         resp = httpx.get(
             f"{API_BASE}/cms/entries",
@@ -96,6 +123,8 @@ with st.expander("➕ New entry", expanded=False):
         if st.form_submit_button("Save"):
             if not title or not body:
                 st.warning("Title and body are required.")
+            elif token == "preview":
+                st.info("Preview mode — connect the API to save entries.")
             else:
                 resp = httpx.post(
                     f"{API_BASE}/cms/entries",
@@ -141,6 +170,9 @@ else:
                     new_lang = col2.selectbox("Language", ["en", "ar"], index=["en", "ar"].index(entry["lang"]))
                     s1, s2 = st.columns(2)
                     if s1.form_submit_button("Save changes"):
+                        if token == "preview":
+                            st.info("Preview mode — connect the API to save changes.")
+                            st.stop()
                         resp = httpx.put(
                             f"{API_BASE}/cms/entries/{entry['id']}",
                             headers=_auth_headers(),
@@ -163,6 +195,9 @@ else:
                 st.warning(f"Delete **{entry['title']}**? This also removes all vectors.")
                 d1, d2 = st.columns(2)
                 if d1.button("Confirm delete", key=f"confirm_del_{entry['id']}"):
+                    if token == "preview":
+                        st.info("Preview mode — connect the API to delete entries.")
+                        st.stop()
                     resp = httpx.delete(
                         f"{API_BASE}/cms/entries/{entry['id']}",
                         headers=_auth_headers(),
