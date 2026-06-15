@@ -16,6 +16,7 @@ classifier_confidence_thresholds:
 
 agent_tool_accuracy: 0.91   # measured 0.933 (14/15, 2026-06-07); −2pp buffer; Arabizi misses on Groq fallback
 workflow_handled_rate: 0.60 # SC-002: ≥ 60% of turns handled by workflow (no agent LLM call)
+agent_scope_accuracy: 0.80  # off-topic decline gate (evals/agent_scope.json, 10 cases); measured 1.000 (2026-06-15, Groq); wide buffer for small-n LLM variance
 
 rag_hit_at_5: 0.85    # measured 0.8750 baseline (8 triples, 2026-06-07); −2pp buffer
 rag_mrr: 0.85         # measured 0.8750 baseline (2026-06-07); −2pp buffer

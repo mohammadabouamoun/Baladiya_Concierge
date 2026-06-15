@@ -203,6 +203,34 @@ Each example specifies the expected tool the agent should select (`rag_search`, 
 
 Note: ATS-008 was correctly predicted (escalate) in the initial Gemini-only run; the failure occurred during re-run when Gemini was rate-limited and Groq handled the Arabizi input.
 
+### Scope (Off-Topic Decline) — Live Run 2026-06-15
+
+The tool-selection eval above forces a tool on every input ("always call a tool"),
+so it cannot measure whether the agent **declines** out-of-scope requests (poems,
+coding, trivia, math, advice). That is measured separately against the *production*
+system prompt (which now carries a Scope section instructing a one-sentence decline
+with no tool call). Run: `python evals/evaluate_agent.py --scope -v`.
+
+**Set**: `evals/agent_scope.json` — 7 off-topic requests (EN/MSA/Lebanese/Arabizi) +
+3 civic controls. A case is correct when the decline decision matches `should_decline`
+(off-topic → no tool; control → calls a tool), so the gate catches both the original
+gap *and* over-declining legitimate civic questions.
+
+| Metric | Value |
+|---|---|
+| Scope accuracy | **1.000** (10/10) |
+| Off-topic decline rate | 1.000 (7/7) |
+| Control tool-use rate | 1.000 (3/3) |
+| Gate threshold (`agent_scope_accuracy`) | 0.80 |
+| Gate result | **PASS ✓** |
+| LLM used | Groq llama-3.3-70b (Gemini 2.5 Flash daily quota exhausted) |
+
+Before the prompt fix, the agent answered off-topic requests poorly: a "write me a
+poem" request triggered a wasted `rag_search` then "I'll have to try a different
+approach", and a coding request offered to `escalate` to a non-existent "programming
+expert". After the fix all seven off-topic probes decline in one sentence and redirect,
+while the three civic controls still route to a tool.
+
 ---
 
 ## 5. RAG Quality Evaluation

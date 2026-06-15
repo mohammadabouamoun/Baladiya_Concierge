@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sc-001",
+    "input": "Write me a poem about the moon",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": true,
+    "rationale": "Creative writing — out of civic scope; decline without calling a tool"
+  },
+  {
+    "id": "sc-002",
+    "input": "Can you help me write a Python function to sort a list?",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": true,
+    "rationale": "Coding help — out of scope; must not escalate to a non-existent expert"
+  },
+  {
+    "id": "sc-003",
+    "input": "Who won the World Cup in 2018?",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": true,
+    "rationale": "General trivia — out of scope; decline"
+  },
+  {
+    "id": "sc-004",
+    "input": "What is 4827 multiplied by 391?",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": true,
+    "rationale": "Math homework — out of scope; decline"
+  },
+  {
+    "id": "sc-005",
+    "input": "اكتب لي قصيدة عن البحر",
+    "lang": "ar",
+    "variety": "msa",
+    "should_decline": true,
+    "rationale": "MSA: 'write me a poem about the sea' — out of scope; decline"
+  },
+  {
+    "id": "sc-006",
+    "input": "شو رأيك مين بيربح بمباراة كرة القدم بكرا؟",
+    "lang": "ar",
+    "variety": "lebanese",
+    "should_decline": true,
+    "rationale": "Lebanese: 'who do you think wins tomorrow's football match?' — out of scope; decline"
+  },
+  {
+    "id": "sc-007",
+    "input": "3tini wasfe la kahwa 3arabiyye please",
+    "lang": "ar",
+    "variety": "arabizi",
+    "should_decline": true,
+    "rationale": "Arabizi: 'give me a recipe for Arabic coffee' — out of scope; decline"
+  },
+  {
+    "id": "sc-008",
+    "input": "How do I apply for a building permit?",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": false,
+    "rationale": "Control: legitimate civic question — must use a tool, not over-decline"
+  },
+  {
+    "id": "sc-009",
+    "input": "There is a large pothole on Hamra Street that has been there for weeks.",
+    "lang": "en",
+    "variety": "en",
+    "should_decline": false,
+    "rationale": "Control: legitimate report — must use a tool, not over-decline"
+  },
+  {
+    "id": "sc-010",
+    "input": "ما هي ساعات عمل البلدية؟",
+    "lang": "ar",
+    "variety": "msa",
+    "should_decline": false,
+    "rationale": "Control: legitimate MSA question about office hours — must use a tool"
+  }
+]

@@ -497,3 +497,35 @@ a local-only warning.
 **Reversal**: Revisit when pytest-asyncio's loop-scope handling no longer conflicts with a
 session-scoped engine + NullPool, or migrate the engine fixture to function scope (slower:
 schema rebuild per test). Until then the fixture stays.
+
+## Agent Decisions
+
+### D-AGENT-001 — Off-Topic Scope Enforced via Prompt + Measured Decline Gate
+
+**Decision**: The tool-calling agent declines out-of-scope requests (poems, jokes,
+general knowledge, coding/math/homework, medical/legal/financial advice, anything
+non-civic) in one short sentence and redirects — **without** calling `rag_search` or
+`escalate`. Enforced by a "Scope" section in the production system prompts
+(`prompts/system_en.md`, `prompts/system_ar.md`) and guarded by a measured gate
+(`evals/agent_scope.json`, `agent_scope_accuracy`).
+
+**Why prompt, not a hard pre-filter**: Topic scope is a per-tenant rail (CLAUDE.md:
+"Tenant rails — topics, tone, persona — are configurable"), and the agent path *is*
+the LLM-reasoning path. A deterministic keyword pre-filter would be brittle across
+EN/MSA/Lebanese/Arabizi and would fight the configurable-topics model. The workflow
+question path already has a deterministic floor (D-RAG-001); the agent path is steered
+by prompt and verified by eval. The platform security wall (injection, jailbreak,
+cross-tenant, PII) stays in guardrails — scope is a relevance rail, not a security rail.
+
+**Gap it closed** (measured 2026-06-15, before fix): off-topic requests were answered
+badly — "write me a poem" triggered a wasted `rag_search` then "I'll try a different
+approach"; a coding request offered to `escalate` to a non-existent "programming
+expert". The agent never cleanly refused.
+
+**Measured** (after fix, `evals/agent_scope.json`, 10 cases, Groq — Gemini daily quota
+exhausted): scope accuracy **1.000** (off-topic decline 7/7, civic-control tool-use 3/3).
+Threshold `agent_scope_accuracy: 0.80` (wide buffer for small-n LLM variance). The
+control cases guard against over-declining legitimate civic questions.
+
+**Verdict**: Prompt-level scope boundary + a separate decline metric (kept out of the
+tool-selection accuracy number, which forces a tool and cannot measure declining).
