@@ -114,5 +114,5 @@ Every architectural choice in `DESIGN.md` / `DECISIONS.md` must be backed by a m
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/008-hardening-evals/plan.md`.
+at `specs/009-arabizi-liveeval/plan.md`.
 <!-- SPECKIT END -->
