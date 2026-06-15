@@ -49,10 +49,17 @@ async def test_rate_limit_blocks_after_limit_exceeded():
     mock_redis.incr = AsyncMock(side_effect=mock_incr)
     mock_redis.expire = AsyncMock()
 
+    # Report path now requires a verified phone (verify feature) — mock it as verified
+    # and not blocked so the rate-limit behaviour is what's under test.
+    mock_blocked = MagicMock()
+    mock_blocked.is_blocked = AsyncMock(return_value=False)
+
     with (
         patch("api.services.tools.capture_request.CaptureRequestRepository", return_value=mock_repo_instance),
         patch("api.services.tools.capture_request.get_settings", return_value=settings_obj),
         patch("api.services.tools.capture_request.get_redis", return_value=mock_redis),
+        patch("api.services.otp_service.get_session_phone_hash", new=AsyncMock(return_value="phh")),
+        patch("api.repositories.blocked_reporter_repo.BlockedReporterRepository", return_value=mock_blocked),
     ):
         # First two succeed
         result1 = await capture_tool.run(args.copy(), context)

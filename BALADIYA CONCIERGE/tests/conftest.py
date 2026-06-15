@@ -24,6 +24,11 @@ TEST_DATABASE_URL = "postgresql+asyncpg://baladiya:baladiya_dev@localhost:5432/b
 
 @pytest.fixture(scope="session")
 def event_loop():
+    """Session-scoped event loop so the session-scoped engine fixture is shared.
+
+    Deprecated in pytest-asyncio but the documented loop-scope replacement
+    (0.24+) regresses the isolation-test teardown — see DECISIONS.md D-TEST-001.
+    """
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()

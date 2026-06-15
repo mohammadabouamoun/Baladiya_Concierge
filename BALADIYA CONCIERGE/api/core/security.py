@@ -9,7 +9,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from api.core.config import get_settings
 
-_bearer = HTTPBearer(auto_error=True)
+# auto_error=False so a *missing* Authorization header yields 401 (via the None
+# check in get_current_user), not FastAPI's default 403 — consistent with the 401
+# raised for expired/invalid tokens in decode_token.
+_bearer = HTTPBearer(auto_error=False)
 
 
 async def _get_signing_key(token: str, settings) -> str:
@@ -91,6 +94,12 @@ async def decode_token(token: str) -> TokenClaims:
 
 
 async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> TokenClaims:
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return await decode_token(credentials.credentials)

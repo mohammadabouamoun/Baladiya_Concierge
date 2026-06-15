@@ -472,3 +472,28 @@ gate tests skip cleanly when it is unset.
 **Verdict**: Real LLM-judge for faithfulness + answer-relevancy; both gated at 0.85 on measured
 0.95 / 0.975. Self-evaluation bias is the known limitation, documented and mitigated by the
 Gemini-preferred client.
+
+## Testing Infrastructure Decisions
+
+### D-TEST-001 — Keep the Deprecated Session-Scoped `event_loop` Fixture
+
+**Decision**: `tests/conftest.py` retains a custom session-scoped `event_loop` fixture
+(pinned to `pytest-asyncio==0.23.8`) instead of migrating to the 0.24+
+`asyncio_default_fixture_loop_scope = session` config.
+
+**Why**: The DB `engine` fixture is session-scoped (one schema create/drop per run). That
+requires a session-scoped loop. The modern replacement (drop the custom fixture, bump
+pytest-asyncio to 0.24, set `asyncio_default_fixture_loop_scope = session`) was tried and
+**regressed the isolation gate**: `test_rls` and `test_session_reset` began raising
+"Exception closing connection" NullPool teardown errors — even when run alone, where they
+were previously clean. The deprecated fixture keeps every isolation test clean in isolation.
+
+The only cost of staying on the deprecated path is a `DeprecationWarning` and Python-3.12-local
+cross-test event-loop pollution (full-suite runs show false failures that pass per-file). **CI
+runs Python 3.11, where this pollution does not occur** — so the deprecation is cosmetic for the
+gate that matters. Isolation is the grade; we do not ship a teardown regression to it to silence
+a local-only warning.
+
+**Reversal**: Revisit when pytest-asyncio's loop-scope handling no longer conflicts with a
+session-scoped engine + NullPool, or migrate the engine fixture to function scope (slower:
+schema rebuild per test). Until then the fixture stays.

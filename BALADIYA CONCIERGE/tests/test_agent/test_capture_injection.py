@@ -22,7 +22,7 @@ async def test_fabricated_tenant_id_is_stripped():
 
     captured_tenant: list[uuid.UUID] = []
 
-    async def mock_repo_create(payload, session_id):
+    async def mock_repo_create(payload, session_id, visitor_phone_hash=None):
         return MagicMock(id=uuid.uuid4(), intent="report")
 
     mock_repo = AsyncMock()
@@ -47,9 +47,16 @@ async def test_fabricated_tenant_id_is_stripped():
         "tenant_id": str(attacker_tenant_id),  # injection attempt
     }
 
+    # Report path now requires a verified, non-blocked phone (verify feature).
+    mock_blocked = MagicMock()
+    mock_blocked.is_blocked = AsyncMock(return_value=False)
+
     with (
         patch("api.services.tools.capture_request.CaptureRequestRepository", side_effect=make_mock_repo),
         patch("api.services.tools.capture_request._check_rate_limit", new_callable=AsyncMock),
+        patch("api.services.tools.capture_request.get_redis", return_value=MagicMock()),
+        patch("api.services.otp_service.get_session_phone_hash", new=AsyncMock(return_value="phh")),
+        patch("api.repositories.blocked_reporter_repo.BlockedReporterRepository", return_value=mock_blocked),
     ):
         result = await capture_tool.run(args, context)
 
