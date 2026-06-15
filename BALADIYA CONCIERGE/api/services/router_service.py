@@ -20,6 +20,57 @@ from api.services.lang_detect_service import LangDetectResult, detect as lang_de
 
 logger = structlog.get_logger(__name__)
 
+# ── Language-aware workflow response strings ───────────────────────────────
+# "ar" key is used for variety ∈ {msa, lebanese, arabizi}.
+# Arabizi writers communicate in Arabic — formal civic reply is in Arabic script.
+_W = {
+    "en": {
+        "report_ok":     "Your request has been recorded. Reference: {ref}",
+        "report_err":    "I wasn't able to record your request. Please try again.",
+        "question_miss": (
+            "I don't have specific information about this in our knowledge base. "
+            "Would you like me to connect you with a staff member who can help?"
+        ),
+        "human_ok":      "I've notified our staff and they will contact you shortly. Ticket: {ref}",
+        "human_err":     "I wasn't able to connect you right now. Please call the municipality directly.",
+        "fallback":      "Thank you for your message. Is there anything else I can help you with?",
+        "verify_prompt": (
+            "To file this report, please verify your phone number. "
+            "This ensures accountability for reports submitted to the municipality."
+        ),
+        "blocked":       (
+            "You are currently unable to submit reports due to a previous false report. "
+            "Please contact the municipality directly for assistance."
+        ),
+    },
+    "ar": {
+        "report_ok":     "تم تسجيل طلبك. رقم المرجع: {ref}",
+        "report_err":    "لم نتمكن من تسجيل طلبك. يرجى المحاولة مجدداً.",
+        "question_miss": (
+            "لا تتوفر لديّ معلومات محددة حول هذا الموضوع. "
+            "هل تريد التواصل مع أحد موظفينا؟"
+        ),
+        "human_ok":      "تم إخطار موظفينا وسيتواصلون معك قريباً. رقم التذكرة: {ref}",
+        "human_err":     "لم نتمكن من التواصل معك الآن. يرجى الاتصال بالبلدية مباشرة.",
+        "fallback":      "شكراً لرسالتك. هل يمكنني مساعدتك في شيء آخر؟",
+        "verify_prompt": (
+            "لتقديم هذا البلاغ، يرجى التحقق من رقم هاتفك. "
+            "يضمن ذلك مسؤولية البلاغات المقدمة إلى البلدية."
+        ),
+        "blocked":       (
+            "لا يمكنك تقديم بلاغات حالياً بسبب بلاغ كاذب سابق. "
+            "يرجى التواصل مع البلدية مباشرة للحصول على المساعدة."
+        ),
+    },
+}
+
+VERIFICATION_REQUIRED = "__VERIFICATION_REQUIRED__"
+
+
+def _lang_key(variety: str) -> str:
+    """Return "ar" for any Arabic variety (msa/lebanese/arabizi), "en" otherwise."""
+    return "ar" if variety in ("msa", "lebanese", "arabizi") else "en"
+
 
 class RouteDecision(str, Enum):
     WORKFLOW = "workflow"
@@ -41,7 +92,13 @@ async def route(
     result = await classify(text)
 
     settings = get_settings()
-    thresholds: dict = settings.classifier_confidence_thresholds
+    # Use Arabic-specific thresholds for MSA/Lebanese/Arabizi varieties.
+    # The AR sub-model is trained on fewer rows so calibrated confidences are
+    # lower even when precision/recall = 1.0 — see §8.3 in HANDOFF.md.
+    if result.variety in ("msa", "lebanese", "arabizi"):
+        thresholds: dict = settings.ar_classifier_confidence_thresholds
+    else:
+        thresholds = settings.classifier_confidence_thresholds
     threshold = thresholds.get(result.intent, 0.75)
 
     if result.intent == "spam" and result.confidence >= threshold:
@@ -119,8 +176,12 @@ async def handle(
 
     # ── Agent path ─────────────────────────────────────────────────────────
     if decision == RouteDecision.AGENT:
-        from api.services.agent_service import run as agent_run
-        response = await agent_run(text, context)
+        from api.services.agent_service import run as agent_run, PhoneVerificationRequired
+        strings = _W[_lang_key(lang_result.variety)]
+        try:
+            response = await agent_run(text, context)
+        except PhoneVerificationRequired:
+            return strings["verify_prompt"], VERIFICATION_REQUIRED
         logger.info(
             "router.agent_handled",
             tenant_id=str(tenant_id),
@@ -130,31 +191,67 @@ async def handle(
 
     # ── Workflow path (confident classifier) ───────────────────────────────
     intent = clf_result.intent
+    strings = _W[_lang_key(lang_result.variety)]
 
     if intent == "report":
+        from api.repositories.blocked_reporter_repo import BlockedReporterRepository
+        from api.services.otp_service import get_session_phone_hash
+        from api.infra.redis import get_redis
+
+        redis = get_redis()
+        phone_hash = await get_session_phone_hash(redis, session_id, tenant_id)
+
+        if not phone_hash:
+            # Phone not verified — ask the resident to verify before filing
+            return strings["verify_prompt"], VERIFICATION_REQUIRED
+
+        # Check if this phone is blocked for false reports
+        blocked_repo = BlockedReporterRepository(db_session)
+        if await blocked_repo.is_blocked(tenant_id, phone_hash):
+            logger.warning(
+                "router.blocked_reporter",
+                tenant_id=str(tenant_id),
+                session_id=session_id,
+            )
+            return strings["blocked"], "workflow"
+
+        # Verified and not blocked — attach phone hash to context for the capture tool
+        context.visitor_phone_hash = phone_hash
+
         from api.services.tools import capture_request as capture_tool
         result = await capture_tool.run(
             {"intent": "report", "description": text},
             context,
         )
         if "error" in result:
-            response = f"I wasn't able to record your request: {result['error']}"
+            response = strings["report_err"]
         else:
-            response = (
-                "Your request has been recorded. "
-                + result.get("message", "We will follow up with you shortly.")
-            )
+            ref = result.get("id", "")[:8].upper()
+            response = strings["report_ok"].format(ref=ref)
 
     elif intent == "question":
         from api.services.tools import rag_search as rag_tool
         result = await rag_tool.run({"query": text}, context)
-        if "error" in result or not result.get("results"):
-            response = (
-                "I don't have specific information about this in our knowledge base. "
-                "Would you like me to connect you with a staff member who can help?"
-            )
+        results = result.get("results") or []
+        # Off-topic decline (A4): the relevance gate in rag_search is *relative* to the
+        # top score, so an off-topic query still returns its "least irrelevant" chunk.
+        # Here, on the raw-concat workflow path, apply an *absolute* language-aware floor:
+        # if even the best match is below it, the question is off-topic for this KB —
+        # decline gracefully (offer a human) instead of dumping loosely-related text.
+        floor = get_settings().rag_relevance_floor.get(lang_result.variety, 0.58)
+        top_sim = results[0]["similarity"] if results else 0.0
+        if "error" in result or not results or top_sim < floor:
+            if results and top_sim < floor:
+                logger.info(
+                    "router.question_offtopic_declined",
+                    tenant_id=str(tenant_id),
+                    session_id=session_id,
+                    top_similarity=top_sim,
+                    floor=floor,
+                )
+            response = strings["question_miss"]
         else:
-            top = result["results"][:3]
+            top = results[:3]
             response = "\n\n".join(r["chunk"] for r in top)
 
     elif intent == "human":
@@ -164,15 +261,13 @@ async def handle(
             context,
         )
         if "error" in result:
-            response = "I wasn't able to connect you right now. Please call the municipality directly."
+            response = strings["human_err"]
         else:
-            response = (
-                "I've notified our staff and they will contact you shortly. "
-                + result.get("message", "")
-            )
+            ref = result.get("ticket_id", "")[:8].upper()
+            response = strings["human_ok"].format(ref=ref)
 
     else:
-        response = "Thank you for your message. Is there anything else I can help you with?"
+        response = strings["fallback"]
 
     logger.info(
         "router.workflow_handled",
