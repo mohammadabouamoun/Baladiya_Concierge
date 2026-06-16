@@ -212,7 +212,9 @@ services:
     networks:
       - baladiya
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/healthz"]
+      # 127.0.0.1, not localhost: inside the container localhost resolves to ::1
+      # (IPv6) but nginx only listens on IPv4 0.0.0.0:80 → connection refused.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -258,7 +260,8 @@ services:
     networks:
       - baladiya
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:80/healthz"]
+      # 127.0.0.1, not localhost: see widget healthcheck note above.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
