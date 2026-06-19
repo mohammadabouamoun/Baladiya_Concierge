@@ -251,8 +251,24 @@ async def handle(
                 )
             response = strings["question_miss"]
         else:
-            top = results[:3]
-            response = "\n\n".join(r["chunk"] for r in top)
+            # Synthesize a concise grounded answer from the top chunks instead of
+            # dumping them verbatim. One LLM generation per workflow question —
+            # Gemini primary, Groq fallback. Fail-open: if generation is fully
+            # unavailable, return the raw chunks so the resident still gets info
+            # ("audit/aux failure never breaks the resident's reply").
+            from api.services.rag_service import synthesize_answer
+
+            chunks = [r["chunk"] for r in results[:3]]
+            try:
+                response = await synthesize_answer(text, chunks)
+            except Exception as exc:
+                logger.warning(
+                    "router.synthesis_failed",
+                    tenant_id=str(tenant_id),
+                    session_id=session_id,
+                    error=str(exc),
+                )
+                response = "\n\n".join(chunks)
 
     elif intent == "human":
         from api.services.tools import escalate as escalate_tool

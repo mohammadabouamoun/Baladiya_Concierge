@@ -7,12 +7,20 @@ agent → RAG) across **English, MSA, Lebanese, Arabizi**, with a working embedd
 
 ---
 
-## 0. Current state (2026-06-15) — READ FIRST
+## 0. Current state (2026-06-19) — READ FIRST
 
-The stack is **up, healthy, and verified**, and the work is **committed**: 10 commits on
-branch **`session/phase9-rag-evals`** (working tree clean). The off-topic decline gap is
-**closed on both paths** (workflow floor + agent scope). See §1b for this session's work
-and §5 for what's left.
+The stack is **up, healthy, and verified**. Branch **`session/phase9-rag-evals`**. This
+session changed the **workflow `question` path from raw-chunk dump → LLM-synthesized
+concise answers** (see §1c) and fixed an api crash-loop (dev-mode Vault secret loss). The
+off-topic decline gap remains **closed on both paths** (workflow floor + agent scope).
+See §1c for the latest work, §1b for the prior RAG/evals work, §5 for what's left.
+
+> **Cost note (matters for live demos):** every workflow question now makes **2 Gemini
+> generation calls** — query-rewrite + answer-synthesis — vs **1** before (rewrite only).
+> The free tier is **20 generations/day**, so the quota drains ~2× faster. A burst of test
+> queries can exhaust it in one sitting → everything falls to Groq (rough Arabic + per-minute
+> token throttling). Mitigations not yet done: disable query-rewrite on the workflow path,
+> cache synthesized answers in Redis, or use a paid Gemini key. See §5 "Quota / cost".
 
 - **LLM:** Gemini free tier (`gemini-2.5-flash`) is **exhausted for the day** (20 req/day),
   so chat + evals are currently answered by the **Groq fallback** (`llama-3.3-70b`). Groq
@@ -88,6 +96,39 @@ Branch **`session/phase9-rag-evals`**, 10 commits (tree clean). Maps to the old 
 | `7ac197f` | **Agent off-topic scope (the "poem" gap)** — Scope section in both prompts; agent now declines poems/coding/trivia/etc. in one sentence with no tool call. New measured gate `evals/agent_scope.json` + `evaluate_agent.py --scope` (`agent_scope_accuracy` 0.80); measured **1.000** (10/10). `D-AGENT-001`. | poem gap ✅ |
 
 (Earlier commits `47c51ce`, `1238fef`, `6d0b16c` = prior-session backend/verify/platform-manager work folded in.)
+
+---
+
+## 1c. Workflow answer synthesis (2026-06-19)
+
+**Problem:** the workflow `question` path returned the **top-3 retrieved chunks concatenated
+verbatim** (`router_service.py`) — no LLM, by design (cheap path). For a specific question
+like "how much is a commercial permit?" this dumped ~1400 chars of three KB entries
+(building-permit + permit-requirements + business-licensing) instead of the one-line answer.
+This is the *workflow* path; the agent path was already concise via its system prompt.
+
+**Change (chosen over top-1-chunk / tighter-gate alternatives — see chat decision):**
+- **`api/services/rag_service.py`** — new `synthesize_answer(query, chunks)`: feeds the top-3
+  chunks to `llm_client.complete_text` (Gemini→Groq fallback) with a concise grounded-answer
+  prompt **copied verbatim from the eval generator** (`evals/rag_judge.py:_ANSWER_SYS`), so
+  live answers and the measured faithfulness/answer-relevancy gate exercise identical
+  generation. `max_tokens=1200` — **not** 400: `gemini-2.5-flash` is a *thinking* model and
+  reasoning tokens count against the budget; 400 starved the visible answer (observed cut at
+  "…LBP 1,").
+- **`api/services/router_service.py`** — workflow `question` path calls `synthesize_answer`
+  instead of `"\n\n".join(chunks)`. **Fail-open:** on any LLM error it falls back to raw
+  chunk concat so the resident still gets info (never an error / hang).
+
+**Verified (Gemini live):** "commercial permit cost" → *"A commercial building permit
+processing fee is LBP 1,200,000."*; "new water connection" → one focused sentence (no
+licensing bleed); MSA office-hours → clean concise Arabic. No truncation, no dump.
+
+**Cost:** +1 Gemini generation per workflow question (see §0 cost note + §5).
+
+**Also this session (not a code change):** fixed an api **crash-loop** — dev-mode Vault holds
+secrets in memory; when Vault state is disturbed the seeded `secret/baladiya/*` vanish and the
+api can't start (`StartupError: Vault unreachable`). Cure is idempotent:
+`docker compose up migrate && docker compose restart api` (re-seeds Vault). Noted in §6.
 
 ---
 
@@ -175,8 +216,15 @@ Expected: same language in/out, concise & focused answers, sensible `handled_by`
 - **A6** fresh-clone smoke — verified end-to-end; RUNBOOK/compose bugs fixed.
 - **Poem / agent-scope gap** — agent declines off-topic; measured gate 1.000. (`D-AGENT-001`)
 - **B1** bilingual KB parity — seeder is 10 EN + 10 AR.
+- **C1** workflow answer synthesis — concise LLM answers replace raw-chunk dump (§1c).
 
 ### ⏳ Left to do
+
+**Quota / cost (new, from §1c).** Workflow synthesis added a 2nd Gemini generation call per
+question → 20/day free quota drains ~2× faster; a demo burst exhausts it, then Groq throttles
+(per-minute token `413`) and Arabic degrades. Pick one: **(a)** disable query-rewrite on the
+workflow path (halves calls, minor retrieval loss on small KB), **(b)** cache synthesized
+answers per `(tenant, query)` in Redis, **(c)** paid Gemini key. (b)+(a) recommended for demos.
 
 **A5 (full real CI run).** Only the *unit* gate was made green this session. A full green
 run of **all** gates on real services still owes: classifier macro-F1, agent tool-selection,
@@ -234,6 +282,16 @@ re-tests above are optional; B2/B3 and persona localization are quality follow-u
   while guardrails inits the spaCy pipeline. Send one to warm up; subsequent calls are fast.
 - **Gemini 20/day** free tier → auto-fallback to Groq after `GEMINI_FALLBACK_THRESHOLD`
   failures. Both keys are in `.env`. Embeddings are a separate quota and keep working.
+  Since §1c, each workflow question costs **2** generations (rewrite + synthesis) — quota
+  drains ~2× faster; see §5 "Quota / cost".
+- **api crash-loop on startup** (`StartupError: Vault unreachable / InvalidPath
+  secret/baladiya/db`): dev-mode Vault keeps secrets **in memory**, and `migrate` (which
+  seeds them) has already exited — so if Vault's state is disturbed the api can't start.
+  Idempotent cure: `docker compose up migrate && docker compose restart api`.
+- **Both providers throttled at once:** Gemini `429` (daily) **and** Groq `413
+  rate_limit_exceeded` (per-minute tokens) → the agent path crawls and the widget looks stuck
+  on "thinking". The reply usually still arrives; the capture/report write itself succeeds.
+  Wait ~1–2 min for Groq's per-minute bucket to refill; demo in English meanwhile.
 - **Spam threshold is 0.90 (EN), 0.75 (AR)** — deliberately high (precision-first).
   Borderline spam below threshold goes to the agent as a fail-safe (still no write).
 - **Prompts:** edit `prompts/system_{en,ar}.md` → `docker compose restart api` (mounted, no rebuild).
