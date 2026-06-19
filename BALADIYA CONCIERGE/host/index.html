@@ -1,75 +1,1615 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Municipality A — Official Portal</title>
+  <title>بلدية بيروت — البوابة الرسمية | Beirut Municipality</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&family=Noto+Sans+Arabic:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; }
-    header { background: #1d4ed8; color: white; padding: 1rem 2rem; }
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header p { font-size: 0.85rem; opacity: 0.8; margin-top: 0.25rem; }
-    nav { background: #1e40af; padding: 0.5rem 2rem; display: flex; gap: 1.5rem; }
-    nav a { color: white; text-decoration: none; font-size: 0.85rem; opacity: 0.85; }
-    nav a:hover { opacity: 1; }
-    main { max-width: 900px; margin: 2rem auto; padding: 0 2rem; }
-    .card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .card h2 { font-size: 1rem; font-weight: 600; color: #1d4ed8; margin-bottom: 0.5rem; }
-    .card p { font-size: 0.9rem; color: #475569; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
-    footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: #94a3b8; }
+    :root {
+      --deep-green:    #1a3a2a;
+      --mid-green:     #2d6a4f;
+      --light-green:   #d4e8df;
+      --copper:        #b5651d;
+      --copper-dark:   #8b4513;
+      --copper-light:  #f0d9c8;
+      --stone:         #f4f0ea;
+      --sand:          #ede8de;
+      --border:        #d4cec5;
+      --text-primary:  #1c1c1c;
+      --text-secondary:#4a4a4a;
+      --text-muted:    #8a8680;
+      --white:         #ffffff;
+      --font-disp:     'Playfair Display', Georgia, serif;
+      --font-body:     'Source Sans 3', system-ui, sans-serif;
+      --font-ar:       'Noto Sans Arabic', 'Arial Unicode MS', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ar);
+      background: var(--stone);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+    body.lang-en { font-family: var(--font-body); direction: ltr; }
+    body.lang-en html { direction: ltr; }
+
+    /* bilingual toggle */
+    .ar { display: block; }
+    .en { display: none;  }
+    body.lang-en .ar { display: none;  }
+    body.lang-en .en { display: block; }
+    .ar-inline { display: inline; }
+    .en-inline { display: none;   }
+    body.lang-en .ar-inline { display: none;   }
+    body.lang-en .en-inline { display: inline; }
+
+    /* ── TOPBAR ─────────────────────────────────────────────── */
+    .topbar {
+      background: var(--copper);
+      color: rgba(255,255,255,0.92);
+      font-size: 12px;
+      padding: 7px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .topbar-left { font-family: var(--font-ar); }
+    .topbar-right { font-family: var(--font-body); letter-spacing: 0.04em; }
+
+    /* ── HEADER ─────────────────────────────────────────────── */
+    .site-header {
+      background: var(--deep-green);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.25);
+      transition: box-shadow 0.35s cubic-bezier(0.22,1,0.36,1);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      height: 98px;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .header-logo {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(181,101,29,0.45);
+      box-shadow: 0 0 0 3px rgba(181,101,29,0.12);
+    }
+    .header-name {
+      color: white;
+      line-height: 1.2;
+    }
+    .header-name-ar {
+      font-family: var(--font-ar);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .header-name-en {
+      font-family: var(--font-body);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-top: 3px;
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-family: var(--font-ar);
+      transition: background 0.16s, color 0.16s;
+      white-space: nowrap;
+    }
+    body.lang-en .nav-a { font-family: var(--font-body); }
+    .nav-a:hover { background: rgba(255,255,255,0.1); color: white; }
+    .nav-a.active { background: var(--copper); color: white; }
+    .lang-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-size: 12px;
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      letter-spacing: 0.06em;
+      font-weight: 600;
+      transition: background 0.16s;
+      margin-inline-start: 12px;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.18); }
+
+    /* ── HERO ───────────────────────────────────────────────── */
+    .hero {
+      background: var(--deep-green);
+      padding: 96px 40px 88px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Islamic geometric star tessellation — the signature texture */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 8 L46 22 L60 16 L54 30 L68 36 L54 42 L60 56 L46 50 L40 64 L34 50 L20 56 L26 42 L12 36 L26 30 L20 16 L34 22 Z' fill='none' stroke='rgba(255,255,255,0.045)' stroke-width='0.8'/%3E%3Cpath d='M40 20 L44 30 L54 26 L50 36 L60 40 L50 44 L54 54 L44 50 L40 60 L36 50 L26 54 L30 44 L20 40 L30 36 L26 26 L36 30 Z' fill='none' stroke='rgba(181,101,29,0.06)' stroke-width='0.5'/%3E%3C/svg%3E");
+      background-size: 80px 80px;
+    }
+    /* Logo watermark — the single bold signature element */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset-inline-end: 36px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 360px;
+      height: 360px;
+      background: url('assets/logo-watermark.png') center/contain no-repeat;
+      opacity: 0.5;   /* cream backdrop already removed -> surrounding area is the exact hero green */
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(181,101,29,0.18);
+      border: 1px solid rgba(181,101,29,0.38);
+      color: #f0d9c8;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 7px 20px;
+      border-radius: 20px;
+      margin-bottom: 28px;
+      font-family: var(--font-body);
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--copper);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(0.7); }
+    }
+    .hero-h1-ar {
+      font-family: var(--font-ar);
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .hero-h1-en {
+      font-family: var(--font-disp);
+      font-size: 38px;
+      font-style: italic;
+      font-weight: 400;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .hero-sub-ar {
+      font-family: var(--font-ar);
+      font-size: 16px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.85;
+      max-width: 540px;
+      margin: 0 auto 36px;
+    }
+    .hero-sub-en {
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.8;
+      max-width: 540px;
+      margin: 0 auto 36px;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-copper {
+      background: var(--copper);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+      font-family: var(--font-ar);
+      box-shadow: 0 4px 16px rgba(181,101,29,0.35);
+    }
+    body.lang-en .btn-copper { font-family: var(--font-body); }
+    .btn-copper:hover { background: var(--copper-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(181,101,29,0.4); }
+    .btn-ghost {
+      background: transparent;
+      color: rgba(255,255,255,0.82);
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.18s;
+      font-family: var(--font-ar);
+    }
+    body.lang-en .btn-ghost { font-family: var(--font-body); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.45); }
+
+    /* ── STATS STRIP ─────────────────────────────────────────── */
+    .stats-strip {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-cell {
+      padding: 32px 20px;
+      text-align: center;
+      border-inline-end: 1px solid var(--border);
+    }
+    .stat-cell:last-child { border-inline-end: none; }
+    .stat-num {
+      font-family: var(--font-disp);
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--deep-green);
+      line-height: 1;
+    }
+    .stat-num sup { color: var(--copper); font-size: 22px; font-style: italic; }
+    .stat-lbl-ar { font-family: var(--font-ar); font-size: 13px; color: var(--text-secondary); margin-top: 7px; }
+    .stat-lbl-en { font-family: var(--font-body); font-size: 12px; letter-spacing: 0.05em; color: var(--text-muted); margin-top: 7px; }
+
+    /* ── SERVICES ────────────────────────────────────────────── */
+    .services-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+    .sec-hd {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+    .sec-eyebrow {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--copper);
+      margin-bottom: 14px;
+    }
+    .sec-title-ar {
+      font-family: var(--font-ar);
+      font-size: 33px;
+      font-weight: 700;
+      color: var(--deep-green);
+      line-height: 1.3;
+    }
+    .sec-title-en {
+      font-family: var(--font-disp);
+      font-size: 24px;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    .svc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .svc-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 32px 28px 28px;
+      border: 1px solid var(--border);
+      transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .svc-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; inset-inline-start: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--copper), var(--mid-green));
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.25s;
+    }
+    body.lang-en .svc-card::after { transform-origin: left; }
+    .svc-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(26,58,42,0.11); border-color: rgba(181,101,29,0.3); }
+    .svc-card:hover::after { transform: scaleX(1); }
+    .svc-icon {
+      width: 54px; height: 54px;
+      border-radius: 12px;
+      background: var(--light-green);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--deep-green);
+      margin-bottom: 22px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .svc-card:hover .svc-icon { background: var(--copper-light); color: var(--copper-dark); }
+    .svc-name-ar { font-family: var(--font-ar); font-size: 18px; font-weight: 700; color: var(--deep-green); margin-bottom: 14px; }
+    .svc-name-en { font-family: var(--font-body); font-size: 18px; font-weight: 700; color: var(--deep-green); margin-bottom: 14px; }
+    .svc-desc-ar { font-family: var(--font-ar); font-size: 14px; color: var(--text-secondary); line-height: 1.75; }
+    .svc-desc-en { font-family: var(--font-body); font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+    .svc-arrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--copper); font-size: 13px; font-weight: 600;
+      margin-top: 18px; text-decoration: none;
+      font-family: var(--font-ar); transition: gap 0.15s;
+    }
+    body.lang-en .svc-arrow { font-family: var(--font-body); }
+    .svc-arrow:hover { gap: 10px; }
+
+    /* ── ANNOUNCEMENTS ───────────────────────────────────────── */
+    .announce-wrap {
+      background: var(--sand);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 40px;
+    }
+    .announce-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .ann-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      transition: box-shadow 0.2s;
+    }
+    .ann-card:hover { box-shadow: 0 6px 24px rgba(26,58,42,0.08); }
+    .ann-date {
+      background: var(--deep-green);
+      color: white;
+      border-radius: 10px;
+      padding: 10px 13px;
+      text-align: center;
+      flex-shrink: 0;
+      min-width: 54px;
+    }
+    .ann-day { font-family: var(--font-disp); font-size: 24px; font-weight: 700; line-height: 1; }
+    .ann-mon { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; margin-top: 3px; }
+    .ann-title-ar { font-family: var(--font-ar); font-size: 15px; font-weight: 700; color: var(--deep-green); margin-bottom: 7px; }
+    .ann-title-en { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--deep-green); margin-bottom: 7px; }
+    .ann-body-ar { font-family: var(--font-ar); font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+    .ann-body-en { font-family: var(--font-body); font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+    .ann-tag {
+      display: inline-block;
+      background: var(--light-green);
+      color: var(--deep-green);
+      font-size: 10px;
+      font-family: var(--font-body);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    /* ── CONTACT BAND ─────────────────────────────────────────── */
+    .contact-band {
+      background: var(--deep-green);
+      padding: 64px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-band::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 8 L46 22 L60 16 L54 30 L68 36 L54 42 L60 56 L46 50 L40 64 L34 50 L20 56 L26 42 L12 36 L26 30 L20 16 L34 22 Z' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='0.8'/%3E%3C/svg%3E");
+      background-size: 80px 80px;
+    }
+    .contact-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+    }
+    .contact-text-ar { font-family: var(--font-ar); font-size: 28px; font-weight: 700; color: white; line-height: 1.35; }
+    .contact-text-en { font-family: var(--font-disp); font-size: 26px; font-style: italic; color: white; line-height: 1.35; }
+    .contact-sub-ar { font-family: var(--font-ar); font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+    .contact-sub-en { font-family: var(--font-body); font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+    .contact-actions { display: flex; gap: 14px; flex-shrink: 0; flex-wrap: wrap; }
+
+    /* ── FOOTER ──────────────────────────────────────────────── */
+    .site-footer {
+      background: #0f2318;
+      color: white;
+      padding: 64px 40px 32px;
+    }
+    .footer-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .footer-brand-row {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+    }
+    .footer-logo {
+      width: 68px; height: 68px;
+      border-radius: 50%; object-fit: cover;
+      border: 1.5px solid rgba(181,101,29,0.4);
+    }
+    .footer-brand-name-ar { font-family: var(--font-ar); font-size: 16px; font-weight: 700; }
+    .footer-brand-name-en { font-family: var(--font-body); font-size: 14px; font-weight: 600; }
+    .footer-tagline-ar { font-family: var(--font-ar); font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.75; max-width: 260px; }
+    .footer-tagline-en { font-family: var(--font-body); font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.7; max-width: 260px; }
+    .footer-col-ttl { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #f0d9c8; margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-links a {
+      color: rgba(255,255,255,0.55); text-decoration: none;
+      font-size: 13px; transition: color 0.15s;
+    }
+    .footer-links a.ar-link { font-family: var(--font-ar); }
+    .footer-links a.en-link { font-family: var(--font-body); }
+    .footer-links a:hover { color: white; }
+    .footer-bottom {
+      max-width: 1200px; margin: 0 auto;
+      padding-top: 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; color: rgba(255,255,255,0.35);
+      font-family: var(--font-body);
+      flex-wrap: wrap; gap: 12px;
+    }
+    .powered-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 11px; letter-spacing: 0.06em; color: rgba(255,255,255,0.55);
+    }
+    .powered-pill img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+
+    /* ── CHAT WIDGET — floating launcher + panel (demo preview) ── */
+    #chat-dock {
+      position: fixed;
+      bottom: 28px;
+      inset-inline-end: 28px;
+      z-index: 9999;
+      /* Hidden by default — this is the fallback demo bubble. It only appears when the
+         real widget.js can't load (no backend). When the API is up (Docker), the real
+         widget mounts instead and this stays hidden — so there's never a double bubble. */
+      display: none;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 16px;
+      /* The dock's box is tall (it reserves the closed panel's height); make the
+         empty area click-through so it never blocks the page underneath (e.g. the navbar). */
+      pointer-events: none;
+    }
+    #chat-dock.demo-on { display: flex; }
+    .widget-fab { pointer-events: auto; }
+    #chat-dock.open .chat-panel { pointer-events: auto; }
+
+    /* Floating bubble (FAB) */
+    .widget-fab {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--deep-green);
+      border: 2px solid rgba(181,101,29,0.5);
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(26,58,42,0.42);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      /* faint star texture inside the bubble */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath d='M28 6 L32 16 L42 11 L37 21 L47 25 L37 29 L42 39 L32 34 L28 44 L24 34 L14 39 L19 29 L9 25 L19 21 L14 11 L24 16 Z' fill='none' stroke='rgba(255,255,255,0.07)' stroke-width='0.7'/%3E%3C/svg%3E");
+    }
+    .widget-fab:hover { transform: scale(1.07); box-shadow: 0 12px 34px rgba(26,58,42,0.5); }
+    .widget-fab:active { transform: scale(0.96); }
+    .widget-fab img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; position: relative; z-index: 1; }
+    /* pulse ring to draw the eye */
+    .widget-fab::before {
+      content: '';
+      position: absolute; inset: -2px;
+      border-radius: 50%;
+      border: 2px solid var(--copper);
+      animation: fab-pulse 2.6s ease-out infinite;
+    }
+    @keyframes fab-pulse {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      70%  { transform: scale(1.4); opacity: 0; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    /* unread dot */
+    .fab-badge {
+      position: absolute;
+      top: 2px; inset-inline-end: 2px;
+      width: 14px; height: 14px;
+      background: var(--copper);
+      border: 2px solid var(--deep-green);
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    /* Chat panel */
+    .chat-panel {
+      width: 380px;
+      max-width: calc(100vw - 40px);
+      height: 560px;
+      max-height: calc(100vh - 130px);
+      background: var(--stone);
+      border-radius: 18px;
+      box-shadow: 0 24px 64px rgba(15,35,24,0.34);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform-origin: bottom right;
+      opacity: 0;
+      transform: translateY(20px) scale(0.94);
+      pointer-events: none;
+      transition: opacity 0.32s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.32s cubic-bezier(0.22,1,0.36,1);
+    }
+    body.lang-en .chat-panel { transform-origin: bottom right; }
+    #chat-dock.open .chat-panel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    #chat-dock.open .widget-fab::before { display: none; }
+    #chat-dock.open .fab-badge { display: none; }
+
+    /* Panel header */
+    .cw-header {
+      background-color: var(--deep-green);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath d='M28 6 L32 16 L42 11 L37 21 L47 25 L37 29 L42 39 L32 34 L28 44 L24 34 L14 39 L19 29 L9 25 L19 21 L14 11 L24 16 Z' fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='0.7'/%3E%3Cpath d='M28 14 L31 21 L38 18 L35 25 L42 28 L35 31 L38 38 L31 35 L28 42 L25 35 L18 38 L21 31 L14 28 L21 25 L18 18 L25 21 Z' fill='none' stroke='rgba(181,101,29,0.07)' stroke-width='0.5'/%3E%3C/svg%3E");
+      background-size: 56px 56px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .cw-id { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .cw-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(181,101,29,0.45);
+      box-shadow: 0 0 0 3px rgba(181,101,29,0.12);
+      flex-shrink: 0;
+    }
+    .cw-title { color: #fff; font-family: var(--font-ar); font-size: 14px; font-weight: 700; line-height: 1.2; }
+    body.lang-en .cw-title { font-family: var(--font-body); }
+    .cw-status { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+    .cw-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 0 rgba(52,211,153,0.6); animation: dot-pulse 2s infinite; }
+    @keyframes dot-pulse { 0%{box-shadow:0 0 0 0 rgba(52,211,153,0.5);} 70%{box-shadow:0 0 0 6px rgba(52,211,153,0);} 100%{box-shadow:0 0 0 0 rgba(52,211,153,0);} }
+    .cw-status span { color: rgba(255,255,255,0.55); font-family: var(--font-body); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .cw-close {
+      background: rgba(255,255,255,0.1);
+      border: none; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 8px;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .cw-close:hover { background: rgba(255,255,255,0.2); }
+    .cw-lang {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer;
+      height: 32px; padding: 0 12px; border-radius: 16px;
+      color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .cw-lang:hover { background: rgba(255,255,255,0.2); }
+    .cw-lang:active { transform: scale(0.94); }
+
+    /* Messages */
+    .cw-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .cw-body::-webkit-scrollbar { width: 5px; }
+    .cw-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .cw-msg {
+      max-width: 82%;
+      padding: 11px 14px;
+      font-size: 14px;
+      line-height: 1.65;
+      border-radius: 16px;
+      animation: rise 0.4s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .cw-msg.bot {
+      align-self: flex-start;
+      background: #fff;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-inline-start: 2.5px solid var(--copper);
+      border-bottom-left-radius: 5px;
+    }
+    body[dir="rtl"] .cw-msg.bot, html[dir="rtl"] .cw-msg.bot { border-bottom-left-radius: 16px; border-bottom-right-radius: 5px; }
+    .cw-msg.user {
+      align-self: flex-end;
+      background: var(--deep-green);
+      color: #fff;
+      border-bottom-right-radius: 5px;
+    }
+    .cw-msg.ar { font-family: var(--font-ar); }
+    .cw-msg.en { font-family: var(--font-body); }
+
+    /* Suggestion chips */
+    .cw-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 4px; }
+    .cw-chip {
+      background: var(--light-green);
+      color: var(--deep-green);
+      border: 1px solid rgba(45,106,79,0.2);
+      border-radius: 16px;
+      padding: 7px 13px;
+      font-size: 12.5px;
+      cursor: pointer;
+      font-family: var(--font-ar);
+      transition: background 0.22s, transform 0.18s, color 0.22s;
+    }
+    body.lang-en .cw-chip { font-family: var(--font-body); }
+    .cw-chip:hover { background: var(--copper-light); color: var(--copper-dark); transform: translateY(-2px); }
+
+    /* Input bar */
+    .cw-foot {
+      flex-shrink: 0;
+      padding: 12px 14px;
+      background: var(--stone);
+      border-top: 1px solid var(--border);
+    }
+    .cw-inputrow { display: flex; align-items: center; gap: 8px; }
+    .cw-input {
+      flex: 1;
+      padding: 11px 16px;
+      font-size: 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-ar);
+      transition: border-color 0.22s, box-shadow 0.22s;
+    }
+    body.lang-en .cw-input { font-family: var(--font-body); }
+    .cw-input:focus { border-color: var(--deep-green); box-shadow: 0 0 0 3px rgba(26,58,42,0.1); }
+    .cw-send {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--copper);
+      border: none; cursor: pointer;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.22s, transform 0.15s;
+    }
+    .cw-send:hover { background: var(--copper-dark); }
+    .cw-send:active { transform: scale(0.92); }
+    .cw-foot-note { text-align: center; font-size: 9px; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 9px; font-family: var(--font-body); }
+
+    /* phone / OTP verification card */
+    .cw-verify {
+      padding: 12px 16px;
+      background: var(--light-green, #d4e8df);
+      border-top: 1px solid var(--border);
+    }
+    .cw-verify-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .cw-vbtn {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      font-size: 13px; font-weight: 600;
+      background: var(--deep-green, #1a3a2a);
+      color: #fff; border: none; border-radius: 22px;
+      cursor: pointer;
+      font-family: var(--font-ar);
+      transition: background 0.22s, transform 0.15s;
+    }
+    body.lang-en .cw-vbtn { font-family: var(--font-body); }
+    .cw-vbtn:hover { background: var(--copper); }
+    .cw-vbtn:active { transform: scale(0.95); }
+    .cw-vbtn:disabled { opacity: 0.55; cursor: default; }
+    .cw-verify-note { font-size: 11.5px; line-height: 1.5; color: var(--deep-green, #1a3a2a); font-family: var(--font-body); min-height: 14px; }
+    .cw-verify-note.ok { color: #1b7a45; font-weight: 600; }
+    .cw-verify-note.err { color: #b3261e; }
+
+    @media (max-width: 480px) {
+      #chat-dock { bottom: 16px; inset-inline-end: 16px; inset-inline-start: 16px; align-items: stretch; }
+      .chat-panel { width: 100%; height: 70vh; }
+      .widget-fab { align-self: flex-end; }
+    }
+
+    /* ── MOTION SYSTEM ──────────────────────────────────────── */
+    /* Shared easing — a gentle, civic-feeling deceleration curve */
+    /* used everywhere so the whole page moves with one personality */
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes logo-in {
+      from { opacity: 0; transform: scale(0.6) rotate(-12deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    @keyframes fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── Page-load orchestration (staggered hero reveal) ──────── */
+    .site-header { animation: fade 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+    .header-logo { animation: logo-in 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.1s both; }
+    .header-name { animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
+
+    .hero-badge   { animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.30s both; }
+    .hero-inner h1 { animation: rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.42s both; }
+    .hero-inner p  { animation: rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.54s both; }
+    .hero-ctas    { animation: rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.66s both; }
+    .hero::after  { animation: fade 1.6s ease-out 0.4s both; }
+
+    /* ── Scroll-reveal — applied via IntersectionObserver ─────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+                  transform 0.7s cubic-bezier(0.22,1,0.36,1);
+      will-change: opacity, transform;
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    /* Stagger children of a revealed grid */
+    .reveal.in .svc-card,
+    .reveal.in .ann-card,
+    .reveal.in .stat-cell {
+      animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .reveal.in .svc-card:nth-child(1), .reveal.in .ann-card:nth-child(1), .reveal.in .stat-cell:nth-child(1) { animation-delay: 0.05s; }
+    .reveal.in .svc-card:nth-child(2), .reveal.in .ann-card:nth-child(2), .reveal.in .stat-cell:nth-child(2) { animation-delay: 0.12s; }
+    .reveal.in .svc-card:nth-child(3), .reveal.in .stat-cell:nth-child(3) { animation-delay: 0.19s; }
+    .reveal.in .svc-card:nth-child(4), .reveal.in .stat-cell:nth-child(4) { animation-delay: 0.26s; }
+    .reveal.in .svc-card:nth-child(5) { animation-delay: 0.33s; }
+    .reveal.in .svc-card:nth-child(6) { animation-delay: 0.40s; }
+
+    /* ── Smoother shared transitions on interactive elements ──── */
+    .nav-a      { transition: background 0.28s cubic-bezier(0.22,1,0.36,1), color 0.28s cubic-bezier(0.22,1,0.36,1); }
+    .lang-btn   { transition: background 0.28s cubic-bezier(0.22,1,0.36,1), transform 0.2s cubic-bezier(0.34,1.56,0.64,1); }
+    .lang-btn:active { transform: scale(0.94); }
+    .btn-copper { transition: background 0.28s cubic-bezier(0.22,1,0.36,1), transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.28s ease; }
+    .btn-ghost  { transition: all 0.28s cubic-bezier(0.22,1,0.36,1); }
+    .svc-card   { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s cubic-bezier(0.22,1,0.36,1), border-color 0.35s cubic-bezier(0.22,1,0.36,1); }
+    .svc-card::after { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); }
+    .svc-icon   { transition: background 0.32s cubic-bezier(0.22,1,0.36,1), color 0.32s cubic-bezier(0.22,1,0.36,1), transform 0.32s cubic-bezier(0.34,1.56,0.64,1); }
+    .svc-card:hover .svc-icon { transform: scale(1.08) rotate(-4deg); }
+    .svc-arrow  { transition: gap 0.25s cubic-bezier(0.22,1,0.36,1), color 0.25s ease; }
+    .ann-card   { transition: box-shadow 0.32s cubic-bezier(0.22,1,0.36,1), transform 0.32s cubic-bezier(0.22,1,0.36,1); }
+    .ann-card:hover { transform: translateY(-3px); }
+    .footer-links a { transition: color 0.22s cubic-bezier(0.22,1,0.36,1), padding-inline-start 0.22s cubic-bezier(0.22,1,0.36,1); }
+    .footer-links a:hover { padding-inline-start: 5px; }
+    .header-logo { transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+    .header-brand:hover .header-logo { transform: scale(1.06) rotate(3deg); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .hero::after { display: none; }
+    }
+    @media (max-width: 960px) {
+      .svc-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .announce-inner { grid-template-columns: 1fr; }
+      .contact-inner { flex-direction: column; text-align: center; }
+      .contact-actions { justify-content: center; }
+      .header-nav { display: none; }
+    }
+    @media (max-width: 600px) {
+      .svc-grid { grid-template-columns: 1fr; }
+      .hero-h1-ar, .hero-h1-en { font-size: 30px; }
+      .topbar { display: none; }
+      .header-inner { padding: 0 20px; }
+      .services-wrap, .announce-wrap, .contact-band { padding-inline: 20px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .site-footer { padding: 40px 20px 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Municipality A — Official Portal</h1>
-    <p>Serving residents with transparent, efficient public services</p>
+
+  <!-- ── TOP BAR ──────────────────────────────────────────────── -->
+  <div class="topbar">
+    <span class="topbar-left">
+      <span class="ar">⚠ الطوارئ: 112 &nbsp;|&nbsp; ساعات العمل: الإثنين–الجمعة، 8 ص–3 م</span>
+      <span class="en">⚠ Emergency: 112 &nbsp;|&nbsp; Office Hours: Mon–Fri, 8:00 AM – 3:00 PM</span>
+    </span>
+    <span class="topbar-right">+961 1 000 000</span>
+  </div>
+
+  <!-- ── HEADER ────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="header-brand" href="#">
+        <img class="header-logo" src="assets/logo.png" alt="Baladiya Concierge Logo">
+        <div class="header-name">
+          <div class="header-name-ar ar">بلدية بيروت</div>
+          <div class="header-name-ar en">Beirut Municipality</div>
+          <div class="header-name-en">YOUR CIVIC PARTNER</div>
+        </div>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a class="nav-a active" href="#">
+          <span class="ar">الرئيسية</span><span class="en">Home</span>
+        </a>
+        <a class="nav-a" href="#">
+          <span class="ar">الخدمات</span><span class="en">Services</span>
+        </a>
+        <a class="nav-a" href="#">
+          <span class="ar">التصاريح</span><span class="en">Permits</span>
+        </a>
+        <a class="nav-a" href="#">
+          <span class="ar">الأخبار</span><span class="en">News</span>
+        </a>
+        <a class="nav-a" href="#">
+          <span class="ar">تواصل معنا</span><span class="en">Contact</span>
+        </a>
+      </nav>
+      <button class="lang-btn" onclick="toggleLang()" id="langBtn">EN</button>
+    </div>
   </header>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#">Services</a>
-    <a href="#">News</a>
-    <a href="#">Contact</a>
-  </nav>
-  <main>
-    <div class="grid">
-      <div class="card">
-        <h2>Report an Issue</h2>
-        <p>Report road damage, water leaks, electricity faults, or waste collection issues directly to our team.</p>
+
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span class="ar">بلدية بيروت الرسمية</span>
+        <span class="en">Official Beirut Municipality</span>
       </div>
-      <div class="card">
-        <h2>Permits & Licenses</h2>
-        <p>Apply for building permits, business licenses, and municipal certificates online.</p>
-      </div>
-      <div class="card">
-        <h2>Municipal Services</h2>
-        <p>Pay taxes, request documents, and track your submitted requests in real time.</p>
-      </div>
-      <div class="card">
-        <h2>Environment</h2>
-        <p>Learn about recycling programs, green initiatives, and environmental compliance.</p>
+      <h1>
+        <span class="ar hero-h1-ar" id="hero-heading">البلدية في خدمتكم</span>
+        <span class="en hero-h1-en" id="hero-heading">Your City, At Your Service</span>
+      </h1>
+      <p>
+        <span class="ar hero-sub-ar">نقدّم خدمات بلدية متكاملة لسكان بيروت، من الإبلاغ عن المشكلات إلى استخراج التصاريح والشهادات. مساعدنا الذكي متاح على مدار الساعة بالعربية والإنجليزية.</span>
+        <span class="en hero-sub-en">Comprehensive municipal services for Beirut residents — from reporting issues to permits and certificates. Our AI assistant is available 24/7 in Arabic and English.</span>
+      </p>
+      <div class="hero-ctas">
+        <a href="#" class="btn-copper">
+          <span class="ar">ابدأ الآن</span>
+          <span class="en">Get Started</span>
+        </a>
+        <a href="#services" class="btn-ghost">
+          <span class="ar">استعرض الخدمات</span>
+          <span class="en">Browse Services</span>
+        </a>
       </div>
     </div>
-    <div class="card" style="margin-top:1.5rem">
-      <h2>Need Help?</h2>
-      <p>Use the chat widget in the bottom-right corner to ask any question or report an issue.
-         Our AI assistant is available 24/7 and supports both English and Arabic.</p>
+  </section>
+
+  <!-- ── STATS ─────────────────────────────────────────────────── -->
+  <div class="stats-strip">
+    <div class="stats-inner reveal">
+      <div class="stat-cell">
+        <div class="stat-num"><span class="count" data-target="247">0</span><sup>k</sup></div>
+        <div class="stat-lbl-ar ar">ساكن مسجّل</div>
+        <div class="stat-lbl-en en">Registered Residents</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span class="count" data-target="18">0</span><sup>+</sup></div>
+        <div class="stat-lbl-ar ar">خدمة بلدية</div>
+        <div class="stat-lbl-en en">Municipal Services</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span class="count" data-target="94">0</span><sup>%</sup></div>
+        <div class="stat-lbl-ar ar">معدل الحلّ الأول</div>
+        <div class="stat-lbl-en en">First-Contact Resolution</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span class="count" data-target="24">0</span><sup>/7</sup></div>
+        <div class="stat-lbl-ar ar">المساعد متاح دائماً</div>
+        <div class="stat-lbl-en en">AI Assistant Availability</div>
+      </div>
     </div>
-  </main>
-  <footer>
-    &copy; 2026 Municipality A. All rights reserved.
+  </div>
+
+  <!-- ── SERVICES ─────────────────────────────────────────────── -->
+  <section id="services" class="services-wrap" aria-labelledby="svc-heading">
+    <div class="sec-hd reveal">
+      <span class="sec-eyebrow ar">خدماتنا</span>
+      <span class="sec-eyebrow en">Our Services</span>
+      <h2>
+        <div class="sec-title-ar ar" id="svc-heading">ما نقدمه لسكان بيروت</div>
+        <div class="sec-title-en en">Everything Residents Need</div>
+      </h2>
+    </div>
+    <div class="svc-grid reveal">
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="13" cy="13" r="11"/>
+            <path d="M13 7v6l4 2"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">الإبلاغ عن مشكلة</div>
+        <div class="svc-name-en en">Report an Issue</div>
+        <p class="svc-desc-ar ar">أبلغ عن تلف الطرق وتسرب المياه وأعطال الكهرباء وجمع النفايات مباشرةً.</p>
+        <p class="svc-desc-en en">Report road damage, water leaks, electrical faults, and waste collection issues directly.</p>
+        <a href="#" class="svc-arrow">
+          <span class="ar">أبلغ الآن ←</span>
+          <span class="en">Report now →</span>
+        </a>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="20" height="20" rx="3"/>
+            <path d="M8 12h10M8 16h6"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">التصاريح والتراخيص</div>
+        <div class="svc-name-en en">Permits &amp; Licenses</div>
+        <p class="svc-desc-ar ar">تقدّم بطلب رخصة بناء أو ترخيص تجاري أو شهادات بلدية إلكترونياً.</p>
+        <p class="svc-desc-en en">Apply for building permits, business licenses, and official municipal certificates online.</p>
+        <a href="#" class="svc-arrow">
+          <span class="ar">تقدّم بطلب ←</span>
+          <span class="en">Apply now →</span>
+        </a>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 7v12l10 5 10-5V7L13 2z"/>
+            <path d="M13 7v12M3 7l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">الخدمات البلدية</div>
+        <div class="svc-name-en en">Municipal Services</div>
+        <p class="svc-desc-ar ar">ادفع الضرائب، اطلب الوثائق، وتابع طلباتك المقدّمة في الوقت الفعلي.</p>
+        <p class="svc-desc-en en">Pay taxes, request official documents, and track your submitted requests in real time.</p>
+        <a href="#" class="svc-arrow">
+          <span class="ar">استكشف ←</span>
+          <span class="en">Explore →</span>
+        </a>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="9" r="4"/><circle cx="17" cy="17" r="4"/>
+            <path d="M12.5 5.5l8 8"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">البيئة وإعادة التدوير</div>
+        <div class="svc-name-en en">Environment</div>
+        <p class="svc-desc-ar ar">تعرّف على برامج إعادة التدوير والمبادرات الخضراء والامتثال البيئي.</p>
+        <p class="svc-desc-en en">Learn about recycling programs, green initiatives, and environmental compliance in the city.</p>
+        <a href="#" class="svc-arrow">
+          <span class="ar">اعرف أكثر ←</span>
+          <span class="en">Learn more →</span>
+        </a>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h2M19 12h2M13 5v2M13 19v2"/>
+            <circle cx="13" cy="12" r="5"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">الطاقة والمرافق</div>
+        <div class="svc-name-en en">Utilities</div>
+        <p class="svc-desc-ar ar">أبلغ عن انقطاع الكهرباء والمياه، وتحقق من جداول الصيانة المقررة.</p>
+        <p class="svc-desc-en en">Report power and water outages, and check scheduled maintenance in your neighbourhood.</p>
+        <a href="#" class="svc-arrow">
+          <span class="ar">أبلغ ←</span>
+          <span class="en">Report →</span>
+        </a>
+      </div>
+
+      <div class="svc-card">
+        <div class="svc-icon">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div class="svc-name-ar ar">المساعد الذكي</div>
+        <div class="svc-name-en en">AI Assistant</div>
+        <p class="svc-desc-ar ar">تحدّث مع مساعدنا الذكي بالعربية أو الإنجليزية — متاح على مدار الساعة.</p>
+        <p class="svc-desc-en en">Chat with our AI assistant in Arabic or English — available 24/7, no wait time.</p>
+        <a href="#" class="svc-arrow" onclick="toggleChat(true); return false;">
+          <span class="ar">ابدأ المحادثة ←</span>
+          <span class="en">Start chatting →</span>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── ANNOUNCEMENTS ─────────────────────────────────────────── -->
+  <section class="announce-wrap" aria-label="Latest announcements">
+    <div style="max-width:1200px;margin:0 auto;margin-bottom:40px;" class="sec-hd reveal">
+      <span class="sec-eyebrow ar">إعلانات</span>
+      <span class="sec-eyebrow en">Announcements</span>
+      <div class="sec-title-ar ar">آخر الأخبار البلدية</div>
+      <div class="sec-title-en en">Latest from the Municipality</div>
+    </div>
+    <div class="announce-inner reveal">
+      <div class="ann-card">
+        <div class="ann-date">
+          <div class="ann-day">18</div>
+          <div class="ann-mon">JUN</div>
+        </div>
+        <div>
+          <span class="ann-tag">طرق | Roads</span>
+          <h3 class="ann-title-ar ar">صيانة شارع الحمراء — الجمعة 20 يونيو</h3>
+          <h3 class="ann-title-en en">Hamra Street Maintenance — Friday 20 June</h3>
+          <p class="ann-body-ar ar">سيتم إغلاق شارع الحمراء جزئياً بين الساعة 8 صباحاً و2 ظهراً لأعمال صيانة طارئة في شبكة الصرف الصحي.</p>
+          <p class="ann-body-en en">Partial closure of Hamra Street between 8 AM and 2 PM for emergency sewer maintenance works.</p>
+        </div>
+      </div>
+      <div class="ann-card">
+        <div class="ann-date">
+          <div class="ann-day">15</div>
+          <div class="ann-mon">JUN</div>
+        </div>
+        <div>
+          <span class="ann-tag">تصاريح | Permits</span>
+          <h3 class="ann-title-ar ar">تمديد مهلة تجديد رخص البناء</h3>
+          <h3 class="ann-title-en en">Building Permit Renewal Deadline Extended</h3>
+          <p class="ann-body-ar ar">تُمدّد المهلة الأخيرة لتجديد رخص البناء لعام 2025 حتى 31 يوليو 2026. قدّم طلبك إلكترونياً أو عبر مساعدنا.</p>
+          <p class="ann-body-en en">The deadline for renewing 2025 building permits is extended to 31 July 2026. Apply online or via our AI assistant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT BAND ──────────────────────────────────────────── -->
+  <section class="contact-band" aria-label="Contact">
+    <div class="contact-inner reveal">
+      <div>
+        <div class="contact-text-ar ar">هل تحتاج مساعدة؟<br>نحن هنا دائماً.</div>
+        <div class="contact-text-en en">Need help?<br>We're always here.</div>
+        <div class="contact-sub-ar ar">تحدّث مع مساعدنا الذكي أو تواصل مباشرةً مع فريقنا.</div>
+        <div class="contact-sub-en en">Talk to our AI assistant or reach our team directly.</div>
+      </div>
+      <div class="contact-actions">
+        <a href="tel:+9611000000" class="btn-copper">
+          <span class="ar">اتصل بنا</span>
+          <span class="en">Call Us</span>
+        </a>
+        <a href="#" class="btn-ghost">
+          <span class="ar">أرسل بريداً</span>
+          <span class="en">Send Email</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-grid reveal">
+      <div>
+        <div class="footer-brand-row">
+          <img class="footer-logo" src="assets/logo.png" alt="">
+          <div>
+            <div class="footer-brand-name-ar ar">بلدية بيروت</div>
+            <div class="footer-brand-name-en en">Beirut Municipality</div>
+          </div>
+        </div>
+        <p class="footer-tagline-ar ar">مشغّل بتقنية Baladiya Concierge — المنصة الذكية للخدمات البلدية الرقمية.</p>
+        <p class="footer-tagline-en en">Powered by Baladiya Concierge — the intelligent platform for digital civic services.</p>
+      </div>
+      <div>
+        <div class="footer-col-ttl">
+          <span class="ar">الخدمات</span><span class="en">Services</span>
+        </div>
+        <ul class="footer-links">
+          <li><a href="#" class="ar-link ar">الإبلاغ عن مشكلة</a><a href="#" class="en-link en">Report an Issue</a></li>
+          <li><a href="#" class="ar-link ar">التصاريح</a><a href="#" class="en-link en">Permits</a></li>
+          <li><a href="#" class="ar-link ar">الوثائق</a><a href="#" class="en-link en">Documents</a></li>
+          <li><a href="#" class="ar-link ar">دفع الضرائب</a><a href="#" class="en-link en">Pay Taxes</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-ttl">
+          <span class="ar">البلدية</span><span class="en">Municipality</span>
+        </div>
+        <ul class="footer-links">
+          <li><a href="#" class="ar-link ar">من نحن</a><a href="#" class="en-link en">About Us</a></li>
+          <li><a href="#" class="ar-link ar">مجلس البلدية</a><a href="#" class="en-link en">City Council</a></li>
+          <li><a href="#" class="ar-link ar">الأخبار</a><a href="#" class="en-link en">News</a></li>
+          <li><a href="#" class="ar-link ar">التقارير السنوية</a><a href="#" class="en-link en">Annual Reports</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-ttl">
+          <span class="ar">تواصل</span><span class="en">Contact</span>
+        </div>
+        <ul class="footer-links">
+          <li><a href="tel:+9611000000" class="en-link">+961 1 000 000</a></li>
+          <li><a href="mailto:info@beirut.gov.lb" class="en-link">info@beirut.gov.lb</a></li>
+          <li><a href="#" class="ar-link ar">ساعات العمل</a><a href="#" class="en-link en">Working Hours</a></li>
+          <li><a href="#" class="ar-link ar">الموقع</a><a href="#" class="en-link en">Location</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>
+        <span class="ar">© 2026 بلدية بيروت. جميع الحقوق محفوظة.</span>
+        <span class="en">© 2026 Beirut Municipality. All rights reserved.</span>
+      </span>
+      <span class="powered-pill">
+        <img src="assets/logo.png" alt="">
+        Powered by Baladiya Concierge
+      </span>
+    </div>
   </footer>
 
-  <!--
-    Widget embed snippet — replace TENANT_A_WIDGET_ID with the actual widget ID
-    from the Streamlit admin after running `docker compose up migrate`.
-  -->
-  <script
-    src="http://api:8000/widget.js"
-    data-widget-id="TENANT_A_WIDGET_ID"
+  <!-- ── CHAT WIDGET (demo preview — mirrors the React widget design) ── -->
+  <div id="chat-dock" aria-live="polite">
+    <div class="chat-panel" id="chatPanel" role="dialog" aria-label="Municipal Assistant" aria-modal="false">
+      <!-- header -->
+      <div class="cw-header">
+        <div class="cw-id">
+          <img class="cw-avatar" src="assets/logo.png" alt="Baladiya Concierge">
+          <div>
+            <div class="cw-title">
+              <span class="ar">المساعد البلدي</span><span class="en">Municipal Assistant</span>
+            </div>
+            <div class="cw-status">
+              <span class="cw-dot" aria-hidden="true"></span>
+              <span class="ar">متاح الآن</span><span class="en">Online</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+          <button class="cw-lang" id="cwLangBtn" onclick="toggleLang()" aria-label="Switch language">EN</button>
+          <button class="cw-close" onclick="toggleChat(false)" aria-label="Close chat">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- messages -->
+      <div class="cw-body" id="cwBody">
+        <div class="cw-msg bot ar">مرحباً! أنا المساعد البلدي لبلدية بيروت. كيف يمكنني مساعدتك اليوم؟</div>
+        <div class="cw-msg bot en">Hello! I'm the Municipal Assistant for Beirut. How can I help you today?</div>
+      </div>
+
+      <!-- suggestion chips -->
+      <div class="cw-chips" id="cwChips">
+        <button class="cw-chip" onclick="cwSuggest(this)">
+          <span class="ar">الإبلاغ عن مشكلة</span><span class="en">Report an issue</span>
+        </button>
+        <button class="cw-chip" onclick="cwSuggest(this)">
+          <span class="ar">استخراج تصريح</span><span class="en">Get a permit</span>
+        </button>
+        <button class="cw-chip" onclick="cwSuggest(this)">
+          <span class="ar">دفع الضرائب</span><span class="en">Pay taxes</span>
+        </button>
+        <button class="cw-chip" onclick="cwStartVerify()">
+          <span class="ar">تأكيد رقم الهاتف</span><span class="en">Verify phone</span>
+        </button>
+      </div>
+
+      <!-- phone / OTP verification (demo API) -->
+      <div class="cw-verify" id="cwVerify" hidden>
+        <div class="cw-verify-row" id="cwVerifyStep1">
+          <input class="cw-input" id="cwPhone" inputmode="tel" autocomplete="off"
+            placeholder="70 123 456" aria-label="Phone number">
+          <button type="button" class="cw-vbtn" onclick="cwSendCode()">
+            <span class="ar">إرسال الرمز</span><span class="en">Send code</span>
+          </button>
+        </div>
+        <div class="cw-verify-row" id="cwVerifyStep2" hidden>
+          <input class="cw-input" id="cwCode" inputmode="numeric" maxlength="6" autocomplete="off"
+            placeholder="••••••" aria-label="Verification code">
+          <button type="button" class="cw-vbtn" onclick="cwConfirmCode()">
+            <span class="ar">تأكيد</span><span class="en">Verify</span>
+          </button>
+        </div>
+        <div class="cw-verify-note" id="cwVerifyNote"></div>
+      </div>
+
+      <!-- input -->
+      <div class="cw-foot">
+        <form class="cw-inputrow" onsubmit="cwSend(event)">
+          <input class="cw-input" id="cwInput" autocomplete="off"
+            placeholder="اكتب رسالتك…" aria-label="Your message">
+          <button type="submit" class="cw-send" aria-label="Send message">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" id="cwSendIcon"><path d="M14 8L2 3l3.5 5L2 13l12-5z" fill="currentColor"/></svg>
+          </button>
+        </form>
+        <div class="cw-foot-note">
+          <span class="ar">مشغّل بـ Baladiya Concierge</span>
+          <span class="en">Powered by Baladiya Concierge</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- floating bubble -->
+    <button class="widget-fab" id="chatFab" onclick="toggleChat()" aria-label="Open chat assistant">
+      <span class="fab-badge" aria-hidden="true"></span>
+      <img src="assets/logo.png" alt="">
+    </button>
+  </div>
+
+  <!-- Real widget. When the API is reachable (Docker), this loads and mounts the real
+       bilingual AI widget. When it can't load (no backend / local static preview), onerror
+       reveals the fallback demo bubble above so the page always shows a working chat. -->
+  <script id="widget-loader"
+    src="http://localhost:8000/widget.js"
+    data-widget-id="2f11bf32-ead9-45a9-8b33-3694b3f718cb"
     data-api-base="http://localhost:8000"
+    onerror="document.getElementById('chat-dock').classList.add('demo-on')"
   ></script>
+
+  <script>
+    function toggleLang() {
+      const body = document.body;
+      const html = document.documentElement;
+      const btn  = document.getElementById('langBtn');
+      if (body.classList.contains('lang-en')) {
+        body.classList.remove('lang-en');
+        html.setAttribute('lang', 'ar');
+        html.setAttribute('dir', 'rtl');
+        btn.textContent = 'EN';
+      } else {
+        body.classList.add('lang-en');
+        html.setAttribute('lang', 'en');
+        html.setAttribute('dir', 'ltr');
+        btn.textContent = 'ع';
+      }
+      syncChatLang();
+    }
+
+    /* ── Chat widget (demo preview) ─────────────────────────────── */
+    function isEn() { return document.body.classList.contains('lang-en'); }
+
+    function syncChatLang() {
+      const en = isEn();
+      const input = document.getElementById('cwInput');
+      if (input) input.placeholder = en ? 'Type a message…' : 'اكتب رسالتك…';
+      const cwBtn = document.getElementById('cwLangBtn');
+      if (cwBtn) cwBtn.textContent = en ? 'ع' : 'EN';
+    }
+
+    function toggleChat(force) {
+      const dock = document.getElementById('chat-dock');
+      const open = force === undefined ? !dock.classList.contains('open') : force;
+      dock.classList.toggle('open', open);
+      if (open) {
+        syncChatLang();
+        setTimeout(() => document.getElementById('cwInput').focus(), 320);
+      }
+    }
+
+    function cwAppend(text, who) {
+      const body = document.getElementById('cwBody');
+      const el = document.createElement('div');
+      el.className = 'cw-msg ' + who + ' ' + (isEn() ? 'en' : 'ar');
+      el.style.display = 'block';
+      el.textContent = text;
+      body.appendChild(el);
+      body.scrollTop = body.scrollHeight;
+      return el;
+    }
+
+    // Optional local demo API (scripts/demo_api.py) for REAL Gemini answers + OTP.
+    // If it isn't running, the bubble silently falls back to canned replies.
+    const DEMO_API = 'http://localhost:8787';
+
+    function cwCanned(userText) {
+      const en = isEn();
+      const t = userText.toLowerCase();
+      if (/report|issue|road|water|مشكلة|طريق|تلف|مياه/.test(t))
+        return en ? "I can log that report for you. Could you share the location and a short description of the issue?"
+                  : "يمكنني تسجيل هذا البلاغ لك. هل يمكنك تزويدي بالموقع ووصف مختصر للمشكلة؟";
+      if (/permit|license|تصريح|رخصة/.test(t))
+        return en ? "For permits, I can guide you through the application. Which type do you need — building, business, or an event permit?"
+                  : "بالنسبة للتصاريح، يمكنني إرشادك خلال عملية التقديم. أي نوع تحتاج — بناء، تجاري، أم تصريح فعالية؟";
+      if (/tax|pay|ضريبة|ضرائب|دفع/.test(t))
+        return en ? "You can pay municipal taxes online. Would you like me to pull up your account balance?"
+                  : "يمكنك دفع الضرائب البلدية إلكترونياً. هل تريد أن أعرض لك رصيد حسابك؟";
+      return en ? "Thanks for reaching out. I'm a demo of the Baladiya Concierge assistant — in production I'd answer from your municipality's verified knowledge base."
+                : "شكراً لتواصلك. أنا نسخة تجريبية من مساعد Baladiya Concierge — في النسخة الفعلية سأجيب من قاعدة المعرفة الموثوقة لبلديتك.";
+    }
+
+    // running conversation history sent to the demo API so the bot remembers context
+    const cwHistory = [];
+
+    async function cwBotReply(userText) {
+      const en = isEn();
+      const body = document.getElementById('cwBody');
+
+      // typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'cw-msg bot ' + (en ? 'en' : 'ar');
+      typing.style.display = 'block';
+      typing.textContent = '…';
+      body.appendChild(typing);
+      body.scrollTop = body.scrollHeight;
+
+      let reply, verify = false;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 30000);
+        const res = await fetch(DEMO_API + '/demo/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ history: cwHistory, lang: en ? 'en' : 'ar' }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error('demo api ' + res.status);
+        const data = await res.json();
+        reply = (data && data.reply) ? data.reply : cwCanned(userText);
+        verify = !!(data && data.verify);
+      } catch (err) {
+        // demo API not running — fall back to canned, keep a brief delay for feel
+        await new Promise(r => setTimeout(r, 600));
+        reply = cwCanned(userText);
+      }
+      typing.textContent = reply;
+      cwHistory.push({ role: 'model', text: reply });
+      body.scrollTop = body.scrollHeight;
+
+      // bot decided it has enough info → open phone verification automatically
+      if (verify) setTimeout(() => cwStartVerify(true), 500);
+    }
+
+    function cwSend(e) {
+      e.preventDefault();
+      const input = document.getElementById('cwInput');
+      const text = input.value.trim();
+      if (!text) return;
+      cwAppend(text, 'user');
+      cwHistory.push({ role: 'user', text });
+      input.value = '';
+      const chips = document.getElementById('cwChips');
+      if (chips) chips.style.display = 'none';
+      cwBotReply(text);
+    }
+
+    function cwSuggest(btn) {
+      const span = btn.querySelector(isEn() ? '.en' : '.ar');
+      const text = (span ? span.textContent : btn.textContent).trim();
+      cwAppend(text, 'user');
+      cwHistory.push({ role: 'user', text });
+      document.getElementById('cwChips').style.display = 'none';
+      cwBotReply(text);
+    }
+
+    /* ── Phone / OTP verification (demo API) ─────────────────────── */
+    function cwVerifyNote(text, kind) {
+      const note = document.getElementById('cwVerifyNote');
+      note.textContent = text;
+      note.className = 'cw-verify-note' + (kind ? ' ' + kind : '');
+    }
+
+    function cwStartVerify(auto) {
+      const en = isEn();
+      const chips = document.getElementById('cwChips');
+      if (chips) chips.style.display = 'none';
+      document.getElementById('cwVerify').hidden = false;
+      document.getElementById('cwVerifyStep1').hidden = false;
+      document.getElementById('cwVerifyStep2').hidden = true;
+      document.getElementById('cwPhone').value = '';
+      document.getElementById('cwCode').value = '';
+      cwVerifyNote(en ? 'Enter your phone number to receive a verification code.'
+                      : 'أدخل رقم هاتفك لاستلام رمز التحقق.');
+      // when the bot auto-triggers this, it already told the resident — skip the extra line
+      if (!auto) {
+        cwAppend(en ? 'To follow up on a report, the municipality verifies your phone number. Enter it below.'
+                    : 'لمتابعة بلاغك، تتحقق البلدية من رقم هاتفك. أدخله في الأسفل.', 'bot');
+      }
+      setTimeout(() => document.getElementById('cwPhone').focus(), 50);
+    }
+
+    async function cwSendCode() {
+      const en = isEn();
+      const phone = document.getElementById('cwPhone').value.trim();
+      if (!phone) { cwVerifyNote(en ? 'Please enter a phone number.' : 'الرجاء إدخال رقم الهاتف.', 'err'); return; }
+      cwVerifyNote(en ? 'Sending…' : 'جارٍ الإرسال…');
+      try {
+        const res = await fetch(DEMO_API + '/demo/otp/request', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone }),
+        });
+        if (!res.ok) throw new Error('otp ' + res.status);
+        const data = await res.json();
+        document.getElementById('cwVerifyStep1').hidden = true;
+        document.getElementById('cwVerifyStep2').hidden = false;
+        // demo_code is surfaced so it can be shown live (mirrors the console SMS backend)
+        cwVerifyNote((en ? 'Code sent. Demo code: ' : 'تم إرسال الرمز. رمز العرض: ') + data.demo_code);
+        setTimeout(() => document.getElementById('cwCode').focus(), 50);
+      } catch (err) {
+        cwVerifyNote(en ? 'Demo API not running — start scripts/demo_api.py to test OTP.'
+                        : 'واجهة العرض غير مشغّلة — شغّل scripts/demo_api.py لتجربة التحقق.', 'err');
+      }
+    }
+
+    async function cwConfirmCode() {
+      const en = isEn();
+      const phone = document.getElementById('cwPhone').value.trim();
+      const code = document.getElementById('cwCode').value.trim();
+      if (!code) { cwVerifyNote(en ? 'Enter the 6-digit code.' : 'أدخل الرمز المكوّن من 6 أرقام.', 'err'); return; }
+      cwVerifyNote(en ? 'Verifying…' : 'جارٍ التحقق…');
+      try {
+        const res = await fetch(DEMO_API + '/demo/otp/confirm', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, code }),
+        });
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          cwVerifyNote(en ? '✓ Phone verified — registering report…'
+                          : '✓ تم التحقق من الهاتف — جارٍ تسجيل البلاغ…', 'ok');
+          // store the report so it appears on the Tenant Admin requests page
+          let ref = '';
+          try {
+            const sres = await fetch(DEMO_API + '/demo/requests', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone, lang: en ? 'en' : 'ar', messages: cwHistory }),
+            });
+            if (sres.ok) ref = (await sres.json()).ref || '';
+          } catch (err) { /* keep going — still show success */ }
+
+          cwVerifyNote(en ? '✓ Report registered.' : '✓ تم تسجيل البلاغ.', 'ok');
+          const refLine = ref ? (en ? (' Reference number: ' + ref + '.') : (' رقم المرجع: ' + ref + '.')) : '';
+          cwAppend((en ? 'Your report is registered.' + refLine +
+                         ' A municipal officer will follow up shortly — keep this number to track your request.'
+                       : 'تم تسجيل بلاغك.' + refLine +
+                         ' سيتابع موظف البلدية معك قريباً — احتفظ بهذا الرقم لتتبّع طلبك.'), 'bot');
+          setTimeout(() => { document.getElementById('cwVerify').hidden = true; }, 2500);
+        } else {
+          cwVerifyNote(en ? 'Incorrect or expired code. Try again.' : 'الرمز غير صحيح أو منتهي الصلاحية. حاول مجدداً.', 'err');
+        }
+      } catch (err) {
+        cwVerifyNote(en ? 'Demo API not running.' : 'واجهة العرض غير مشغّلة.', 'err');
+      }
+    }
+
+    /* ── Scroll-reveal: fade sections up as they enter the viewport ── */
+    (function () {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const els = document.querySelectorAll('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        els.forEach(el => el.classList.add('in'));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      els.forEach(el => io.observe(el));
+    })();
+
+    /* ── Count-up: animate stat numbers when the strip scrolls in ── */
+    (function () {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const counters = document.querySelectorAll('.count');
+      if (!counters.length) return;
+
+      const run = (el) => {
+        const target = parseInt(el.dataset.target, 10);
+        if (reduce) { el.textContent = target; return; }
+        const duration = 1600;
+        const start = performance.now();
+        const step = (now) => {
+          const p = Math.min((now - start) / duration, 1);
+          // easeOutCubic — fast then settle, feels deliberate not frantic
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(target * eased);
+          if (p < 1) requestAnimationFrame(step);
+          else el.textContent = target;
+        };
+        requestAnimationFrame(step);
+      };
+
+      if (!('IntersectionObserver' in window)) {
+        counters.forEach(run);
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            run(entry.target);
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.6 });
+      counters.forEach(c => io.observe(c));
+    })();
+
+    /* ── Subtle elevation on the header once the page scrolls ── */
+    (function () {
+      const header = document.querySelector('.site-header');
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          header.style.boxShadow = window.scrollY > 20
+            ? '0 4px 30px rgba(0,0,0,0.32)'
+            : '0 2px 24px rgba(0,0,0,0.25)';
+          ticking = false;
+        });
+      }, { passive: true });
+    })();
+  </script>
 </body>
 </html>

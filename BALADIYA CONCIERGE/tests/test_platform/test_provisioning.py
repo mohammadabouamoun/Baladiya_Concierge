@@ -6,6 +6,10 @@
 """
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 import uuid
 
 import pytest
@@ -21,7 +25,7 @@ async def test_provision_creates_tenant_and_admin(
 ):
     payload = TenantCreate(
         name="Test City",
-        admin_email=f"admin-{uuid.uuid4()}@test.local",
+        admin_email=f"admin-{uuid.uuid4()}@example.com",
         admin_password="securepass",
         plan="standard",
     )
@@ -34,7 +38,7 @@ async def test_provision_creates_tenant_and_admin(
 
 @pytest.mark.asyncio
 async def test_provision_idempotent(db_session: AsyncSession, platform_manager):
-    email = f"idempotent-{uuid.uuid4()}@test.local"
+    email = f"idempotent-{uuid.uuid4()}@example.com"
     payload = TenantCreate(name="City 1", admin_email=email, admin_password="pass")
 
     tenant1 = await platform_service.provision_tenant(db_session, payload, platform_manager.id)
@@ -53,10 +57,9 @@ async def test_tenant_a_cannot_see_tenant_b_data(
     from api.repositories.tenant_repo import TenantAdminRepository
     from sqlalchemy import text
 
-    # Scope session to Tenant A
+    # Scope session to Tenant A — UUID is hex+hyphen only, f-string is safe
     await db_session.execute(
-        text("SET LOCAL app.current_tenant = :tid"),
-        {"tid": str(tenant_a_obj.id)},
+        text(f"SET LOCAL app.current_tenant = '{tenant_a_obj.id}'")
     )
 
     repo_a = TenantAdminRepository(db_session, tenant_a_obj.id)
@@ -69,7 +72,7 @@ async def test_tenant_a_cannot_see_tenant_b_data(
 
 @pytest.mark.asyncio
 async def test_suspend_tenant(db_session: AsyncSession, platform_manager):
-    email = f"suspend-{uuid.uuid4()}@test.local"
+    email = f"suspend-{uuid.uuid4()}@example.com"
     payload = TenantCreate(name="City Suspend", admin_email=email, admin_password="pass")
     tenant = await platform_service.provision_tenant(db_session, payload, platform_manager.id)
 

@@ -120,3 +120,95 @@ async def test_token_ttl_is_3600_seconds():
     payload = jwt.decode(token, _JWT_SECRET, algorithms=["HS256"])
     ttl = payload["exp"] - payload["iat"]
     assert ttl == 3600, f"Expected TTL 3600s, got {ttl}s"
+
+
+# ── Per-widget key rotation tests (Phase 8 — FR-007–011) ───────────────────
+
+_WIDGET_A_KEY = "widget-a-signing-key-32-chars-xx"
+_WIDGET_B_KEY = "widget-b-signing-key-32-chars-yy"
+_WIDGET_B_ID = uuid.uuid4()
+
+
+def _issue_raw_token(widget_id: uuid.UUID, tenant_id: uuid.UUID, key: str) -> str:
+    """Helper: mint a widget JWT signed with the given key."""
+    import time
+    now = int(time.time())
+    return jwt.encode(
+        {"sub": str(uuid.uuid4()), "jti": str(uuid.uuid4()),
+         "tenant_id": str(tenant_id), "widget_id": str(widget_id),
+         "role": "visitor", "iat": now, "exp": now + 3600},
+        key, algorithm="HS256",
+    )
+
+
+@pytest.mark.asyncio
+async def test_rotate_key_invalidates_old_token():
+    """A token signed with the old key must be rejected after key rotation."""
+    from api.core.security import decode_token
+    import api.infra.vault as vault_mod
+
+    old_key = _WIDGET_A_KEY
+    new_key = "new-widget-a-key-32-chars-replace"
+
+    old_token = _issue_raw_token(_WIDGET_ID, _TENANT_ID, old_key)
+
+    with patch("api.core.security.get_settings", return_value=_fake_settings()):
+        # Before rotation: cache returns old key → decode succeeds
+        vault_mod._widget_key_cache[str(_WIDGET_ID)] = (old_key, float("inf"))
+        claims = await decode_token(old_token)
+        assert str(claims.widget_id) == str(_WIDGET_ID)
+
+        # Rotation: cache now holds new key
+        vault_mod._widget_key_cache[str(_WIDGET_ID)] = (new_key, float("inf"))
+
+        # Old token should now be rejected (wrong signature for new key)
+        from fastapi import HTTPException
+        with pytest.raises(HTTPException) as exc_info:
+            await decode_token(old_token)
+        assert exc_info.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_rotate_key_does_not_affect_other_widget():
+    """Rotating widget A's key must not invalidate widget B's tokens."""
+    from api.core.security import decode_token
+    import api.infra.vault as vault_mod
+
+    token_b = _issue_raw_token(_WIDGET_B_ID, _TENANT_ID, _WIDGET_B_KEY)
+
+    with patch("api.core.security.get_settings", return_value=_fake_settings()):
+        # Seed both caches
+        vault_mod._widget_key_cache[str(_WIDGET_ID)] = (_WIDGET_A_KEY, float("inf"))
+        vault_mod._widget_key_cache[str(_WIDGET_B_ID)] = (_WIDGET_B_KEY, float("inf"))
+
+        # Rotate widget A: update its cache entry
+        vault_mod._widget_key_cache[str(_WIDGET_ID)] = ("rotated-key-for-a-32-chars-xxxxx", float("inf"))
+
+        # Widget B's token must still decode successfully
+        claims_b = await decode_token(token_b)
+        assert str(claims_b.widget_id) == str(_WIDGET_B_ID)
+
+
+@pytest.mark.asyncio
+async def test_non_widget_token_unaffected():
+    """A tenant_admin JWT (no widget_id claim) must validate via jwt_secret after rotation."""
+    from api.core.security import decode_token
+    import api.infra.vault as vault_mod
+    import time
+
+    now = int(time.time())
+    admin_token = jwt.encode(
+        {"sub": str(uuid.uuid4()), "jti": str(uuid.uuid4()),
+         "tenant_id": str(_TENANT_ID), "role": "tenant_admin",
+         "iat": now, "exp": now + 3600},
+        _JWT_SECRET, algorithm="HS256",
+    )
+
+    with patch("api.core.security.get_settings", return_value=_fake_settings()):
+        # Rotate a widget key (should not affect admin token)
+        vault_mod._widget_key_cache[str(_WIDGET_ID)] = ("some-rotated-key-32-chars-xxxxxx", float("inf"))
+
+        # Admin token must still decode with jwt_secret
+        claims = await decode_token(admin_token)
+        assert claims.role == "tenant_admin"
+        assert claims.widget_id is None

@@ -317,6 +317,46 @@ These decisions are structural — they are set at design time and changing them
 
 ---
 
+## Arabic & Bilingual Decisions
+
+### D-Arabic-001 — Single Bilingual Model vs Per-Language Models
+
+**Decision**: Ship one bilingual Classical ML classifier (TF-IDF char 3-5 + word 1-2 + LogisticRegression) trained on all four varieties (en, msa, lebanese, arabizi), rather than separate per-language models.
+**Filled in**: Phase 8 | **Evidence**: Phase 7 bilingual retrain (2026-06-06, 12,731 rows)
+
+| | Value |
+|---|---|
+| Measured overall macro-F1 | **0.9980** (held-out test, n=2,525) |
+| Measured EN F1 | **1.0000** (template test set, n=2,412) |
+| Measured AR macro-F1 | **0.9507** (hand-crafted AR test, n=113) |
+| Measured Arabizi F1 | **0.8322** (machine-seeded AR test, n=41) |
+| Artifact SHA-256 | `728a4bf1aee84c015ddd9d73d998573a179bd32085a9b39330a50306f177b041` |
+| Training set size | 12,731 rows (10,206 train / 2,525 test) |
+| Inference latency | p50=1.48ms, p95=3.97ms |
+
+**Alternative considered — per-language models (EN model + AR model)**:
+
+| | Per-language models | Single bilingual model |
+|---|---|---|
+| Expected AR F1 | Higher (no EN dilution in TF-IDF space) | 0.9507 (measured) |
+| Artifacts | 2 joblib files + routing logic | 1 joblib file |
+| Routing complexity | Language detection → model selection → two HTTP paths | Language detection → intent classification |
+| Container footprint | ~2× | Same as Phase 2 |
+| EN:AR ratio handling | Natural (separate char n-gram spaces) | 19:1 dilution — Arabizi F1 most affected |
+| Constitution II compliance | Adds complexity without architecture change | Simpler |
+
+**Why single bilingual model was chosen**:
+1. **AR macro-F1 = 0.9507 exceeds the 0.93 CI gate** — the bilingual model already meets the defense threshold.
+2. **Arabizi F1 = 0.8322 is the gap** — growing Arabizi cells from ~50 to ~100 per intent is the correct fix, not splitting models. A per-language AR model with 200 Arabizi examples would also suffer from thin data.
+3. **Constitution VII (no scope creep)** — adding a second artifact, a model router, and a second modelserver endpoint is scope expansion. The single model achieves acceptable F1 at 1.48ms p50.
+4. **Arabic is additive (Constitution III)** — a single model means Arabic quality improvements are a data problem, not an architecture problem. This keeps the EN path clean.
+
+**Arabizi F1 caveat**: 0.8322 measured on 41 machine-seeded test rows — not statistically reliable. Hand-verify before citing in defense. Growing Arabizi cells toward 100 per intent and re-measuring is the recommended next step.
+
+**Verdict**: Single bilingual model. Measured AR macro-F1 = 0.9507 clears the CI gate. Arabizi gap is a data quality issue, not a model architecture issue. Per-language model path is documented but deferred to post-defense if Arabizi F1 < 0.90 after Phase 8 data expansion.
+
+---
+
 ## Widget Decisions
 
 ### D-Widget-001 — Shared JWT Signing Key vs Per-Widget Key
@@ -334,3 +374,158 @@ These decisions are structural — they are set at design time and changing them
 | Future path | Phase 8: implement per-widget key rotation. Each widget gets its own key at `baladiya/widget/{widget_id}/signing_key`. `decode_token` checks the `widget_id` claim to select the right key. Requires a migration script to rotate existing tokens |
 
 **Verdict**: Use `jwt_secret` for Phase 6. Per-widget key rotation is deferred to Phase 8 with the infrastructure already in place (`widget_signing_key` is seeded but unused).
+
+**Phase 8 update (implemented 2026-06-06)**: Per-widget key rotation is now live. Each widget has its own key at `baladiya/widget/{widget_id}/signing_key` in Vault KV v2. `decode_token` performs a two-pass decode: (1) peek `widget_id` claim without signature verification, (2) fetch the per-widget key from Vault (TTL-300s LRU cache, max 128 entries), (3) full verified decode. Non-widget tokens (no `widget_id` claim) continue to use `jwt_secret`. Rotation endpoint: `POST /admin/widgets/{widget_id}/rotate-key` (Tenant Admin auth). `scripts/seed.py` migrates existing Phase 6 widgets idempotently. See `specs/008-hardening-evals/plan.md §Per-Widget Key: Vault Path Convention` for the full algorithm.
+
+---
+
+## RAG / Retrieval Decisions
+
+### D-RAG-001 — Off-Topic Decline via Variety-Aware Absolute Similarity Floor
+
+**Decision**: The confident-`question` **workflow** path declines (`question_miss`) when the
+top retrieval similarity falls below a per-variety absolute floor, instead of returning the
+"least irrelevant" chunks. Floors: `en/msa/lebanese = 0.58`, `arabizi = 0.50`
+(`Settings.rag_relevance_floor`). The **agent** path is unaffected — it can still reason over
+weak matches and decline conversationally.
+**Filled in**: Phase 9 (2026-06-15)
+
+**Problem**: The relevance gate in `api/services/tools/rag_search.py` is *relative* to the top
+score, so an off-topic query (e.g. "How do I renew my passport?") still returns its single best
+— and wrong — chunk. The workflow `question` branch then concatenates that raw chunk as the
+answer, dumping loosely-related KB instead of declining.
+
+**Calibration** (`scripts/probe_relevance.py`, Beirut tenant, deterministic `rewrite=False`,
+11 on-topic / 10 off-topic queries):
+
+| Variety | on-topic min | off-topic max | Floor | Separates? |
+|---|---|---|---|---|
+| en | 0.705 | 0.536 | 0.58 | ✅ 17pp gap |
+| msa | 0.732 | 0.561 | 0.58 | ✅ (declines passport 0.561) |
+| lebanese | 0.695 | 0.523 | 0.58 | ✅ |
+| arabizi | 0.527 | 0.535 | 0.50 | ❌ overlaps — kept lenient |
+
+At these floors, **20 of 21** probes classify correctly; the single miss is one Arabizi
+off-topic query (0.535) that sits above on-topic Arabizi (0.527).
+
+**Why Arabizi is the exception**: Latin-script Arabizi queries embed poorly against the
+Arabic-script KB *unless* the Gemini query-rewrite normalises them to MSA first. With rewrite
+unavailable (free-tier quota exhausted), Arabizi on-topic similarity collapses (~0.53) into the
+off-topic band, so no floor can separate the two without false-declining real questions. Arabizi
+is therefore kept lenient (0.50) to preserve recall; its off-topic gating is best-effort until
+query-rewrite is healthy, at which point Arabizi normalises to MSA and the 0.58-class behaviour
+applies upstream. Recalibrate then.
+
+**Caveat**: query-rewrite is non-deterministic under intermittent quota (per-minute limit of 5),
+so it can occasionally mangle an on-topic query and tank its score. The floor is calibrated on
+the deterministic rewrite-off worst case to minimise false-declines of on-topic questions
+(judged worse than leaking a borderline off-topic answer the relative gate already trims). Every
+decline is logged (`router.question_offtopic_declined` with `top_similarity` + `floor`).
+
+**Out of scope (separate findings)**: (1) the Beirut demo KB contains leftover eval rows
+("Test Entry" / "Test Vector Entry") that off-topic queries match — a data-hygiene issue;
+(2) the agent path will fulfil non-civic requests (e.g. "write me a poem") — a tenant-rails /
+agent-scope gap, not a retrieval issue.
+
+**Verdict**: Variety-aware absolute floor on the workflow path. Measured 20/21 on the calibration
+probe. Borderline gov-adjacent off-topic in Arabizi is a documented residual limitation tied to
+query-rewrite availability.
+
+### D-RAG-002 — RAG Faithfulness & Answer-Relevancy via LLM-Judge
+
+**Decision**: The RAG quality gate judges **faithfulness** (are the generated answer's claims
+supported by the retrieved context?) and **answer-relevancy** (does the answer address the
+question?) with a real LLM-judge (RAGAS-style), replacing the prior keyword-overlap proxy for
+faithfulness and gating answer-relevancy for the first time. Judge + generator use the app's
+Gemini→Groq fallback (`api/infra/llm_client.complete_text`).
+**Filled in**: Phase 9 (2026-06-15)
+
+**Problem**: faithfulness/relevancy are properties of a *generated answer*, but the eval had no
+generation step — `rag_faithfulness: 0.60` was a keyword-overlap proxy on retrieved chunks and
+`rag_answer_relevancy: 0.0` was ungated. Neither could be honestly cited.
+
+**Implementation**: `evals/rag_judge.py` — for each golden triple: retrieve top-5 chunks →
+generate a grounded answer → judge faithfulness against the chunks and relevancy against the
+question (each returns JSON `{"score": 0..1}`). Reusable functions (`generate_answer`,
+`judge_faithfulness`, `judge_relevancy`) are imported by the CI gate
+(`tests/test_rag/test_rag_gate.py`, `RAG_EVAL=1`, `EVAL_TENANT_ID` set).
+
+**Measured** (n=8 direct-source triples, Beirut KB, 2026-06-15; Groq judge):
+
+| Metric | Mean | Min | Threshold set |
+|---|---|---|---|
+| faithfulness | 0.9500 | 0.80 | 0.85 |
+| answer_relevancy | 0.9750 | 0.80 | 0.85 |
+
+Thresholds use a ~10pp buffer (not the usual −2pp) because n=8 + LLM-judge + self-evaluation
+carry more run-to-run variance than the stable retrieval metrics.
+
+**Caveat (self-evaluation)**: Gemini's free-tier quota (20/day) was exhausted, so generation
+*and* judging ran on the same model (Groq llama-3.3-70b). Same-model judging inflates scores.
+The client prefers Gemini automatically; re-run as judge once quota resets to cross-check. A
+distinct, stronger judge model is the correct future step if these gates become load-bearing.
+
+**Also fixed**: the live gate previously retrieved against a random `uuid.uuid4()` tenant (so it
+retrieved nothing and never meaningfully ran). It now reads `EVAL_TENANT_ID`, and the three live
+gate tests skip cleanly when it is unset.
+
+**Verdict**: Real LLM-judge for faithfulness + answer-relevancy; both gated at 0.85 on measured
+0.95 / 0.975. Self-evaluation bias is the known limitation, documented and mitigated by the
+Gemini-preferred client.
+
+## Testing Infrastructure Decisions
+
+### D-TEST-001 — Keep the Deprecated Session-Scoped `event_loop` Fixture
+
+**Decision**: `tests/conftest.py` retains a custom session-scoped `event_loop` fixture
+(pinned to `pytest-asyncio==0.23.8`) instead of migrating to the 0.24+
+`asyncio_default_fixture_loop_scope = session` config.
+
+**Why**: The DB `engine` fixture is session-scoped (one schema create/drop per run). That
+requires a session-scoped loop. The modern replacement (drop the custom fixture, bump
+pytest-asyncio to 0.24, set `asyncio_default_fixture_loop_scope = session`) was tried and
+**regressed the isolation gate**: `test_rls` and `test_session_reset` began raising
+"Exception closing connection" NullPool teardown errors — even when run alone, where they
+were previously clean. The deprecated fixture keeps every isolation test clean in isolation.
+
+The only cost of staying on the deprecated path is a `DeprecationWarning` and Python-3.12-local
+cross-test event-loop pollution (full-suite runs show false failures that pass per-file). **CI
+runs Python 3.11, where this pollution does not occur** — so the deprecation is cosmetic for the
+gate that matters. Isolation is the grade; we do not ship a teardown regression to it to silence
+a local-only warning.
+
+**Reversal**: Revisit when pytest-asyncio's loop-scope handling no longer conflicts with a
+session-scoped engine + NullPool, or migrate the engine fixture to function scope (slower:
+schema rebuild per test). Until then the fixture stays.
+
+## Agent Decisions
+
+### D-AGENT-001 — Off-Topic Scope Enforced via Prompt + Measured Decline Gate
+
+**Decision**: The tool-calling agent declines out-of-scope requests (poems, jokes,
+general knowledge, coding/math/homework, medical/legal/financial advice, anything
+non-civic) in one short sentence and redirects — **without** calling `rag_search` or
+`escalate`. Enforced by a "Scope" section in the production system prompts
+(`prompts/system_en.md`, `prompts/system_ar.md`) and guarded by a measured gate
+(`evals/agent_scope.json`, `agent_scope_accuracy`).
+
+**Why prompt, not a hard pre-filter**: Topic scope is a per-tenant rail (CLAUDE.md:
+"Tenant rails — topics, tone, persona — are configurable"), and the agent path *is*
+the LLM-reasoning path. A deterministic keyword pre-filter would be brittle across
+EN/MSA/Lebanese/Arabizi and would fight the configurable-topics model. The workflow
+question path already has a deterministic floor (D-RAG-001); the agent path is steered
+by prompt and verified by eval. The platform security wall (injection, jailbreak,
+cross-tenant, PII) stays in guardrails — scope is a relevance rail, not a security rail.
+
+**Gap it closed** (measured 2026-06-15, before fix): off-topic requests were answered
+badly — "write me a poem" triggered a wasted `rag_search` then "I'll try a different
+approach"; a coding request offered to `escalate` to a non-existent "programming
+expert". The agent never cleanly refused.
+
+**Measured** (after fix, `evals/agent_scope.json`, 10 cases, Groq — Gemini daily quota
+exhausted): scope accuracy **1.000** (off-topic decline 7/7, civic-control tool-use 3/3).
+Threshold `agent_scope_accuracy: 0.80` (wide buffer for small-n LLM variance). The
+control cases guard against over-declining legitimate civic questions.
+
+**Verdict**: Prompt-level scope boundary + a separate decline metric (kept out of the
+tool-selection accuracy number, which forces a tool and cannot measure declining).

@@ -5,6 +5,8 @@ COPY widget/package.json ./
 RUN npm install --frozen-lockfile 2>/dev/null || npm install
 
 COPY widget/ ./
+ARG VITE_API_BASE=http://localhost:8000
+ENV VITE_API_BASE=${VITE_API_BASE}
 RUN npm run build
 
 # ── Serve with nginx ───────────────────────────────────────────────────────

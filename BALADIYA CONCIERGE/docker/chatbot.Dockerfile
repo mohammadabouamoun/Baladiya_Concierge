@@ -6,6 +6,7 @@ COPY requirements-chatbot.txt .
 RUN pip install --no-cache-dir -r requirements-chatbot.txt
 
 COPY chatbot/ ./chatbot/
+COPY .streamlit/ ./.streamlit/
 
 EXPOSE 8501
 

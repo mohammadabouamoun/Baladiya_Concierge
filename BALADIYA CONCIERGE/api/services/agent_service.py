@@ -21,6 +21,11 @@ from api.services.session_service import SessionService
 
 logger = structlog.get_logger(__name__)
 
+
+class PhoneVerificationRequired(Exception):
+    """Raised by the agent when a tool requires phone verification before proceeding."""
+
+
 FALLBACK_MESSAGE = (
     "I wasn't able to fully process your request. "
     "I've notified our staff and they will follow up with you shortly."
@@ -34,8 +39,9 @@ class AgentContext:
     tenant_id: uuid.UUID
     session_id: str
     db_session: AsyncSession
-    lang: str = "en"       # detected language — "en" | "ar"
-    variety: str = "en"    # detected variety — "en" | "msa" | "lebanese" | "arabizi"
+    lang: str = "en"                       # detected language — "en" | "ar"
+    variety: str = "en"                    # detected variety — "en" | "msa" | "lebanese" | "arabizi"
+    visitor_phone_hash: str | None = None  # set when session phone is verified
 
 
 async def _get_persona(context: AgentContext) -> str:
@@ -172,6 +178,8 @@ async def run(
 
             history.append(AgentMessage(role="model", tool_call=turn.tool_call))
             tool_result = await _dispatch_tool(turn.tool_call, context)
+            if tool_result.get("verification_required"):
+                raise PhoneVerificationRequired()
             history.append(
                 AgentMessage(
                     role="tool_result",
@@ -196,6 +204,9 @@ async def run(
             [("user", message), ("model", FALLBACK_MESSAGE)],
         )
         return FALLBACK_MESSAGE
+
+    except PhoneVerificationRequired:
+        raise  # let router_service handle this — do NOT swallow into fallback
 
     except Exception as exc:
         logger.error(

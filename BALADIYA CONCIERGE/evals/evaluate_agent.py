@@ -80,6 +80,87 @@ async def _call_llm_for_tool(example: dict, model: str) -> tuple[str | None, flo
     return tool_name, elapsed
 
 
+async def _call_llm_for_scope(example: dict) -> tuple[bool, float]:
+    """Ask the LLM to handle an off-topic / control message using the *production*
+    system prompt, with all tools available. Returns (declined, latency_s).
+
+    "declined" == the agent answered with plain text instead of calling a tool.
+    Off-topic requests should decline; civic controls should call a tool.
+    """
+    from api.infra import llm_client
+    from api.services.prompt_service import select_system_prompt
+
+    # Production prompt — the one that actually governs the agent at runtime.
+    system_prompt = select_system_prompt(example.get("lang", "en"), "your municipality")
+
+    start = time.perf_counter()
+    turn = await llm_client.complete(
+        system_prompt=system_prompt,
+        history=[],
+        user_message=example["input"],
+        tool_schemas=_tool_schema_for_eval(),
+    )
+    elapsed = time.perf_counter() - start
+    declined = not turn.is_tool_call
+    return declined, elapsed
+
+
+async def run_scope_eval(verbose: bool = False) -> dict[str, Any]:
+    """Measure off-topic decline behaviour on evals/agent_scope.json.
+
+    A case is correct when the agent's decline decision matches `should_decline`:
+    off-topic requests decline (no tool), civic controls call a tool. Guards against
+    both the gap (answering off-topic) and over-declining legitimate civic questions.
+    """
+    os.environ.setdefault("ENV", "testing")
+    from api.core.config import get_settings
+    get_settings.cache_clear()
+
+    with (EVALS_DIR / "agent_scope.json").open() as f:
+        examples = json.load(f)
+    thresholds = load_thresholds()
+
+    results: list[dict] = []
+    print(f"\nRunning agent scope (off-topic decline) eval ({len(examples)} examples)")
+    print("-" * 60)
+
+    for i, ex in enumerate(examples):
+        if i > 0:
+            await asyncio.sleep(13)  # stay under free-tier 5 req/min
+        declined, _ = await _call_llm_for_scope(ex)
+        correct = declined == ex["should_decline"]
+        if verbose:
+            mark = "✓" if correct else "✗"
+            kind = "off-topic" if ex["should_decline"] else "control  "
+            act = "declined" if declined else "used tool"
+            print(f"  {mark} [{kind}|{ex['variety']:9s}] {ex['input'][:45]:45s} → {act}")
+        results.append({**ex, "declined": declined, "correct": correct})
+
+    n = len(results)
+    accuracy = sum(1 for r in results if r["correct"]) / n
+    offtopic = [r for r in results if r["should_decline"]]
+    controls = [r for r in results if not r["should_decline"]]
+    decline_rate = sum(1 for r in offtopic if r["declined"]) / len(offtopic) if offtopic else 0.0
+    control_pass = sum(1 for r in controls if not r["declined"]) / len(controls) if controls else 0.0
+
+    threshold = thresholds.get("agent_scope_accuracy", 0.80)
+    passed = accuracy >= threshold
+    print(f"\n{'='*60}")
+    print(f"Scope accuracy          : {accuracy:.3f}  (threshold: {threshold:.2f})")
+    print(f"  off-topic decline rate: {decline_rate:.3f}  ({len(offtopic)} cases)")
+    print(f"  control tool-use rate : {control_pass:.3f}  ({len(controls)} cases)")
+    print(f"Result                  : {'PASS ✓' if passed else 'FAIL ✗'}")
+    print(f"{'='*60}\n")
+
+    return {
+        "accuracy": accuracy,
+        "passed": passed,
+        "decline_rate": decline_rate,
+        "control_tool_use_rate": control_pass,
+        "results": results,
+    }
+
+
 async def run_eval(model: str = "gemini", verbose: bool = False) -> dict[str, Any]:
     """Run the full 15-example eval. Returns a results dict."""
 
@@ -97,7 +178,9 @@ async def run_eval(model: str = "gemini", verbose: bool = False) -> dict[str, An
     print(f"\nRunning agent tool-selection eval ({len(examples)} examples, model={model})")
     print("-" * 60)
 
-    for ex in examples:
+    for i, ex in enumerate(examples):
+        if i > 0:
+            await asyncio.sleep(13)  # stay under 5 req/min free-tier limit
         predicted, latency = await _call_llm_for_tool(ex, model)
         correct = predicted == ex["expected_tool"]
 
@@ -175,7 +258,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Agent tool-selection evaluation")
     parser.add_argument("--model", choices=["gemini", "groq"], default="gemini")
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--scope", action="store_true",
+                        help="Run the off-topic decline (scope) eval instead of tool-selection")
     args = parser.parse_args()
 
-    summary = asyncio.run(run_eval(model=args.model, verbose=args.verbose))
+    if args.scope:
+        summary = asyncio.run(run_scope_eval(verbose=args.verbose))
+    else:
+        summary = asyncio.run(run_eval(model=args.model, verbose=args.verbose))
     sys.exit(0 if summary["passed"] else 1)

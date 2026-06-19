@@ -10,7 +10,11 @@ interface UseChatResult {
   turns: Turn[];
   sending: boolean;
   sessionExpired: boolean;
+  verificationRequired: boolean;
   send: (message: string, lang: "en" | "ar") => void;
+  requestOtp: (phone: string) => Promise<"sent" | "rate_limited" | "error">;
+  confirmOtp: (phone: string, code: string) => Promise<"verified" | "invalid" | "error">;
+  dismissVerification: () => void;
 }
 
 const ERROR_MSG_EN = "Something went wrong. Please try again.";
@@ -25,7 +29,11 @@ export function useChat(token: string, apiBase: string): UseChatResult {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [sending, setSending] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [verificationRequired, setVerificationRequired] = useState(false);
   const sessionId = useRef<string>(crypto.randomUUID());
+  const pendingRef = useRef<{ message: string; lang: "en" | "ar" } | null>(null);
+  // Always points to the latest send — lets confirmOtp resend without stale closure
+  const sendRef = useRef<(message: string, lang: "en" | "ar") => void>(() => {});
 
   // Preview mode — simulate replies without a real backend
   if (token === "preview") {
@@ -43,7 +51,11 @@ export function useChat(token: string, apiBase: string): UseChatResult {
         setSending(false);
       }, 1200);
     };
-    return { turns, sending, sessionExpired, send };
+    const noopAsync = async () => "error" as const;
+    return {
+      turns, sending, sessionExpired, verificationRequired: false,
+      send, requestOtp: noopAsync, confirmOtp: noopAsync, dismissVerification: () => {},
+    };
   }
 
   const send = useCallback(
@@ -70,18 +82,25 @@ export function useChat(token: string, apiBase: string): UseChatResult {
             throw new Error("__expired__");
           }
           if (!r.ok) throw new Error(`API ${r.status}`);
-          return r.json() as Promise<{ response: string; handled_by: string }>;
+          return r.json() as Promise<{
+            response: string;
+            handled_by: string;
+            verification_required: boolean;
+          }>;
         })
-        .then(({ response }) => {
+        .then(({ response, verification_required }) => {
           setTurns((prev) =>
             prev.map((t, i) =>
               i === prev.length - 1 ? { ...t, response, loading: false } : t
             )
           );
+          if (verification_required) {
+            pendingRef.current = { message, lang };
+            setVerificationRequired(true);
+          }
         })
         .catch((err: Error) => {
           if (err.message === "__expired__") {
-            // Remove the loading turn — session-expired screen replaces it
             setTurns((prev) => prev.slice(0, -1));
             return;
           }
@@ -102,5 +121,62 @@ export function useChat(token: string, apiBase: string): UseChatResult {
     [token, apiBase, sending, sessionExpired]
   );
 
-  return { turns, sending, sessionExpired, send };
+  sendRef.current = send;
+
+  const requestOtp = useCallback(
+    async (phone: string): Promise<"sent" | "rate_limited" | "error"> => {
+      try {
+        const r = await fetch(`${apiBase}/verify/otp/request`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ phone, session_id: sessionId.current }),
+        });
+        if (!r.ok) return "error";
+        const data = (await r.json()) as { status: string };
+        return data.status as "sent" | "rate_limited";
+      } catch {
+        return "error";
+      }
+    },
+    [token, apiBase]
+  );
+
+  const confirmOtp = useCallback(
+    async (phone: string, code: string): Promise<"verified" | "invalid" | "error"> => {
+      try {
+        const r = await fetch(`${apiBase}/verify/otp/confirm`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ phone, code, session_id: sessionId.current }),
+        });
+        if (!r.ok) return "error";
+        const data = (await r.json()) as { status: string };
+        if (data.status === "verified") {
+          setVerificationRequired(false);
+          const pending = pendingRef.current;
+          pendingRef.current = null;
+          // Small delay so verification panel animates out before new turn appears
+          if (pending) setTimeout(() => sendRef.current(pending.message, pending.lang), 120);
+          return "verified";
+        }
+        return "invalid";
+      } catch {
+        return "error";
+      }
+    },
+    [token, apiBase]
+  );
+
+  const dismissVerification = useCallback(() => {
+    setVerificationRequired(false);
+    pendingRef.current = null;
+  }, []);
+
+  return { turns, sending, sessionExpired, verificationRequired, send, requestOtp, confirmOtp, dismissVerification };
 }

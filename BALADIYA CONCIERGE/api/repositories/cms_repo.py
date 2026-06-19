@@ -106,13 +106,17 @@ class CmsChunkRepository:
         the ORM model definition (column added by migration via ALTER TABLE).
         """
         chunk_id = uuid.uuid4()
+        embedding_str = "[" + ",".join(str(v) for v in embedding) + "]"
         await self._session.execute(
             text(
                 """
                 INSERT INTO cms_chunks
                     (id, entry_id, tenant_id, chunk_text, embedding, chunk_index, metadata)
                 VALUES
-                    (:id, :entry_id, :tenant_id, :chunk_text, :embedding::vector, :chunk_index, :metadata::jsonb)
+                    (:id, :entry_id, :tenant_id, :chunk_text,
+                     CAST(:embedding AS vector),
+                     :chunk_index,
+                     CAST(:metadata AS jsonb))
                 """
             ),
             {
@@ -120,7 +124,7 @@ class CmsChunkRepository:
                 "entry_id": str(entry_id),
                 "tenant_id": str(self._tenant_id),
                 "chunk_text": chunk_text,
-                "embedding": "[" + ",".join(str(v) for v in embedding) + "]",
+                "embedding": embedding_str,
                 "chunk_index": chunk_index,
                 "metadata": __import__("json").dumps(metadata),
             },
@@ -131,6 +135,7 @@ class CmsChunkRepository:
         self,
         query_embedding: list[float],
         top_k: int,
+        lang: str | None = None,
     ) -> list[dict]:
         """Cosine similarity search — ALWAYS filters by tenant_id.
 
@@ -138,19 +143,23 @@ class CmsChunkRepository:
         chunk_index, metadata, and cosine similarity score (1 - distance).
         """
         embedding_str = "[" + ",".join(str(v) for v in query_embedding) + "]"
+        lang_filter = "AND e.lang = :lang" if lang else ""
+        join_clause = "JOIN cms_entries e ON e.id = c.entry_id" if lang else ""
         result = await self._session.execute(
             text(
-                """
+                f"""
                 SELECT
                     c.id            AS chunk_id,
                     c.entry_id,
                     c.chunk_text,
                     c.chunk_index,
                     c.metadata,
-                    1 - (c.embedding <=> :embedding::vector) AS similarity
+                    1 - (c.embedding <=> CAST(:embedding AS vector)) AS similarity
                 FROM cms_chunks c
+                {join_clause}
                 WHERE c.tenant_id = :tenant_id
-                ORDER BY c.embedding <=> :embedding::vector
+                {lang_filter}
+                ORDER BY c.embedding <=> CAST(:embedding AS vector)
                 LIMIT :top_k
                 """
             ),
@@ -158,6 +167,7 @@ class CmsChunkRepository:
                 "embedding": embedding_str,
                 "tenant_id": str(self._tenant_id),
                 "top_k": top_k,
+                **({"lang": lang} if lang else {}),
             },
         )
         rows = result.mappings().all()

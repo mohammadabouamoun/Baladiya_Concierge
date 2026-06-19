@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,18 +6,21 @@
 
 /* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  --accent:       #1d4ed8;   /* overridden at runtime by theme_color */
-  --accent-dim:   color-mix(in srgb, var(--accent) 15%, transparent);
-  --header-bg:    #172040;
-  --header-text:  #ffffff;
-  --surface:      #fafaf8;
-  --surface-alt:  #f2f2ef;
-  --border:       #e5e4df;
-  --text-primary: #16191f;
-  --text-secondary: #6b717f;
-  --text-muted:   #9ca3af;
-  --radius-bubble: 18px;
-  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+  --accent:         #1a3a2a;   /* Baladiya deep green — overridden at runtime by theme_color */
+  --accent-dim:     color-mix(in srgb, var(--accent) 15%, transparent);
+  --accent-hover:   #2d6a4f;
+  --copper:         #b5651d;
+  --copper-dim:     color-mix(in srgb, #b5651d 15%, transparent);
+  --header-bg:      #1a3a2a;
+  --header-text:    #ffffff;
+  --surface:        #f4f0ea;
+  --surface-alt:    #ede8de;
+  --border:         #d4cec5;
+  --text-primary:   #1c1c1c;
+  --text-secondary: #4a4a4a;
+  --text-muted:     #8a8680;
+  --radius-bubble:  18px;
+  --ease-out:       cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Reset ─────────────────────────────────────────────────── */
@@ -26,7 +29,7 @@
 html, body, #root {
   height: 100%;
   overflow: hidden;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Source Sans 3', 'Noto Sans Arabic', system-ui, sans-serif;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -34,11 +37,11 @@ html, body, #root {
   color: var(--text-primary);
 }
 
-/* ── Header lattice pattern ────────────────────────────────── */
+/* ── Header — Islamic star tessellation on brand green ──────── */
 .header-pattern {
   background-color: var(--header-bg);
-  background-image: url("data:image/svg+xml,%3Csvg width='28' height='28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 0 L28 7 L28 21 L14 28 L0 21 L0 7 Z' stroke='rgba(255,255,255,0.045)' fill='none' stroke-width='0.6'/%3E%3Cpath d='M14 6 L22 10 L22 18 L14 22 L6 18 L6 10 Z' stroke='rgba(255,255,255,0.03)' fill='none' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 28px 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath d='M28 6 L32 16 L42 11 L37 21 L47 25 L37 29 L42 39 L32 34 L28 44 L24 34 L14 39 L19 29 L9 25 L19 21 L14 11 L24 16 Z' fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='0.7'/%3E%3Cpath d='M28 14 L31 21 L38 18 L35 25 L42 28 L35 31 L38 38 L31 35 L28 42 L25 35 L18 38 L21 31 L14 28 L21 25 L18 18 L25 21 Z' fill='none' stroke='rgba(181,101,29,0.07)' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 56px 56px;
 }
 
 /* ── Animations ────────────────────────────────────────────── */
@@ -105,9 +108,9 @@ html, body, #root {
 }
 .send-btn:active::after { opacity: 1; }
 
-/* ── Bot bubble accent rail ────────────────────────────────── */
+/* ── Bot bubble accent rail — copper for brand warmth ───────── */
 .bot-bubble {
-  border-inline-start: 2.5px solid var(--accent);
+  border-inline-start: 2.5px solid var(--copper);
 }
 
 /* ── Input focus ───────────────────────────────────────────── */

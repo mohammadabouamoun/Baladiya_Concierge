@@ -12,15 +12,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Python deps (no torch, no transformers) ───────────────────────────────
-COPY requirements.txt .
+COPY modelserver/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ── Application code ──────────────────────────────────────────────────────
-COPY __init__.py classifier.py main.py ./
+# ── Application code (copied to modelserver/ so import path is modelserver.main) ──
+COPY modelserver/__init__.py modelserver/classifier.py modelserver/main.py ./modelserver/
 
 # ── Artifact (committed if < 50 MB, else pulled from MinIO at startup) ───
-# Artifacts live in artifacts/ — copy if present, skip if not (MinIO path)
-COPY artifacts/ ./artifacts/
+COPY modelserver/artifacts/ ./modelserver/artifacts/
 
 EXPOSE 8001
 

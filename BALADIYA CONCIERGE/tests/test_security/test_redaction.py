@@ -116,6 +116,41 @@ async def test_api_response_does_not_contain_raw_pii():
     assert FAKE_EMAIL not in safe_input
 
 
+# ── Arabic name PII redaction (Phase 8 — FR-004–006) ───────────────────────
+
+def test_arabic_full_name_redacted():
+    """Arabic full name (given + family) must be replaced with [NAME]."""
+    result = redact("اشتكي من محمد علي بسبب الكهرباء")
+    assert "محمد علي" not in result
+    assert "[NAME]" in result
+
+
+def test_arabic_name_with_prefix_redacted():
+    """Arabic name with prefix particle must be redacted."""
+    result = redact("أنا رنا خوري من بيروت")
+    assert "رنا خوري" not in result
+    assert "[NAME]" in result
+
+
+def test_arabic_three_word_name_redacted():
+    """Three-token Arabic name must be redacted."""
+    result = redact("أحمد الحسن قدم شكوى")
+    assert "أحمد الحسن" not in result
+    assert "[NAME]" in result
+
+
+def test_arabic_civic_phrase_not_redacted():
+    """Civic institution name (مياه الجنوب) must NOT be redacted as a personal name."""
+    result = redact("مياه الجنوب مشكلة")
+    assert "[NAME]" not in result
+
+
+def test_arabic_utility_name_not_redacted():
+    """Utility phrase (كهرباء لبنان) must NOT be redacted as a personal name."""
+    result = redact("كهرباء لبنان منقطعة")
+    assert "[NAME]" not in result
+
+
 # ── End-to-end via HTTP (requires ENV=testing, mocked guardrails) ───────────
 
 @pytest.mark.asyncio

@@ -10,7 +10,7 @@ from typing import Annotated, AsyncGenerator
 import structlog
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from pydantic import BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -18,8 +18,24 @@ class Settings(BaseSettings):
 
     artifact_path: str = "artifacts/classifier.joblib"
     artifact_sha256: str = ""        # must be set; empty = skip check (dev only)
+    artifact_ar_path: str = "artifacts/classifier_ar.joblib"   # Arabic sub-model (§8.3)
+    artifact_ar_sha256: str = ""     # optional — empty = skip hash check
     service_token: str = ""          # shared secret from Vault / env
     env: str = "development"
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        import os
+        if os.getenv("ENV") == "testing":
+            return (init_settings, env_settings, file_secret_settings)
+        return (init_settings, env_settings, dotenv_settings, file_secret_settings)
 
 
 settings = Settings()
@@ -69,7 +85,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     else:
         logger.warning("artifact.sha256_skip", note="set ARTIFACT_SHA256 in production")
 
-    app.state.classifier = ClassifierService(artifact_path)
+    ar_artifact_path: Path | None = None
+    ar_path = Path(settings.artifact_ar_path)
+    if ar_path.exists():
+        if settings.artifact_ar_sha256:
+            actual_ar = _sha256_file(ar_path)
+            if actual_ar != settings.artifact_ar_sha256:
+                raise StartupError(
+                    f"AR artifact SHA-256 mismatch: got {actual_ar}, expected {settings.artifact_ar_sha256}"
+                )
+            logger.info("artifact_ar.sha256_ok", sha256=actual_ar)
+        else:
+            logger.warning("artifact_ar.sha256_skip", note="set ARTIFACT_AR_SHA256 in production")
+        ar_artifact_path = ar_path
+        logger.info("artifact_ar.loaded", path=str(ar_path))
+    else:
+        logger.warning("artifact_ar.not_found", path=str(ar_path), note="Arabic text falls back to main pipeline")
+
+    app.state.classifier = ClassifierService(artifact_path, ar_artifact_path)
     logger.info("modelserver.ready", artifact=str(artifact_path))
     yield
     logger.info("modelserver.shutdown")

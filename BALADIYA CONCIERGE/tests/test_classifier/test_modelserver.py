@@ -7,12 +7,16 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+
+# Ensure ENV=testing before any module-level code in modelserver.main runs
+os.environ.setdefault("ENV", "testing")
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -46,14 +50,15 @@ def mock_client():
 
     with patch("modelserver.main.settings") as mock_settings:
         mock_settings.service_token = "test-token"
-        mock_settings.artifact_path = "artifacts/classifier.joblib"
+        mock_settings.artifact_path = "modelserver/artifacts/classifier.joblib"
         mock_settings.artifact_sha256 = ""
         mock_settings.env = "testing"
 
         from modelserver.main import app
-        app.state.classifier = mock_clf
 
         with TestClient(app, raise_server_exceptions=False) as client:
+            # Set mock AFTER lifespan completes so it isn't overwritten by startup
+            app.state.classifier = mock_clf
             yield client, mock_clf
 
 
@@ -80,7 +85,7 @@ def test_classify_returns_correct_schema(mock_client):
 def test_classify_without_token_returns_401():
     with patch("modelserver.main.settings") as mock_settings:
         mock_settings.service_token = "required-token"
-        mock_settings.artifact_path = "artifacts/classifier.joblib"
+        mock_settings.artifact_path = "modelserver/artifacts/classifier.joblib"
         mock_settings.artifact_sha256 = ""
         mock_settings.env = "testing"
 
@@ -96,7 +101,7 @@ def test_classify_without_token_returns_401():
 def test_classify_with_wrong_token_returns_401():
     with patch("modelserver.main.settings") as mock_settings:
         mock_settings.service_token = "correct-token"
-        mock_settings.artifact_path = "artifacts/classifier.joblib"
+        mock_settings.artifact_path = "modelserver/artifacts/classifier.joblib"
         mock_settings.artifact_sha256 = ""
         mock_settings.env = "testing"
 
@@ -131,7 +136,7 @@ def test_startup_error_on_sha256_mismatch(tmp_path):
 def test_healthz_endpoint():
     with patch("modelserver.main.settings") as mock_settings:
         mock_settings.service_token = ""
-        mock_settings.artifact_path = "artifacts/classifier.joblib"
+        mock_settings.artifact_path = "modelserver/artifacts/classifier.joblib"
         mock_settings.artifact_sha256 = ""
         mock_settings.env = "testing"
 

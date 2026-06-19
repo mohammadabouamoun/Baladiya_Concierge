@@ -68,7 +68,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],   # depth-in-defense; true auth boundary is widget JWT + origin check
-    allow_credentials=True,
+    allow_credentials=False,  # must be False when allow_origins=["*"]; widget uses Bearer not cookies
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Trace-Id"],
     expose_headers=["X-Trace-Id"],
@@ -106,6 +106,7 @@ from api.api.auth.router import router as auth_router  # noqa: E402
 from api.api.chat.router import router as chat_router  # noqa: E402
 from api.api.admin.router import router as admin_router  # noqa: E402
 from api.api.widget.router import router as widget_router  # noqa: E402
+from api.api.verify.router import router as verify_router  # noqa: E402
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(platform_router, prefix="/platform", tags=["platform"])
@@ -114,3 +115,4 @@ app.include_router(rag_router, prefix="/rag", tags=["rag"])
 app.include_router(chat_router, prefix="/chat", tags=["chat"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
 app.include_router(widget_router, prefix="/widget", tags=["widget"])
+app.include_router(verify_router, prefix="/verify", tags=["verify"])

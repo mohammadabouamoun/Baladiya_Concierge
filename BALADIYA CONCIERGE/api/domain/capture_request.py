@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, field_validator
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -38,6 +38,8 @@ class CaptureRequest(Base):
     intent: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="open")
+    visitor_phone_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    is_false_report: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -107,6 +109,8 @@ class CaptureRequestRead(BaseModel):
     intent: str
     description: str
     status: str
+    visitor_phone_hash: str | None = None
+    is_false_report: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

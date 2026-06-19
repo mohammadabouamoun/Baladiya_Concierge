@@ -43,7 +43,7 @@ async def init_guardrails_client() -> None:
     _client = AsyncClient(
         base_url=settings.guardrails_url,
         headers={"X-Service-Token": settings.guardrails_service_token},
-        timeout=10.0,
+        timeout=30.0,
     )
     logger.info("guardrails_client.ready", url=settings.guardrails_url)
 

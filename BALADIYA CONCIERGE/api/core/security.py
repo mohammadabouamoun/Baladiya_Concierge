@@ -9,7 +9,36 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from api.core.config import get_settings
 
-_bearer = HTTPBearer(auto_error=True)
+# auto_error=False so a *missing* Authorization header yields 401 (via the None
+# check in get_current_user), not FastAPI's default 403 — consistent with the 401
+# raised for expired/invalid tokens in decode_token.
+_bearer = HTTPBearer(auto_error=False)
+
+
+async def _get_signing_key(token: str, settings) -> str:
+    """Two-pass key selection: peek at widget_id claim, then pick the right key.
+
+    Step 1: decode without signature verification to read widget_id.
+    Step 2: if widget_id present, fetch per-widget key from Vault cache (async).
+            Otherwise use jwt_secret (backward compatible).
+    The unverified widget_id is only used to SELECT the key — no auth decision
+    is made on unverified claims.
+    """
+    try:
+        unverified = jwt.decode(token, options={"verify_signature": False}, algorithms=[settings.jwt_algorithm])
+    except jwt.DecodeError:
+        return settings.jwt_secret
+
+    widget_id_raw = unverified.get("widget_id")
+    if not widget_id_raw:
+        return settings.jwt_secret
+
+    try:
+        from api.infra.vault import get_widget_signing_key
+        return await get_widget_signing_key(uuid.UUID(widget_id_raw))
+    except Exception:
+        # Vault unavailable or key missing — fall through; full decode will reject the token
+        return settings.jwt_secret
 
 
 class TokenClaims:
@@ -26,12 +55,13 @@ class TokenClaims:
         self.widget_id = widget_id  # set only for widget-issued visitor tokens
 
 
-def decode_token(token: str) -> TokenClaims:
+async def decode_token(token: str) -> TokenClaims:
     settings = get_settings()
+    signing_key = await _get_signing_key(token, settings)
     try:
         payload = jwt.decode(
             token,
-            settings.jwt_secret,
+            signing_key,
             algorithms=[settings.jwt_algorithm],
         )
     except jwt.ExpiredSignatureError:
@@ -64,6 +94,12 @@ def decode_token(token: str) -> TokenClaims:
 
 
 async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
 ) -> TokenClaims:
-    return decode_token(credentials.credentials)
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return await decode_token(credentials.credentials)

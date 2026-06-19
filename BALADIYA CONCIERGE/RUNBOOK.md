@@ -384,10 +384,12 @@ docker compose restart api
 
 **Step 3** — Verify new widget tokens are issued correctly:
 ```bash
-curl -s -X GET "http://localhost:8000/widget/token" \
-  -H "Origin: https://allowed-municipality-site.lb" \
-  -H "X-Widget-ID: <widget_id>" | jq '.token'
+curl -s -G "http://localhost:8000/widget/token" \
+  --data-urlencode "widget_id=<widget_id>" \
+  --data-urlencode "origin=https://allowed-municipality-site.lb" | jq '.token'
 # Expected: new JWT string
+# Note: widget_id and origin are query params (the server validates origin against
+# the widget's allowed_origins); they are NOT request headers.
 ```
 
 ---
@@ -519,9 +521,9 @@ Send a test chat message through the full stack. If you don't have a widget toke
 ```bash
 # Get a widget token (requires a seeded widget_id — find one with:
 #   SELECT id, allowed_origins FROM widgets LIMIT 3;  via psql)
-WIDGET_TOKEN=$(curl -s -X GET "http://localhost:8000/widget/token" \
-  -H "Origin: http://localhost:8080" \
-  -H "X-Widget-ID: <seeded_widget_id>" | jq -r '.token')
+WIDGET_TOKEN=$(curl -s -G "http://localhost:8000/widget/token" \
+  --data-urlencode "widget_id=<seeded_widget_id>" \
+  --data-urlencode "origin=http://localhost:8080" | jq -r '.token')
 ```
 
 ```bash
@@ -721,8 +723,8 @@ vault status | grep -E "Sealed|Version"
 # Expected: Sealed: false
 
 # --- api ---
-curl -s http://localhost:8000/health | jq .
-# Expected: {"status": "ok", "vault": "connected", "db": "connected", "redis": "connected"}
+curl -s http://localhost:8000/healthz | jq .
+# Expected: {"status": "ok"}
 
 # --- redis ---
 docker compose exec redis redis-cli ping
@@ -759,9 +761,10 @@ Runs the full resident path: widget token → chat → response.
 
 ```bash
 # Step 1: get widget token (requires a seeded widget_id and allowed origin)
-WIDGET_TOKEN=$(curl -s -X GET "http://localhost:8000/widget/token" \
-  -H "Origin: http://localhost:8080" \
-  -H "X-Widget-ID: <seeded_widget_id>" | jq -r '.token')
+# widget_id and origin are query params, not headers.
+WIDGET_TOKEN=$(curl -s -G "http://localhost:8000/widget/token" \
+  --data-urlencode "widget_id=<seeded_widget_id>" \
+  --data-urlencode "origin=http://localhost:8080" | jq -r '.token')
 
 echo "Widget token: ${WIDGET_TOKEN:0:20}..."  # print first 20 chars only
 
@@ -817,7 +820,15 @@ docker compose up db vault migrate api redis -d
 # Wait ~30 seconds for migrations and seed to complete
 
 docker compose logs migrate | tail -20
-# Expected: "Seeded: Platform Manager + 2 tenants"
+# Expected: ends with "[seed] Done." after seeding Vault secrets + platform manager + 2 tenants
 
 # Run the end-to-end smoke test from §6.3
 ```
+
+> **Last verified — 2026-06-15** (core stack `db vault migrate api redis`, images
+> rebuilt from current source): build clean → `migrate` idempotent (`[seed] Done.`)
+> → `/healthz` ok → widget token issued → `/chat` returned a grounded permits answer
+> (on-topic) and declined a chocolate-cake query (off-topic floor, §D-RAG-001) →
+> missing `Authorization` returns 401. The KB (Beirut, bilingual) is seeded separately
+> via `scripts/seed_more_kb.py`, not by `migrate` — a clean-volume run has an empty KB
+> until that script is run, so RAG answers will decline until then.

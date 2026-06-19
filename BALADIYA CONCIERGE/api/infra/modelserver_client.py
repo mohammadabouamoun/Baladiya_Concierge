@@ -17,7 +17,7 @@ async def init_modelserver_client() -> None:
     _client = AsyncClient(
         base_url=settings.modelserver_url,
         headers={"X-Service-Token": _get_service_token()},
-        timeout=5.0,
+        timeout=15.0,
     )
     logger.info("modelserver_client.ready", url=settings.modelserver_url)
 

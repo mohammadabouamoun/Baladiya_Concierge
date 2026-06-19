@@ -48,6 +48,18 @@ async def guardrails_test_client():
         transport=ASGITransport(app=guardrails_main.app),
         base_url="http://test",
     ) as client:
+        # Pre-warm PII analyzer (en_core_web_lg has multiple lazy-init stages).
+        # Three calls flush all lazy initialization before the timed tests run.
+        for warmup_msg in ("warmup", "water bill payment", "pothole on main street"):
+            await client.post(
+                "/validate",
+                headers={"X-Service-Token": "test-service-token-abc"},
+                json={
+                    "message": warmup_msg,
+                    "tenant_id": "00000000-0000-0000-0000-000000000001",
+                    "session_id": "warmup",
+                },
+            )
         yield client
 
     # Cleanup sys.path

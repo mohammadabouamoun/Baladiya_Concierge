@@ -11,6 +11,7 @@ import re
 import uuid
 
 import structlog
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.core.config import get_settings
@@ -149,13 +150,27 @@ async def chunk_and_embed(
             chunks=len(chunks),
         )
     except Exception as exc:
-        await entry_repo.update_status(entry.id, "failed")
+        # Log the root cause BEFORE touching the session (which may be aborted)
         logger.error(
-            "cms.embed_failed",
+            "cms.embed_failed_root",
             entry_id=str(entry.id),
             tenant_id=str(tenant_id),
-            error=str(exc),
+            error=repr(exc),
         )
+        # Roll back so update_status runs in a clean transaction
+        try:
+            await session.rollback()
+            # Re-set the tenant variable after rollback (session-level SET persists
+            # across COMMIT but not across ROLLBACK on the same connection)
+            tid = str(tenant_id)
+            await session.execute(text(f"SET app.current_tenant = '{tid}'"))
+        except Exception as rollback_exc:
+            logger.warning("cms.rollback_failed", error=repr(rollback_exc))
+        try:
+            await entry_repo.update_status(entry.id, "failed")
+            await session.commit()
+        except Exception as status_exc:
+            logger.warning("cms.status_update_failed", error=repr(status_exc))
         raise
 
     await session.commit()
@@ -296,9 +311,9 @@ async def retry_all_pending_entries() -> None:
         try:
             from sqlalchemy import text
             async with factory() as session:
+                tid = str(tenant_id)
                 await session.execute(
-                    text("SET LOCAL app.current_tenant = :tid"),
-                    {"tid": str(tenant_id)},
+                    text(f"SET app.current_tenant = '{tid}'"),
                 )
                 try:
                     count = await retry_pending_entries(session, tenant_id)

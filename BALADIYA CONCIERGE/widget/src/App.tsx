@@ -6,6 +6,7 @@ interface WidgetConfig {
   greeting_ar: string;
   theme_color: string;
   logo_url: string;
+  phone_country_code: string;
 }
 
 function getTokenFromUrl(): string | null {
@@ -19,9 +20,10 @@ const API_BASE: string =
 
 const MOCK_CONFIG = {
   greeting_en: "Hello! I'm the Municipal Assistant. How can I help you today?",
-  greeting_ar: "مرحباً! أنا المساعد البلدي. كيف يمكنني مساعدتك؟",
-  theme_color: "#1d4ed8",
-  logo_url: "",
+  greeting_ar: "مرحباً! أنا المساعد البلدي. كيف يمكنني مساعدتك اليوم؟",
+  theme_color: "#1a3a2a",
+  logo_url: "/logo.png",
+  phone_country_code: "961",
 };
 
 type AppState =

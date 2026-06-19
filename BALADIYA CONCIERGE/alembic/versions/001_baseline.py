@@ -23,7 +23,7 @@ TENANT_OWNED_TABLES = ["tenant_admins"]
 
 def upgrade() -> None:
     # ── pgvector extension ─────────────────────────────────────────────────
-    op.execute("CREATE EXTENSION IF NOT EXISTS pgvector")
+    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
     # ── tenants ────────────────────────────────────────────────────────────
     op.create_table(
@@ -103,7 +103,7 @@ def upgrade() -> None:
         op.execute(
             f"""
             CREATE POLICY tenant_isolation ON {table}
-                USING (tenant_id = current_setting('app.current_tenant', true)::uuid)
+                USING (tenant_id = nullif(current_setting('app.current_tenant', true), '')::uuid)
             """
         )
 

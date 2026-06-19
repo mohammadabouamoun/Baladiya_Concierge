@@ -15,11 +15,35 @@ logger = structlog.get_logger(__name__)
 
 # Arabizi: Arabic meaning expressed in Latin letters with number substitutions.
 # 3=ع  7=ح  2=ء/أ  5=خ  6=ط  8=غ  9=ص
-_ARABIZI_PATTERN = re.compile(
-    r"(?:[37259268])|"         # bare number substitutions
-    r"(?:[a-zA-Z][37259268])|" # letter+number combo
-    r"(?:[37259268][a-zA-Z])", # number+letter combo
-    re.UNICODE
+_ARABIZI_SUB_DIGITS = "2356789"
+# Plain English number tokens that contain those digits but are NOT Arabizi:
+# bare numbers (12), ordinals (3rd, 2nd), times (5pm, 2am), units (5k, 3km).
+# These are skipped so English text with numbers is never mistaken for Arabizi.
+_ENGLISH_NUM_TOKEN = re.compile(r"^\d+(?:st|nd|rd|th|pm|am|k|m|kg|km|h|s)?$", re.IGNORECASE)
+_TOKEN = re.compile(r"[A-Za-z0-9]+")
+
+
+def _arabizi_digit_hits(text: str) -> int:
+    """Count word-tokens that carry an Arabizi number substitution.
+
+    A token counts only when a substitution digit is embedded with a Latin
+    letter (share3, 7afra, 2eddem) AND the token is not a plain English number/
+    ordinal/time/unit (12, 3rd, 5pm, 2am). Bare standalone digits never count.
+    """
+    hits = 0
+    for tok in _TOKEN.findall(text):
+        if _ENGLISH_NUM_TOKEN.match(tok):
+            continue
+        if any(c.isalpha() for c in tok) and any(d in tok for d in _ARABIZI_SUB_DIGITS):
+            hits += 1
+    return hits
+# Common Arabic function words / particles written in Latin script (Arabizi)
+_ARABIZI_LEXICAL = re.compile(
+    r"\b(el|il|al|bil|bel|lal|lel|min|men|msh|mish|ma|fi|fiy|la|le|"
+    r"3al|3and|3anna|3ando|shu|shi|chi|kif|wين|wla|wlo|hala2|halla2|"
+    r"imbere7|mbere7|kbir|kbire|share3|tari2|bayt|baladiyye|baladiyyi|"
+    r"zbele|nfeyet|may|kahraba|rasif|majrour|7ay|mante2a)\b",
+    re.IGNORECASE
 )
 _ARABIC_SCRIPT = re.compile(r"[؀-ۿݐ-ݿࢠ-ࣿ]+")
 
@@ -58,10 +82,24 @@ def _detect_sync(text: str) -> LangDetectResult:
     # Fast-path: check if predominantly Arabizi (Latin letters + number substitutions)
     latin_chars = sum(1 for c in text if c.isascii() and c.isalpha())
     arabic_chars = len(_ARABIC_SCRIPT.findall(text))
-    arabizi_hits = len(_ARABIZI_PATTERN.findall(text))
+    arabizi_hits = _arabizi_digit_hits(text)
 
-    if latin_chars > arabic_chars and arabizi_hits >= 2:
+    lexical_hits = len(_ARABIZI_LEXICAL.findall(text))
+    is_arabizi = latin_chars > arabic_chars and (
+        arabizi_hits >= 2 or (arabizi_hits >= 1 and lexical_hits >= 2)
+    )
+    if not is_arabizi and latin_chars > arabic_chars and lexical_hits >= 3:
+        # Pure lexical Arabizi: no number substitutions but ≥3 distinct Arabic
+        # function words written in Latin script (e.g. "el zbele min el share3")
+        is_arabizi = True
+    if is_arabizi:
         return LangDetectResult(lang="ar", variety="arabizi", confidence=0.75)
+
+    # Fast-path for Arabic script — no langdetect needed.
+    # Handles the case where langdetect is unavailable or raises on Arabic text.
+    if arabic_chars > 2 and arabic_chars >= latin_chars:
+        variety = _infer_arabic_variety(text)
+        return LangDetectResult(lang="ar", variety=variety, confidence=0.90)
 
     from langdetect import detect as ld_detect, detect_langs
     from langdetect.lang_detect_exception import LangDetectException

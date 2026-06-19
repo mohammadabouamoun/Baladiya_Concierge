@@ -4,6 +4,10 @@ Verifies that Platform Manager role has no SELECT path to tenant-owned data.
 """
 from __future__ import annotations
 
+import pytest
+
+pytestmark = pytest.mark.integration
+
 import uuid
 
 import jwt

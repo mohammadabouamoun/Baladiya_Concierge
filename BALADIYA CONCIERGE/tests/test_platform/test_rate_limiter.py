@@ -43,10 +43,10 @@ async def test_rate_limit_allows_under_limit():
     token = _make_token(tenant_id=tenant_id)
     req = _make_request()
 
-    mock_redis = AsyncMock()
-    mock_pipeline = AsyncMock()
-    # zremrangebyscore, zadd, zcard, expire — zcard returns 10 (under 60)
+    # pipeline() is called synchronously; only execute() is awaited
+    mock_pipeline = MagicMock()
     mock_pipeline.execute = AsyncMock(return_value=[None, None, 10, None])
+    mock_redis = MagicMock()
     mock_redis.pipeline.return_value = mock_pipeline
 
     with patch("api.infra.rate_limit.get_redis", return_value=mock_redis):
@@ -60,10 +60,9 @@ async def test_rate_limit_blocks_over_limit():
     token = _make_token(tenant_id=tenant_id)
     req = _make_request()
 
-    mock_redis = AsyncMock()
-    mock_pipeline = AsyncMock()
-    # zcard returns 61 (> 60 limit)
+    mock_pipeline = MagicMock()
     mock_pipeline.execute = AsyncMock(return_value=[None, None, 61, None])
+    mock_redis = MagicMock()
     mock_redis.pipeline.return_value = mock_pipeline
 
     with patch("api.infra.rate_limit.get_redis", return_value=mock_redis):

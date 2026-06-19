@@ -12,9 +12,14 @@ import os
 import httpx
 import streamlit as st
 
+import sys, os as _os
+sys.path.insert(0, _os.path.join(_os.path.dirname(__file__), "../.."))
+from chatbot._style import inject as _inject_css
+
 API_BASE = os.environ.get("API_BASE_URL", "http://api:8000")
 
 st.set_page_config(page_title="Widget — Baladiya Concierge", layout="wide")
+_inject_css()
 
 
 def _auth_headers() -> dict:

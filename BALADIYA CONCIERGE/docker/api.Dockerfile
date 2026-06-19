@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY api/ ./api/
 COPY alembic/ ./alembic/
 COPY alembic.ini .
+COPY prompts/ ./prompts/
 
 EXPOSE 8000
 

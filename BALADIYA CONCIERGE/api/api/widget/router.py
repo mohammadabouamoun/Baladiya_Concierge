@@ -46,17 +46,53 @@ _LOADER_JS = r"""
     })
     .then(function (data) {
       if (!data || !data.token) return;
+
+      // ── Bubble icons (tenant logo when closed, X when open) ─────
+      var widgetAppBase = script.getAttribute('data-widget-app') || '{widget_app_base}';
+      var closedIcon = '<img src="' + widgetAppBase + '/logo.png" alt="" '
+        + 'style="width:100%;height:100%;border-radius:50%;object-fit:cover" '
+        + 'onerror="this.remove()">';
+      var openIcon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+      // ── Bubble button (inset-inline-start: left in EN, right in AR) ─
+      var btn = document.createElement('button');
+      btn.title = 'Chat with us';
+      btn.style.cssText = [
+        'position:fixed', 'bottom:20px', 'inset-inline-start:20px',
+        'width:56px', 'height:56px', 'border-radius:50%',
+        'background:#1a3a2a', 'border:none', 'cursor:pointer',
+        'padding:0', 'overflow:hidden',
+        'box-shadow:0 4px 16px rgba(0,0,0,0.25)',
+        'z-index:2147483647', 'display:flex',
+        'align-items:center', 'justify-content:center',
+        'transition:transform 0.15s'
+      ].join(';');
+      btn.innerHTML = closedIcon;
+
+      // ── Chat iframe (hidden until bubble clicked) ───────────────
       var iframe = document.createElement('iframe');
-      iframe.src = apiBase + '/widget/app/?token=' + encodeURIComponent(data.token);
+      iframe.src = widgetAppBase + '/?token=' + encodeURIComponent(data.token);
       iframe.style.cssText = [
-        'position:fixed', 'bottom:20px', 'right:20px',
+        'position:fixed', 'bottom:88px', 'inset-inline-start:20px',
         'width:380px', 'height:560px', 'border:none',
         'border-radius:16px',
         'box-shadow:0 8px 32px rgba(0,0,0,0.18)',
-        'z-index:2147483647'
+        'z-index:2147483646',
+        'display:none',
+        'transition:opacity 0.2s'
       ].join(';');
       iframe.title = 'Baladiya Chat';
+
+      var open = false;
+      btn.addEventListener('click', function () {
+        open = !open;
+        iframe.style.display = open ? 'block' : 'none';
+        btn.style.transform = open ? 'scale(0.92)' : 'scale(1)';
+        btn.innerHTML = open ? openIcon : closedIcon;
+      });
+
       document.body.appendChild(iframe);
+      document.body.appendChild(btn);
     })
     .catch(function (err) {
       console.warn('[baladiya] widget load error:', err);
@@ -114,12 +150,15 @@ async def _admin_db(
 
 @router.get(".js", response_class=PlainTextResponse, tags=["widget"])
 async def widget_loader(request: Request) -> PlainTextResponse:
+    from api.core.config import get_settings
     api_base = str(request.base_url).rstrip("/")
-    js = _LOADER_JS.replace("{api_base}", api_base)
+    settings = get_settings()
+    widget_app_base = getattr(settings, "widget_app_url", "http://localhost:3000")
+    js = _LOADER_JS.replace("{api_base}", api_base).replace("{widget_app_base}", widget_app_base)
     return PlainTextResponse(
         content=js,
         media_type="application/javascript",
-        headers={"Cache-Control": "public, max-age=300"},
+        headers={"Cache-Control": "no-store"},
     )
 
 
@@ -178,10 +217,11 @@ async def get_widget_config(
     return WidgetConfig(
         greeting_en=wc.get("greeting_en", "Hello! How can I help you today?"),
         greeting_ar=wc.get("greeting_ar", ""),
-        theme_color=wc.get("theme_color", "#1d4ed8"),
+        theme_color=wc.get("theme_color", "#1a3a2a"),
         logo_url=wc.get("logo_url", ""),
         enabled_tools=wc.get("enabled_tools", ["rag_search", "capture_request", "escalate"]),
         persona=wc.get("persona", ""),
+        phone_country_code=wc.get("phone_country_code", "961"),
     )
 
 

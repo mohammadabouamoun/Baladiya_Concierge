@@ -19,7 +19,6 @@ coverage.xml
 notebooks/
 specs/
 evals/
-prompts/
 *.log
 .DS_Store
 Thumbs.db

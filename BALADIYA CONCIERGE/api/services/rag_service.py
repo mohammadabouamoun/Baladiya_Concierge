@@ -88,18 +88,7 @@ async def rag_search(
 
     chunk_repo = CmsChunkRepository(session, tenant_id)
 
-    # FR-004: prefer same-language chunks when lang=="ar"; fetch more then re-rank.
-    # This is a soft boost, not a hard filter — English chunks are the fallback.
-    if lang == "ar":
-        # Fetch 2× top_k, then promote AR-tagged chunks to the front
-        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k * 2)
-        ar_results = [r for r in raw_results if r.get("lang") == "ar"]
-        en_results = [r for r in raw_results if r.get("lang") != "ar"]
-        raw_results = (ar_results + en_results)[:k]
-        if ar_results:
-            logger.debug("rag.arabic_boost", ar_count=len(ar_results), total=len(raw_results))
-    else:
-        raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k)
+    raw_results = await chunk_repo.similarity_search(query_embedding, top_k=k, lang=lang or None)
 
     if not raw_results:
         logger.info(
@@ -138,3 +127,35 @@ async def rag_search(
         top_similarity=results[0].similarity if results else 0.0,
     )
     return results
+
+
+# ── Answer synthesis (workflow question path) ──────────────────────────────
+# Mirror the eval generator (evals/rag_judge.py:_ANSWER_SYS / generate_answer)
+# verbatim so live workflow answers and the measured faithfulness/answer-relevancy
+# gate exercise identical generation behavior. "Same language as the question"
+# keeps the English path free of any Arabic resource (constitution §III).
+_ANSWER_SYS = (
+    "You are a municipal civic assistant. Answer the resident's question using ONLY the "
+    "provided context. If the context does not contain the answer, say you do not have "
+    "that information. Be concise. Reply in the same language as the question."
+)
+
+
+async def synthesize_answer(query: str, chunks: list[str]) -> str:
+    """Synthesize a concise grounded answer from retrieved chunks (Gemini→Groq).
+
+    Replaces raw chunk concatenation on the workflow question path. Reuses
+    llm_client.complete_text, so it inherits the Gemini→Groq fallback. Callers
+    are responsible for fail-open behavior (e.g. fall back to raw chunks) if the
+    LLM is fully unavailable.
+    """
+    from api.infra import llm_client
+
+    ctx = "\n\n".join(chunks) if chunks else "(no relevant context found)"
+    # gemini-2.5-flash is a thinking model: internal reasoning tokens count against
+    # max_output_tokens. A tight budget starves the visible answer mid-sentence when
+    # the model has to reason over several chunks (observed: cost answer cut at "LBP 1,").
+    # 1200 leaves room for reasoning + a concise answer; the prompt still caps length.
+    return await llm_client.complete_text(
+        _ANSWER_SYS, f"Context:\n{ctx}\n\nQuestion: {query}\n\nAnswer:", max_tokens=1200
+    )

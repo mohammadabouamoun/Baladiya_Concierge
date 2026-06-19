@@ -70,3 +70,5 @@ class WidgetConfig(BaseModel):
     # Phase 7: tool filter and persona are configurable per widget
     enabled_tools: list[str] = ["rag_search", "capture_request", "escalate"]
     persona: str = ""
+    # Phone OTP: country calling code for the municipality's country (no "+", e.g. "961" for Lebanon)
+    phone_country_code: str = "961"
