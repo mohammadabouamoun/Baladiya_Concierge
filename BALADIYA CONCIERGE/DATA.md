@@ -2,6 +2,12 @@
 
 > Dataset documentation for the civic intent classifier. Covers schema, build process, split strategy, distribution, labelling guidelines, and growth targets.
 
+> **File-naming note.** `DATA.md` (this file) is *documentation*. The similarly-named
+> `build_dataset.md`, `dataset_english_large.md`, and `dataset_english.md` are **Python
+> builder scripts** — the `.md` extension is a project convention, not a sign they are docs.
+> They generate `civic_intent_dataset.csv`; see §6 for how they chain. (There is no `Data.md`
+> — that stale duplicate of this file was removed.)
+
 ---
 
 ## 1. Dataset Overview

@@ -68,7 +68,7 @@ Schema: `id | text | lang | variety | intent | category | split`
 
 Rebuild: `python3 build_dataset.md` — this is a Python script with a `.md` extension.
 
-This dataset trains the **classifier only** — it is never embedded into pgvector. Current size: ~209 rows. Grow each `(intent × variety)` cell toward 50–100 verified examples before quoting Arabic F1 as reliable. `human` and `electricity` are the thinnest cells.
+This dataset trains the **classifier only** — it is never embedded into pgvector. Current size: **~13,138 rows**, but ~12,100 are EN template-generated (`dataset_english_large.md`, which inflate EN F1 toward 1.0 via memorisation); the hand-verified Arabic seed is only **~628 rows** (msa/lebanese/arabizi). Grow each `(intent × variety)` Arabic cell toward 50–100 verified examples before quoting Arabic F1 as reliable (see `DATA.md §5`). `human` is the thinnest Arabic cell.
 
 ## Roles
 
