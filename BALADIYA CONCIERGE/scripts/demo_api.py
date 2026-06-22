@@ -115,6 +115,20 @@ def _save_report(record: dict) -> None:
         records.insert(0, record)  # newest first
         REQUESTS_FILE.write_text(json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8")
 
+
+def _update_request(req_id: str, changes: dict) -> dict | None:
+    """Apply `changes` to the record with matching id; return it (or None)."""
+    with _REQUESTS_LOCK:
+        records = _load_requests()
+        for rec in records:
+            if rec.get("id") == req_id:
+                rec.update(changes)
+                REQUESTS_FILE.write_text(
+                    json.dumps(records, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                return rec
+    return None
+
 # The model emits this exact marker once it has BOTH a location and a problem
 # description for a report — the frontend strips it and opens the phone/OTP card.
 VERIFY_MARKER = "[[VERIFY_PHONE]]"
@@ -245,6 +259,10 @@ class Handler(BaseHTTPRequestHandler):
             self._otp_confirm()
         elif self.path == "/demo/requests":
             self._store_request()
+        elif self.path.startswith("/demo/requests/") and self.path.endswith("/status"):
+            self._set_status(self.path.split("/")[3])
+        elif self.path.startswith("/demo/requests/") and self.path.endswith("/flag"):
+            self._flag_request(self.path.split("/")[3])
         else:
             self._send(404, {"error": "not found"})
 
@@ -285,6 +303,31 @@ class Handler(BaseHTTPRequestHandler):
         _save_report(record)
         print(f"[demo-api] stored report ref={ref} category={record['category']} phone={phone}")
         self._send(200, {"ref": ref, "id": record["id"]})
+
+    _VALID_STATUSES = ("open", "in_progress", "escalated", "resolved")
+
+    def _set_status(self, req_id: str):
+        """Update a report's status (open/in_progress/escalated/resolved)."""
+        status = (self._body().get("status") or "").strip()
+        if status not in self._VALID_STATUSES:
+            self._send(400, {"error": f"invalid status; allowed {self._VALID_STATUSES}"})
+            return
+        rec = _update_request(req_id, {"status": status})
+        if rec is None:
+            self._send(404, {"error": "request not found"})
+            return
+        print(f"[demo-api] status ref={rec.get('ref')} -> {status}")
+        self._send(200, {"id": req_id, "status": status})
+
+    def _flag_request(self, req_id: str):
+        """Mark / unmark a report as a false report."""
+        flagged = bool(self._body().get("is_false_report", True))
+        rec = _update_request(req_id, {"is_false_report": flagged})
+        if rec is None:
+            self._send(404, {"error": "request not found"})
+            return
+        print(f"[demo-api] flag ref={rec.get('ref')} is_false={flagged}")
+        self._send(200, {"id": req_id, "is_false_report": flagged})
 
     def _chat(self):
         body = self._body()

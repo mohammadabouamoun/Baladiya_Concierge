@@ -28,11 +28,6 @@ def _auth_headers() -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _status_badge(status: str) -> str:
-    colors = {"done": "🟢", "pending": "🟡", "failed": "🔴"}
-    return f"{colors.get(status, '⚪')} {status}"
-
-
 # ── Login ──────────────────────────────────────────────────────────────────
 
 if "token" not in st.session_state:
@@ -75,14 +70,53 @@ if st.sidebar.button("Sign out"):
 # ── Load entries ───────────────────────────────────────────────────────────
 
 _PREVIEW_ENTRIES = [
-    {"id": "p1", "title": "Pothole reporting on main roads", "body": "Residents can report potholes and road damage with a photo and location.",
-     "category": "roads", "lang": "en", "embedding_status": "done"},
-    {"id": "p2", "title": "مواعيد جمع النفايات", "body": "جدول جمع النفايات لكل حي في المدينة، محدّث أسبوعياً.",
+    {"id": "p1", "title": "Building permit — requirements and fees",
+     "body": ("To apply for a building permit you must submit stamped architectural plans, "
+              "structural drawings, proof of land ownership, and the municipal application form. "
+              "The processing fee for a commercial building permit is LBP 1,200,000; a residential "
+              "permit is LBP 600,000. Standard processing takes 15 working days from the date all "
+              "documents are received."),
+     "category": "permits", "lang": "en", "embedding_status": "done"},
+    {"id": "p2", "title": "Household waste collection schedule",
+     "body": ("Household waste is collected three times a week — Monday, Wednesday, and Friday — "
+              "before 7:00 AM in residential neighbourhoods, and daily in the central market area. "
+              "Place bins at the curb the night before. Bulky items (furniture, appliances) are "
+              "collected on the first Saturday of each month by prior request."),
+     "category": "waste", "lang": "en", "embedding_status": "done"},
+    {"id": "p3", "title": "مواعيد جمع النفايات المنزلية",
+     "body": ("تُجمع النفايات المنزلية ثلاث مرات أسبوعياً — الإثنين والأربعاء والجمعة — قبل الساعة "
+              "السابعة صباحاً في الأحياء السكنية، ويومياً في منطقة السوق المركزي. يُرجى إخراج الحاويات "
+              "في الليلة السابقة. تُجمع الأغراض الكبيرة (أثاث، أجهزة) في أول سبت من كل شهر بطلب مسبق."),
      "category": "waste", "lang": "ar", "embedding_status": "done"},
-    {"id": "p3", "title": "Building permit requirements", "body": "Documents and fees required to apply for a residential building permit.",
-     "category": "permits", "lang": "en", "embedding_status": "pending"},
-    {"id": "p4", "title": "انقطاع المياه المجدول", "body": "إشعارات بانقطاع المياه المخطط له لأعمال الصيانة.",
-     "category": "water", "lang": "ar", "embedding_status": "failed"},
+    {"id": "p4", "title": "Municipality office hours and contact",
+     "body": ("The municipality is open Monday to Friday, 8:00 AM to 3:00 PM, and Saturday 8:00 AM "
+              "to 1:00 PM. The Urban Planning and Permits desk closes at 1:00 PM. You can reach the "
+              "main switchboard at 01-123456 or email info@beirut.gov.lb. The offices are closed on "
+              "official public holidays."),
+     "category": "general", "lang": "en", "embedding_status": "done"},
+    {"id": "p5", "title": "Annual property tax (rental value tax)",
+     "body": ("The annual municipal property tax is based on the assessed rental value of the "
+              "property. Bills are issued in January and payable by 31 March. A 10% early-payment "
+              "discount applies before 1 March; late payment after 31 March incurs a 5% penalty. "
+              "Pay at the municipal cashier or via bank transfer using your property reference number."),
+     "category": "taxes", "lang": "en", "embedding_status": "done"},
+    {"id": "p6", "title": "Reporting a water cut or pipe leak",
+     "body": ("To report a water outage or a burst pipe, provide the exact street and the nearest "
+              "landmark. Emergency leaks affecting the public road are prioritised and addressed "
+              "within 24 hours. Scheduled maintenance cuts are announced at least 48 hours in advance "
+              "on the municipality website and SMS list."),
+     "category": "water", "lang": "en", "embedding_status": "done"},
+    {"id": "p7", "title": "الإبلاغ عن انقطاع المياه أو تسرّب",
+     "body": ("للإبلاغ عن انقطاع المياه أو انفجار أنبوب، يُرجى تحديد الشارع وأقرب معلم بارز. تُعالَج "
+              "التسربات الطارئة التي تؤثّر على الطريق العام خلال 24 ساعة. يُعلَن عن انقطاعات الصيانة "
+              "المجدولة قبل 48 ساعة على الأقل عبر موقع البلدية وقائمة الرسائل النصية."),
+     "category": "water", "lang": "ar", "embedding_status": "done"},
+    {"id": "p8", "title": "Reporting street faults — potholes and lighting",
+     "body": ("Report potholes, damaged pavements, or broken streetlights with the street name and a "
+              "nearby landmark; a photo helps. Streetlight repairs are typically completed within five "
+              "working days. Potholes on main roads are assessed within 48 hours and scheduled for "
+              "patching based on severity and traffic."),
+     "category": "roads", "lang": "en", "embedding_status": "done"},
 ]
 
 
@@ -146,11 +180,16 @@ if not entries:
 else:
     for entry in entries:
         with st.container(border=True):
-            c1, c2, c3 = st.columns([4, 1, 1])
-            c1.markdown(f"**{entry['title']}**  \n`{entry['category']}` · `{entry['lang']}`")
-            c2.markdown(_status_badge(entry["embedding_status"]))
-
-            with c3:
+            c1, c2 = st.columns([5, 1])
+            with c1:
+                st.markdown(f"**{entry['title']}**  \n`{entry['category']}` · `{entry['lang']}`")
+                body = entry.get("body", "")
+                st.caption(body[:200] + ("…" if len(body) > 200 else ""))
+                # CMS entries are published information, not tasks — no done/in-progress status.
+                # The only signal worth surfacing is when an entry failed to index for search.
+                if entry.get("embedding_status") == "failed":
+                    st.caption("⚠️ Not yet searchable — re-save this entry to re-index it.")
+            with c2:
                 if st.button("Edit", key=f"edit_{entry['id']}"):
                     st.session_state["editing"] = entry["id"]
                 if st.button("Delete", key=f"del_{entry['id']}"):

@@ -39,6 +39,30 @@ def _fetch_demo_requests() -> list[dict]:
     return []
 
 
+def _set_demo_status(request_id: str, status: str) -> bool:
+    """Preview mode: update a report's status via the local demo API."""
+    try:
+        r = httpx.post(f"{DEMO_API}/demo/requests/{request_id}/status", json={"status": status}, timeout=5)
+        if r.status_code == 200:
+            return True
+        st.error(f"Status update failed: {r.status_code} {r.text}")
+    except httpx.RequestError as exc:
+        st.error(f"Could not reach demo API: {exc}")
+    return False
+
+
+def _flag_demo(request_id: str) -> bool:
+    """Preview mode: flag a report as false via the local demo API."""
+    try:
+        r = httpx.post(f"{DEMO_API}/demo/requests/{request_id}/flag", json={"is_false_report": True}, timeout=5)
+        if r.status_code == 200:
+            return True
+        st.error(f"Flag failed: {r.status_code} {r.text}")
+    except httpx.RequestError as exc:
+        st.error(f"Could not reach demo API: {exc}")
+    return False
+
+
 def _auth_header(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
@@ -108,7 +132,7 @@ def main():
             except ValueError:
                 pass
 
-        status_icon = {"open": "🟡", "escalated": "🔴", "resolved": "🟢"}.get(rec.get("status", ""), "⚪")
+        status_icon = {"open": "🟡", "in_progress": "🟠", "escalated": "🔴", "resolved": "🟢"}.get(rec.get("status", ""), "⚪")
 
         is_false = rec.get("is_false_report", False)
         false_label = " 🚩 FALSE" if is_false else ""
@@ -129,12 +153,37 @@ def main():
                 st.write(f"**Phone verified**: {'Yes' if has_phone else 'No'}")
             st.write(f"**Description**: {rec.get('description', '—')}")
 
-            if not is_false and rec.get("intent") == "report":
-                btn_key = f"flag_{rec.get('id', '')}"
-                if st.button("🚩 Flag as False Report", key=btn_key, type="secondary"):
-                    if preview:
-                        st.info("Preview mode — flagging is disabled (no backend write).")
-                        st.stop()
+            rec_id = rec.get("id", "")
+            if preview:
+                # ── Local demo controls — write to the demo API (never touches Docker) ──
+                st.markdown("---")
+                status_opts = ["open", "in_progress", "escalated", "resolved"]
+                status_labels = {
+                    "open": "🟡 Open", "in_progress": "🟠 In progress",
+                    "escalated": "🔴 Escalated", "resolved": "🟢 Resolved",
+                }
+                cur = rec.get("status", "open")
+                cur_idx = status_opts.index(cur) if cur in status_opts else 0
+                cset, cflag = st.columns([2, 1])
+                with cset:
+                    new_status = st.selectbox(
+                        "Set status", status_opts, index=cur_idx,
+                        format_func=lambda s: status_labels[s], key=f"sel_{rec_id}",
+                    )
+                    if st.button("Update status", key=f"upd_{rec_id}"):
+                        if _set_demo_status(rec_id, new_status):
+                            st.success(f"Status → {status_labels[new_status]}")
+                            st.rerun()
+                with cflag:
+                    if not is_false and rec.get("intent") == "report":
+                        if st.button("🚩 Flag as False", key=f"flag_{rec_id}", type="secondary"):
+                            if _flag_demo(rec_id):
+                                st.success("Marked as false report.")
+                                st.rerun()
+                    elif is_false:
+                        st.warning("Confirmed false.")
+            elif not is_false and rec.get("intent") == "report":
+                if st.button("🚩 Flag as False Report", key=f"flag_{rec_id}", type="secondary"):
                     result = _flag_false_report(token, rec["id"])
                     if result:
                         blocked_msg = " Reporter is now **blocked** from filing further reports." if result.get("blocked") else ""
