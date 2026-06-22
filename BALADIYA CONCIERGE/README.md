@@ -10,31 +10,25 @@ Think Shopify, but for town halls: one platform, an isolated private assistant p
 
 A walkthrough of the running system, one clip per surface.
 
-<!--
-  HOW TO ADD THE VIDEOS (GitHub renders uploaded MP4s as inline players):
-  1. Open this README on github.com and click the pencil (Edit).
-  2. Drag each compressed clip (Desktop/demo-compressed/*-small.mp4) onto the
-     matching line below. GitHub uploads it and replaces the line with a
-     https://github.com/user-attachments/assets/... URL — leave that URL on its
-     own line and it becomes a player.
-  3. Delete the placeholder line for that clip and this comment when done.
--->
+
 
 **1. Resident website + chat bubble** — bilingual (Arabic/English) chat, file a report, phone/OTP verification, reference number.
 
-<!-- paste Recording …171146-small.mp4 here -->
+
+https://github.com/user-attachments/assets/d3bd7a3e-a03b-4f0e-a1bd-d3b849267eaa
 
 **2. Tenant Admin · Requests** — the captured report appears with category, location, and **Phone verified: Yes**.
 
-<!-- paste Recording …171646-small.mp4 here -->
+https://github.com/user-attachments/assets/4fa9854d-13c5-447c-9498-f8d600234cd1
 
 **3. Tenant Admin · CMS** — managing the tenant's bilingual knowledge base.
 
-<!-- paste Recording …171800-small.mp4 here -->
+https://github.com/user-attachments/assets/36015777-c985-47ad-ab6e-c2abab04e3c9
 
 **4. Platform Manager** — control plane: tenant provisioning, status, suspend/erase.
 
-<!-- paste Recording …171926-small.mp4 here -->
+https://github.com/user-attachments/assets/b79f7e25-8e9b-444c-aff8-b855e5f5e888
+
 
 ## How it works
 
